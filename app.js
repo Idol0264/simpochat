@@ -5071,17 +5071,6 @@ function handleAction(
 
     case "search":
 
-    case "open-search":
-
-      state.screen =
-        "search";
-
-      saveState();
-
-      render();
-
-      break;
-
 
     case "settings":
 
