@@ -160,12 +160,52 @@ function joinGroupModal() {
 }
 
 function postModal(name="Maya") {
-  modalRoot.innerHTML = `<div class="modal-backdrop" data-close><div class="modal">
-    <div class="modal-head"><div class="modal-title">${escapeHtml(name)}’s post</div><button class="close-btn" data-close>×</button></div>
-    <div class="post-media" style="height:330px;border-radius:20px">▶</div>
-    <div style="display:flex;gap:8px;margin-top:12px"><span class="chip">128 views</span><span class="chip">♡ 19</span><span class="chip">Comments 6</span></div>
-    <p style="color:var(--muted);font-size:12px;line-height:1.5">Posted from Creators Hub. Posts disappear automatically after 2 days.</p>
-  </div></div>`;
+  modalRoot.innerHTML = `
+    <div class="post-view-backdrop" data-close>
+      <div class="post-view" role="dialog" aria-modal="true">
+
+        <button
+          class="post-view-close"
+          data-close
+          aria-label="Close post"
+          title="Close post"
+        >×</button>
+
+        <div class="post-view-media">
+          <div class="post-placeholder-icon">
+            ▶
+          </div>
+        </div>
+
+        <div class="post-view-info">
+
+          <div class="post-view-user">
+            <div class="post-view-avatar">
+              ${escapeHtml(name.charAt(0).toUpperCase())}
+            </div>
+
+            <div class="post-view-user-copy">
+              <div class="post-view-user-name">
+                ${escapeHtml(name)}
+              </div>
+
+              <div class="post-view-group">
+                Posted from Creators Hub
+              </div>
+            </div>
+          </div>
+
+          <div class="post-view-stats">
+            <span class="chip">128 views</span>
+            <span class="chip">♡ 19 reactions</span>
+            <span class="chip">Comments 6</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  `;
 }
 
 document.addEventListener("click", e => {
