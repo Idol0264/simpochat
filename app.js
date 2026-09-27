@@ -235,8 +235,18 @@ function postModal(name="Maya") {
 
 document.addEventListener("click", e => {
   const close = e.target.closest("[data-close]");
-  if (close) { modalRoot.innerHTML=""; return; }
 
+if (close) {
+  if (
+    close.classList.contains("post-viewer-backdrop") &&
+    e.target !== close
+  ) {
+    return;
+  }
+
+  modalRoot.innerHTML = "";
+  return;
+}
   const action = e.target.closest("[data-action]")?.dataset.action;
   if (action === "open-menu") return openMenu();
   if (action === "open-posts") { state.screen="posts"; return render(); }
