@@ -733,3 +733,1205 @@ function goBack() {
 
   render();
 }
+
+/* =========================================================
+   SIMPOCHAT — SECTION 2/5
+   RENDERING + HOME + STARRED + ARCHIVED
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   MAIN RENDER CONTROLLER
+   --------------------------------------------------------- */
+
+function render() {
+
+  cleanupExpired();
+
+  applyTheme();
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.screen ===
+          state.screen
+      );
+
+    });
+
+  if (state.screen === "home") {
+    return renderHome();
+  }
+
+  if (state.screen === "starred") {
+    return renderGroupCollection(
+      "starred"
+    );
+  }
+
+  if (state.screen === "archived") {
+    return renderGroupCollection(
+      "archived"
+    );
+  }
+
+  if (state.screen === "posts") {
+    return renderPosts();
+  }
+
+  if (state.screen === "search") {
+    return renderSearch();
+  }
+
+  if (state.screen === "settings") {
+    return renderSettings();
+  }
+
+  if (state.screen === "new-group") {
+    return renderNewGroup();
+  }
+
+  if (state.screen === "group-chat") {
+    return renderGroupChat();
+  }
+
+  if (state.screen === "group-profile") {
+    return renderGroupProfile();
+  }
+
+  state.screen = "home";
+
+  renderHome();
+}
+
+
+/* ---------------------------------------------------------
+   HOME
+   --------------------------------------------------------- */
+
+function renderHome() {
+
+  setHeader(
+    "SimpoChat",
+    "Your groups"
+  );
+
+  const groups =
+    visibleGroups();
+
+  screen.innerHTML = `
+
+    <div class="section-head">
+
+      <div>
+
+        <div class="section-title">
+          Groups
+        </div>
+
+        <div class="section-note">
+          Groups you belong to
+        </div>
+
+      </div>
+
+    </div>
+
+    ${
+      groups.length
+        ? `
+          <div class="group-list">
+            ${groups
+              .map(renderGroupCard)
+              .join("")}
+          </div>
+        `
+        : emptyGroups("home")
+    }
+
+  `;
+
+  bindGroupCards();
+}
+
+
+/* ---------------------------------------------------------
+   STARRED / ARCHIVED COLLECTIONS
+   --------------------------------------------------------- */
+
+function renderGroupCollection(
+  type
+) {
+
+  const groups =
+    visibleGroups();
+
+  const title =
+    type === "starred"
+      ? "Starred"
+      : "Archived";
+
+  setHeader(
+    title,
+    `${groups.length} group${
+      groups.length === 1
+        ? ""
+        : "s"
+    }`
+  );
+
+  screen.innerHTML = `
+
+    <div class="section-head">
+
+      <div>
+
+        <div class="section-title">
+          ${title}
+        </div>
+
+        <div class="section-note">
+
+          ${
+            type === "starred"
+              ? "Groups you've marked as interesting"
+              : "Groups you've archived"
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+    ${
+      groups.length
+        ? `
+          <div class="group-list">
+            ${groups
+              .map(renderGroupCard)
+              .join("")}
+          </div>
+        `
+        : emptyGroups(type)
+    }
+
+  `;
+
+  bindGroupCards();
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY GROUP STATE
+   --------------------------------------------------------- */
+
+function emptyGroups(type) {
+
+  let title =
+    "No groups yet";
+
+  let icon =
+    "💬";
+
+  let description =
+    "Create a group or search for an existing group to join.";
+
+  if (type === "starred") {
+
+    title =
+      "No starred groups";
+
+    icon =
+      "⭐";
+
+    description =
+      "Groups you star will appear here.";
+
+  }
+
+  if (type === "archived") {
+
+    title =
+      "No archived groups";
+
+    icon =
+      "🗂️";
+
+    description =
+      "Groups you archive will appear here.";
+
+  }
+
+  return `
+
+    <div class="empty">
+
+      <div class="empty-icon">
+        ${icon}
+      </div>
+
+      <h3>
+        ${esc(title)}
+      </h3>
+
+      <p>
+        ${esc(description)}
+      </p>
+
+      <button
+        class="primary-btn"
+        data-action="open-search"
+      >
+        Find groups
+      </button>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   GROUP CARD
+   --------------------------------------------------------- */
+
+function renderGroupCard(
+  group
+) {
+
+  const selected =
+    state.selectedItems
+      .includes(group.id);
+
+  const unseen =
+    Number(group.unseen || 0);
+
+  return `
+
+    <button
+      class="
+        group-card
+        ${selected
+          ? "selected-card"
+          : ""}
+      "
+      data-group="${esc(group.id)}"
+      data-longpress="${esc(group.id)}"
+    >
+
+      ${
+        state.selectionMode
+          ? `
+            <span
+              class="
+                selection-check
+                ${
+                  selected
+                    ? "checked"
+                    : ""
+                }
+              "
+            >
+              ${
+                selected
+                  ? "✓"
+                  : ""
+              }
+            </span>
+          `
+          : ""
+      }
+
+      <span
+        class="group-avatar"
+        style="--h:${group.hue}"
+      >
+        ${esc(group.icon)}
+      </span>
+
+      <span class="group-copy">
+
+        <span class="group-name">
+          ${esc(group.name)}
+        </span>
+
+        <span class="group-meta">
+          ${
+            safeArray(
+              group.category
+            )
+              .map(esc)
+              .join(" · ")
+          }
+        </span>
+
+      </span>
+
+      ${
+        unseen > 0
+          ? `
+            <span class="unseen">
+              ${
+                unseen > 99
+                  ? "99+"
+                  : unseen
+              }
+            </span>
+          `
+          : ""
+      }
+
+    </button>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   GROUP CARD LONG-PRESS / TAP
+   --------------------------------------------------------- */
+
+function bindGroupCards() {
+
+  document
+    .querySelectorAll(
+      "[data-longpress]"
+    )
+    .forEach(card => {
+
+      const startPress = () => {
+
+        clearTimeout(
+          longPressTimer
+        );
+
+        longPressTriggered =
+          false;
+
+        longPressTimer =
+          setTimeout(() => {
+
+            longPressTriggered =
+              true;
+
+            openGroupActions(
+              card.dataset.longpress
+            );
+
+          }, 550);
+
+      };
+
+
+      const clearPress = () => {
+
+        clearTimeout(
+          longPressTimer
+        );
+
+      };
+
+
+      card.addEventListener(
+        "pointerdown",
+        startPress
+      );
+
+      card.addEventListener(
+        "pointerup",
+        clearPress
+      );
+
+      card.addEventListener(
+        "pointerleave",
+        clearPress
+      );
+
+      card.addEventListener(
+        "pointercancel",
+        clearPress
+      );
+
+
+      card.addEventListener(
+        "click",
+        event => {
+
+          event.preventDefault();
+
+          if (
+            longPressTriggered
+          ) {
+
+            longPressTriggered =
+              false;
+
+            return;
+
+          }
+
+          const id =
+            card.dataset.longpress;
+
+          if (state.selectionMode) {
+
+            toggleSelected(id);
+
+          } else {
+
+            openGroup(id);
+
+          }
+
+        }
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
+   LONG-PRESS GROUP MENU
+   --------------------------------------------------------- */
+
+function openGroupActions(
+  id
+) {
+
+  const group =
+    getGroup(id);
+
+  if (!group) {
+    return;
+  }
+
+  const starred =
+    isStarred(id);
+
+  const archived =
+    isArchived(id);
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            ${esc(group.name)}
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="menu-list">
+
+
+          <!-- STAR -->
+
+          <button
+            class="menu-item"
+            data-group-action="star"
+            data-group-id="${esc(id)}"
+          >
+
+            <div class="menu-icon">
+
+              ${
+                starred
+                  ? "★"
+                  : "☆"
+              }
+
+            </div>
+
+            <div>
+
+              <strong>
+                ${
+                  starred
+                    ? "Remove Star"
+                    : "Star Group"
+                }
+              </strong>
+
+              <span>
+                Keep this group in Starred.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- ARCHIVE -->
+
+          <button
+            class="menu-item"
+            data-group-action="archive"
+            data-group-id="${esc(id)}"
+          >
+
+            <div class="menu-icon">
+              🗂️
+            </div>
+
+            <div>
+
+              <strong>
+                ${
+                  archived
+                    ? "Unarchive"
+                    : "Archive"
+                }
+              </strong>
+
+              <span>
+                ${
+                  archived
+                    ? "Return this group to Home."
+                    : "Move this group to Archived."
+                }
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- SELECT -->
+
+          <button
+            class="menu-item"
+            data-group-action="select"
+            data-group-id="${esc(id)}"
+          >
+
+            <div class="menu-icon">
+              ✓
+            </div>
+
+            <div>
+
+              <strong>
+                Select
+              </strong>
+
+              <span>
+                Select this group for more actions.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- OPEN -->
+
+          <button
+            class="menu-item"
+            data-group-action="open"
+            data-group-id="${esc(id)}"
+          >
+
+            <div class="menu-icon">
+              →
+            </div>
+
+            <div>
+
+              <strong>
+                Open Group
+              </strong>
+
+              <span>
+                Open the group chat.
+              </span>
+
+            </div>
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   SELECTION MODE
+   --------------------------------------------------------- */
+
+function enterSelectionMode(
+  id
+) {
+
+  state.selectionMode =
+    true;
+
+  state.selectedItems =
+    [id];
+
+  modalRoot.innerHTML = "";
+
+  saveState();
+
+  render();
+}
+
+
+function toggleSelected(
+  id
+) {
+
+  state.selectionMode =
+    true;
+
+  if (
+    state.selectedItems
+      .includes(id)
+  ) {
+
+    state.selectedItems =
+      state.selectedItems.filter(
+        item => item !== id
+      );
+
+  } else {
+
+    state.selectedItems =
+      [
+        ...state.selectedItems,
+        id
+      ];
+
+  }
+
+
+  if (
+    state.selectedItems.length === 0
+  ) {
+
+    state.selectionMode =
+      false;
+
+  }
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   SELECT ALL
+   --------------------------------------------------------- */
+
+function selectAllVisible() {
+
+  state.selectionMode =
+    true;
+
+  state.selectedItems =
+    visibleGroups()
+      .map(group => group.id);
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   UNSELECT ALL
+   --------------------------------------------------------- */
+
+function unselectAllVisible() {
+
+  state.selectedItems =
+    [];
+
+  state.selectionMode =
+    false;
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   REMOVE SELECTED GROUPS
+   --------------------------------------------------------- */
+
+function removeSelectedGroups() {
+
+  const ids =
+    new Set(
+      state.selectedItems
+    );
+
+  if (!ids.size) {
+    return;
+  }
+
+  state.groups =
+    state.groups.filter(
+      group =>
+        !ids.has(group.id)
+    );
+
+  state.starred =
+    state.starred.filter(
+      id =>
+        !ids.has(id)
+    );
+
+  state.archived =
+    state.archived.filter(
+      id =>
+        !ids.has(id)
+    );
+
+  ids.forEach(id => {
+    delete state.messages[id];
+  });
+
+  state.selectedItems =
+    [];
+
+  state.selectionMode =
+    false;
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   OPEN GROUP
+   --------------------------------------------------------- */
+
+function openGroup(id) {
+
+  const group =
+    getGroup(id);
+
+  if (!group) {
+    return;
+  }
+
+  state.selectedGroup =
+    id;
+
+  /*
+   * Opening a group marks its
+   * unseen messages as read.
+   */
+
+  group.unseen = 0;
+
+  state.previousScreen =
+    state.screen;
+
+  state.screen =
+    "group-chat";
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   NEW GROUP SCREEN
+   --------------------------------------------------------- */
+
+function renderNewGroup() {
+
+  setHeader(
+    "New Group",
+    "Create a group"
+  );
+
+  screen.innerHTML = `
+
+    <div class="section-head">
+
+      <div>
+
+        <div class="section-title">
+          Create New Group
+        </div>
+
+        <div class="section-note">
+          Choose up to 3 categories
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <form id="newGroupForm">
+
+
+      <div class="field">
+
+        <label
+          for="newGroupName"
+        >
+          Group name
+        </label>
+
+        <input
+          id="newGroupName"
+          maxlength="80"
+          autocomplete="off"
+          placeholder="Enter group name"
+          required
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Categories
+        </label>
+
+        <div
+          class="theme-options"
+          id="categoryPicker"
+        >
+
+          ${CATEGORIES
+            .map(category => `
+
+              <button
+                type="button"
+                class="theme-option"
+                data-cat="${esc(category)}"
+              >
+                ${esc(category)}
+              </button>
+
+            `)
+            .join("")}
+
+        </div>
+
+      </div>
+
+
+      <div style="height:10px"></div>
+
+
+      <button
+        class="primary-btn"
+        type="submit"
+      >
+        Create Group
+      </button>
+
+
+      <button
+        class="secondary-btn"
+        type="button"
+        data-action="back"
+      >
+        Cancel
+      </button>
+
+
+    </form>
+
+  `;
+
+
+  /*
+   * Category selection.
+   * Maximum = 3.
+   */
+
+  document
+    .querySelectorAll(
+      "[data-cat]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const selected =
+            [
+              ...document
+                .querySelectorAll(
+                  "[data-cat].selected"
+                )
+            ];
+
+          if (
+            button.classList.contains(
+              "selected"
+            )
+          ) {
+
+            button.classList.remove(
+              "selected"
+            );
+
+            return;
+          }
+
+
+          if (
+            selected.length >= 3
+          ) {
+
+            alert(
+              "You can select up to 3 categories."
+            );
+
+            return;
+          }
+
+
+          button.classList.add(
+            "selected"
+          );
+
+        }
+      );
+
+    });
+
+
+  /*
+   * IMPORTANT:
+   * Form submit is handled directly.
+   * This makes Create Group reliable
+   * on mobile.
+   */
+
+  const form =
+    $("#newGroupForm");
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+        createGroup();
+
+      }
+    );
+
+  }
+}
+
+
+/* ---------------------------------------------------------
+   CREATE GROUP
+   --------------------------------------------------------- */
+
+function createGroup() {
+
+  const input =
+    $("#newGroupName");
+
+  if (!input) {
+    return;
+  }
+
+  const name =
+    input.value.trim();
+
+  const categories =
+    [
+      ...document
+        .querySelectorAll(
+          "[data-cat].selected"
+        )
+    ]
+      .map(
+        button =>
+          button.dataset.cat
+      )
+      .filter(Boolean);
+
+
+  if (!name) {
+
+    alert(
+      "Enter a group name."
+    );
+
+    input.focus();
+
+    return;
+  }
+
+
+  if (
+    categories.length < 1
+  ) {
+
+    alert(
+      "Select at least 1 category."
+    );
+
+    return;
+  }
+
+
+  if (
+    categories.length > 3
+  ) {
+
+    alert(
+      "Select no more than 3 categories."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Create the new group.
+   */
+
+  const id =
+    uid("group");
+
+  const user =
+    state.currentUser;
+
+
+  const group = {
+
+    id,
+
+    name,
+
+    icon:
+      name
+        .charAt(0)
+        .toUpperCase(),
+
+    hue:
+      randomHue(),
+
+    category:
+      categories,
+
+    admin:
+      true,
+
+    unseen:
+      0,
+
+    members: [
+
+      {
+        id:
+          user.id,
+
+        name:
+          user.name,
+
+        avatar:
+          user.avatar,
+
+        hue:
+          user.hue
+
+      }
+
+    ]
+
+  };
+
+
+  /*
+   * Add group immediately.
+   */
+
+  state.groups.unshift(
+    group
+  );
+
+
+  /*
+   * Create empty message
+   * storage for the group.
+   */
+
+  state.messages[id] =
+    [];
+
+
+  /*
+   * New creator becomes
+   * the selected group.
+   */
+
+  state.selectedGroup =
+    id;
+
+  state.previousScreen =
+    "home";
+
+
+  /*
+   * Open the new group's
+   * profile after creation.
+   */
+
+  state.screen =
+    "group-profile";
+
+
+  state.selectionMode =
+    false;
+
+  state.selectedItems =
+    [];
+
+
+  /*
+   * THIS SAVE IS IMPORTANT.
+   * Without it the new group
+   * would disappear after refresh.
+   */
+
+  saveState();
+
+  render();
+}
