@@ -4738,3 +4738,1761 @@ function openPostComments(
 
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — SECTION 5/5
+   EVENTS + NAVIGATION + ACTIONS + CLEANUP + STARTUP
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   GLOBAL CLICK HANDLER
+   --------------------------------------------------------- */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const target =
+      event.target.closest(
+        "[data-action], [data-close], [data-group-action], [data-post-id], [data-post-reaction], [data-post-comments], [data-member-id], [data-temp-invite]"
+      );
+
+
+    if (!target) {
+      return;
+    }
+
+
+    /* -------------------------------------
+       CLOSE MODALS
+       ------------------------------------- */
+
+    if (
+      target.hasAttribute(
+        "data-close"
+      )
+    ) {
+
+      if (
+        target.dataset.stopClose !==
+        undefined
+      ) {
+        return;
+      }
+
+      modalRoot.innerHTML = "";
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       GROUP ACTION MENU
+       ------------------------------------- */
+
+    if (
+      target.dataset.groupAction
+    ) {
+
+      const action =
+        target.dataset.groupAction;
+
+      const id =
+        target.dataset.groupId;
+
+
+      modalRoot.innerHTML = "";
+
+
+      if (action === "star") {
+
+        toggleStarred(id);
+
+        return;
+      }
+
+
+      if (action === "archive") {
+
+        toggleArchived(id);
+
+        return;
+      }
+
+
+      if (action === "select") {
+
+        enterSelectionMode(id);
+
+        return;
+      }
+
+
+      if (action === "open") {
+
+        openGroup(id);
+
+        return;
+      }
+
+    }
+
+
+    /* -------------------------------------
+       POST CARD
+       ------------------------------------- */
+
+    if (
+      target.dataset.postId
+    ) {
+
+      openPost(
+        target.dataset.postId
+      );
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       POST REACTION
+       ------------------------------------- */
+
+    if (
+      target.dataset.postReaction
+    ) {
+
+      reactToPost(
+        target.dataset.postReaction
+      );
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       POST COMMENTS
+       ------------------------------------- */
+
+    if (
+      target.dataset.postComments
+    ) {
+
+      openPostComments(
+        target.dataset.postComments
+      );
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       TEMPORARY CHAT INVITE
+       ------------------------------------- */
+
+    if (
+      target.dataset.tempInvite
+    ) {
+
+      sendTemporaryChatInvite(
+        target.dataset.tempInvite
+      );
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       MEMBER
+       ------------------------------------- */
+
+    if (
+      target.dataset.memberId
+    ) {
+
+      startTemporaryChat(
+        target.dataset.memberId
+      );
+
+      return;
+    }
+
+
+    /* -------------------------------------
+       NORMAL ACTIONS
+       ------------------------------------- */
+
+    const action =
+      target.dataset.action;
+
+
+    if (!action) {
+      return;
+    }
+
+
+    handleAction(
+      action
+    );
+
+  }
+);
+
+
+/* ---------------------------------------------------------
+   ACTION ROUTER
+   --------------------------------------------------------- */
+
+function handleAction(
+  action
+) {
+
+  switch (action) {
+
+
+    /* ================================
+       NAVIGATION
+       ================================= */
+
+    case "home":
+
+      state.screen =
+        "home";
+
+      state.selectionMode =
+        false;
+
+      state.selectedItems =
+        [];
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "starred":
+
+      state.screen =
+        "starred";
+
+      state.selectionMode =
+        false;
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "archived":
+
+      state.screen =
+        "archived";
+
+      state.selectionMode =
+        false;
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "posts":
+
+      state.screen =
+        "posts";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "search":
+
+    case "open-search":
+
+      state.screen =
+        "search";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "settings":
+
+      state.screen =
+        "settings";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    /* ================================
+       GROUP
+       ================================= */
+
+    case "new-group":
+
+      state.screen =
+        "new-group";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "group-chat":
+
+      if (
+        state.selectedGroup
+      ) {
+
+        state.screen =
+          "group-chat";
+
+        saveState();
+
+        render();
+
+      }
+
+      break;
+
+
+    case "group-profile":
+
+      if (
+        state.selectedGroup
+      ) {
+
+        state.screen =
+          "group-profile";
+
+        saveState();
+
+        render();
+
+      }
+
+      break;
+
+
+    case "back":
+
+      goBack();
+
+      break;
+
+
+    /* ================================
+       GROUP ACTIONS
+       ================================= */
+
+    case "star-group":
+
+      if (
+        state.selectedGroup
+      ) {
+
+        toggleStarred(
+          state.selectedGroup
+        );
+
+      }
+
+      break;
+
+
+    case "leave-group":
+
+      leaveCurrentGroup();
+
+      break;
+
+
+    /* ================================
+       CHAT
+       ================================= */
+
+    case "chat-menu":
+
+      openChatMenu();
+
+      break;
+
+
+    case "voice-call":
+
+      startGroupCall(
+        "voice"
+      );
+
+      break;
+
+
+    case "video-call":
+
+      startGroupCall(
+        "video"
+      );
+
+      break;
+
+
+    case "voice-message":
+
+      createVoiceMessage();
+
+      break;
+
+
+    case "attachment":
+
+      openAttachmentMenu();
+
+      break;
+
+
+    case "camera":
+
+      openCamera();
+
+      break;
+
+
+    case "group-posts":
+
+      state.postFilter =
+        state.selectedGroup ||
+        "all";
+
+      state.screen =
+        "posts";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "group-report":
+
+      openReportForm();
+
+      break;
+
+
+    case "export-chat":
+
+      openTemporaryMemberPicker();
+
+      break;
+
+
+    /* ================================
+       POSTS
+       ================================= */
+
+    case "create-post":
+
+      openCreatePost();
+
+      break;
+
+
+    /* ================================
+       SETTINGS
+       ================================= */
+
+    case "edit-profile":
+
+      openEditProfile();
+
+      break;
+
+
+    case "about":
+
+      openAbout();
+
+      break;
+
+
+    /* ================================
+       SELECTION
+       ================================= */
+
+    case "select-all":
+
+      selectAllVisible();
+
+      break;
+
+
+    case "clear-selection":
+
+      unselectAllVisible();
+
+      break;
+
+
+    case "remove-selected":
+
+      removeSelectedGroups();
+
+      break;
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   NAVIGATION BACK
+   --------------------------------------------------------- */
+
+function goBack() {
+
+  modalRoot.innerHTML = "";
+
+
+  if (
+    state.screen ===
+    "group-chat"
+  ) {
+
+    state.screen =
+      "home";
+
+  }
+
+
+  else if (
+    state.screen ===
+    "group-profile"
+  ) {
+
+    state.screen =
+      state.previousScreen ||
+      "home";
+
+  }
+
+
+  else if (
+    state.screen ===
+    "new-group"
+  ) {
+
+    state.screen =
+      "home";
+
+  }
+
+
+  else if (
+    state.screen ===
+    "search"
+  ) {
+
+    state.screen =
+      "home";
+
+  }
+
+
+  else if (
+    state.screen ===
+    "settings"
+  ) {
+
+    state.screen =
+      "home";
+
+  }
+
+
+  else {
+
+    state.screen =
+      "home";
+
+  }
+
+
+  state.selectionMode =
+    false;
+
+  state.selectedItems =
+    [];
+
+
+  saveState();
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   STAR GROUP
+   --------------------------------------------------------- */
+
+function toggleStarred(
+  groupId
+) {
+
+  if (!groupId) {
+    return;
+  }
+
+
+  const exists =
+    state.starred.includes(
+      groupId
+    );
+
+
+  if (exists) {
+
+    state.starred =
+      state.starred.filter(
+        id =>
+          id !== groupId
+      );
+
+  } else {
+
+    state.starred.push(
+      groupId
+    );
+
+  }
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   ARCHIVE GROUP
+   --------------------------------------------------------- */
+
+function toggleArchived(
+  groupId
+) {
+
+  if (!groupId) {
+    return;
+  }
+
+
+  const exists =
+    state.archived.includes(
+      groupId
+    );
+
+
+  if (exists) {
+
+    state.archived =
+      state.archived.filter(
+        id =>
+          id !== groupId
+      );
+
+  } else {
+
+    state.archived.push(
+      groupId
+    );
+
+  }
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   GROUP CALL
+   --------------------------------------------------------- */
+
+function startGroupCall(
+  type
+) {
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+
+  if (!group) {
+    return;
+  }
+
+
+  /*
+   * Only admins can create/start
+   * group calls.
+   */
+
+  if (!group.admin) {
+
+    alert(
+      "Only group admins can start a group call."
+    );
+
+    return;
+  }
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            ${
+              type === "video"
+                ? "Video"
+                : "Voice"
+            }
+            Call
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="call-start-card">
+
+          <div class="call-icon">
+
+            ${
+              type === "video"
+                ? "▣"
+                : "☎"
+            }
+
+          </div>
+
+
+          <h3>
+            Start ${
+              type === "video"
+                ? "video"
+                : "voice"
+            } call
+          </h3>
+
+
+          <p>
+            Choose members to invite.
+            Each member can participate
+            in only one call at a time.
+          </p>
+
+
+          <div class="member-list">
+
+            ${
+              group.members
+                .filter(
+                  member =>
+                    member.id !==
+                    state.currentUser.id
+                )
+                .map(
+                  member => `
+
+                    <label
+                      class="member-row call-member"
+                    >
+
+                      <input
+                        type="checkbox"
+                        value="${esc(
+                          member.id
+                        )}"
+                      >
+
+                      <span
+                        class="member-avatar"
+                        style="--h:${member.hue}"
+                      >
+                        ${esc(
+                          member.avatar
+                        )}
+                      </span>
+
+                      <span class="member-copy">
+                        <strong>
+                          ${esc(
+                            member.name
+                          )}
+                        </strong>
+                      </span>
+
+                    </label>
+
+                  `
+                )
+                .join("")
+            }
+
+          </div>
+
+
+          <button
+            class="primary-btn"
+            data-action="confirm-call"
+            data-call-type="${esc(type)}"
+          >
+            Start Call
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   CONFIRM CALL
+   --------------------------------------------------------- */
+
+function confirmGroupCall(
+  type
+) {
+
+  const selected =
+    [
+      ...document.querySelectorAll(
+        ".call-member input:checked"
+      )
+    ]
+      .map(
+        input =>
+          input.value
+      );
+
+
+  if (!selected.length) {
+
+    alert(
+      "Select at least one member."
+    );
+
+    return;
+  }
+
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+
+  if (!group) {
+    return;
+  }
+
+
+  state.activeCalls =
+    safeArray(
+      state.activeCalls
+    );
+
+
+  state.activeCalls.push({
+
+    id:
+      uid("call"),
+
+    groupId:
+      group.id,
+
+    type,
+
+    host:
+      state.currentUser.id,
+
+    members:
+      [
+        state.currentUser.id,
+        ...selected
+      ],
+
+    createdAt:
+      now()
+
+  });
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+
+  alert(
+    `${
+      type === "video"
+        ? "Video"
+        : "Voice"
+    } call started.`
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   ATTACHMENT MENU
+   --------------------------------------------------------- */
+
+function openAttachmentMenu() {
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Attachment
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="menu-list">
+
+          <button
+            class="menu-item"
+            data-action="camera"
+          >
+
+            <div class="menu-icon">
+              ◉
+            </div>
+
+            <div>
+
+              <strong>
+                Camera
+              </strong>
+
+              <span>
+                Take a photo or video.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <button
+            class="menu-item"
+            data-action="choose-file"
+          >
+
+            <div class="menu-icon">
+              ▣
+            </div>
+
+            <div>
+
+              <strong>
+                File
+              </strong>
+
+              <span>
+                Choose a file.
+              </span>
+
+            </div>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   CAMERA
+   --------------------------------------------------------- */
+
+function openCamera() {
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.type =
+    "file";
+
+  input.accept =
+    "image/*,video/*";
+
+  input.capture =
+    "environment";
+
+
+  input.addEventListener(
+    "change",
+    () => {
+
+      const file =
+        input.files?.[0];
+
+
+      if (!file) {
+        return;
+      }
+
+
+      alert(
+        `${file.name} selected.`
+      );
+
+    }
+  );
+
+
+  input.click();
+}
+
+
+/* ---------------------------------------------------------
+   FILE PICKER
+   --------------------------------------------------------- */
+
+function openFilePicker() {
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.type =
+    "file";
+
+
+  input.addEventListener(
+    "change",
+    () => {
+
+      const file =
+        input.files?.[0];
+
+
+      if (!file) {
+        return;
+      }
+
+
+      alert(
+        `${file.name} selected.`
+      );
+
+    }
+  );
+
+
+  input.click();
+}
+
+
+/* ---------------------------------------------------------
+   REPORT FORM
+   --------------------------------------------------------- */
+
+function openReportForm() {
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Report
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="form-note">
+
+          The Tally report form will be embedded
+          here when the reporting system is connected.
+
+        </div>
+
+
+        <div class="tally-placeholder">
+
+          TALLY REPORT FORM
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ---------------------------------------------------------
+   TEMPORARY CHAT MEMBER PICKER
+   --------------------------------------------------------- */
+
+function openTemporaryMemberPicker() {
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+
+  if (!group) {
+    return;
+  }
+
+
+  const members =
+    group.members.filter(
+      member =>
+        member.id !==
+        state.currentUser.id
+    );
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Temporary Chat
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <p class="form-note">
+          Select a member to send a temporary
+          chat invitation.
+        </p>
+
+
+        <div class="member-list">
+
+          ${
+            members.length
+              ? members
+                  .map(
+                    member => `
+
+                      <button
+                        class="member-row"
+                        data-member-id="${esc(
+                          member.id
+                        )}"
+                      >
+
+                        <span
+                          class="member-avatar"
+                          style="--h:${member.hue}"
+                        >
+                          ${esc(
+                            member.avatar
+                          )}
+                        </span>
+
+                        <span class="member-copy">
+
+                          <strong>
+                            ${esc(
+                              member.name
+                            )}
+                          </strong>
+
+                          <span>
+                            Send invitation
+                          </span>
+
+                        </span>
+
+                      </button>
+
+                    `
+                  )
+                  .join("")
+              : `
+                <div class="empty">
+
+                  <h3>
+                    No other members
+                  </h3>
+
+                  <p>
+                    There are no other members
+                    available in this group.
+                  </p>
+
+                </div>
+              `
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   TEMPORARY CHAT INVITE
+   --------------------------------------------------------- */
+
+function sendTemporaryChatInvite(
+  memberId
+) {
+
+  const member =
+    findMemberAcrossGroups(
+      memberId
+    );
+
+
+  if (!member) {
+    return;
+  }
+
+
+  state.temporaryInvites =
+    safeArray(
+      state.temporaryInvites
+    );
+
+
+  state.temporaryInvites.push({
+
+    id:
+      uid("invite"),
+
+    from:
+      state.currentUser.id,
+
+    to:
+      member.id,
+
+    createdAt:
+      now(),
+
+    status:
+      "pending"
+
+  });
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+
+  alert(
+    `Temporary chat invitation sent to ${member.name}.`
+  );
+}
+
+
+/* ---------------------------------------------------------
+   CLEAN EXPIRED CONTENT
+   --------------------------------------------------------- */
+
+function cleanupExpired() {
+
+  const cutoff =
+    Date.now() -
+    TWO_DAYS_MS;
+
+
+  /*
+   * Posts
+   */
+
+  state.posts =
+    safeArray(
+      state.posts
+    ).filter(
+      post =>
+        Number(
+          post.createdAt
+        ) > cutoff
+    );
+
+
+  /*
+   * Messages
+   */
+
+  Object.keys(
+    state.messages || {}
+  )
+    .forEach(
+      groupId => {
+
+        state.messages[groupId] =
+          safeArray(
+            state.messages[groupId]
+          ).filter(
+            message =>
+              Number(
+                message.createdAt
+              ) > cutoff
+          );
+
+      }
+    );
+
+
+  /*
+   * Temporary invitations
+   */
+
+  state.temporaryInvites =
+    safeArray(
+      state.temporaryInvites
+    ).filter(
+      invite =>
+        Number(
+          invite.createdAt
+        ) > cutoff
+    );
+
+
+  /*
+   * Temporary chats
+   */
+
+  state.temporaryChats =
+    safeArray(
+      state.temporaryChats
+    ).filter(
+      chat =>
+        Number(
+          chat.createdAt
+        ) > cutoff
+    );
+
+
+  saveState();
+}
+
+
+/* ---------------------------------------------------------
+   POST CREATION BUTTON
+   --------------------------------------------------------- */
+
+function createPostButton() {
+
+  openCreatePost();
+
+}
+
+
+/* ---------------------------------------------------------
+   SELECTION HEADER
+   --------------------------------------------------------- */
+
+function renderSelectionHeader() {
+
+  if (
+    !state.selectionMode
+  ) {
+    return "";
+  }
+
+
+  return `
+
+    <div class="selection-header">
+
+      <button
+        class="icon-btn"
+        data-action="clear-selection"
+      >
+        ×
+      </button>
+
+
+      <strong>
+        ${
+          state.selectedItems.length
+        }
+        selected
+      </strong>
+
+
+      <button
+        class="icon-btn"
+        data-action="select-all"
+      >
+        All
+      </button>
+
+
+      <button
+        class="icon-btn danger-icon"
+        data-action="remove-selected"
+      >
+        Delete
+      </button>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   CONFIRM CALL ROUTE
+   --------------------------------------------------------- */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        "[data-action='confirm-call']"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    confirmGroupCall(
+      button.dataset.callType
+    );
+
+  }
+);
+
+
+/* ---------------------------------------------------------
+   CHOOSE FILE ROUTE
+   --------------------------------------------------------- */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        "[data-action='choose-file']"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    modalRoot.innerHTML = "";
+
+    openFilePicker();
+
+  }
+);
+
+
+/* ---------------------------------------------------------
+   BOTTOM NAVIGATION
+   --------------------------------------------------------- */
+
+function bindNavigation() {
+
+  document
+    .querySelectorAll(
+      "[data-nav]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const screenName =
+            button.dataset.nav;
+
+
+          state.screen =
+            screenName;
+
+
+          state.selectionMode =
+            false;
+
+          state.selectedItems =
+            [];
+
+
+          saveState();
+
+          render();
+
+        }
+      );
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   HEADER SEARCH
+   --------------------------------------------------------- */
+
+function bindHeaderSearch() {
+
+  document
+    .querySelectorAll(
+      "[data-action='search']"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          state.screen =
+            "search";
+
+          saveState();
+
+          render();
+
+        }
+      );
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   APPLY THEME
+   --------------------------------------------------------- */
+
+function applyTheme() {
+
+  const root =
+    document.documentElement;
+
+
+  let theme =
+    state.theme || "system";
+
+
+  if (
+    theme === "system"
+  ) {
+
+    const dark =
+      window.matchMedia &&
+      window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+
+
+    root.dataset.theme =
+      dark
+        ? "dark"
+        : "light";
+
+  }
+
+  else {
+
+    root.dataset.theme =
+      theme;
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   SYSTEM THEME CHANGE
+   --------------------------------------------------------- */
+
+if (
+  window.matchMedia
+) {
+
+  const media =
+    window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
+
+  media.addEventListener?.(
+    "change",
+    () => {
+
+      if (
+        state.theme ===
+        "system"
+      ) {
+
+        applyTheme();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   STARTUP
+   --------------------------------------------------------- */
+
+function startSimpoChat() {
+
+  cleanupExpired();
+
+  applyTheme();
+
+  bindNavigation();
+
+  bindHeaderSearch();
+
+  render();
+
+}
+
+
+/* ---------------------------------------------------------
+   START
+   --------------------------------------------------------- */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    startSimpoChat,
+    {
+      once: true
+    }
+  );
+
+}
+
+else {
+
+  startSimpoChat();
+
+}
