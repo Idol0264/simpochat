@@ -5044,17 +5044,37 @@ function handleAction(
 
     case "join-group":
 
-      state.screen =
-        "search";
+  /*
+   * The floating + button has two functions:
+   *
+   * HOME  → search/join an existing group
+   * POSTS → create a new post
+   *
+   * The visible + symbol does not change.
+   */
 
-      state.searchQuery =
-        "";
+  if (
+    state.screen ===
+    "posts"
+  ) {
 
-      saveState();
+    openCreatePost();
 
-      render();
+  } else {
 
-      break;
+    state.screen =
+      "search";
+
+    state.searchQuery =
+      "";
+
+    saveState();
+
+    render();
+
+  }
+
+  break;
 
 
     case "posts":
