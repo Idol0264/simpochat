@@ -1935,3 +1935,1160 @@ function createGroup() {
 
   render();
 }
+
+/* =========================================================
+   SIMPOCHAT — SECTION 3/5
+   GROUP CHAT + GROUP PROFILE + MESSAGES + CHAT ACTIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   GROUP CHAT
+   --------------------------------------------------------- */
+
+function renderGroupChat() {
+
+  const group =
+    getGroup(state.selectedGroup);
+
+  if (!group) {
+
+    state.screen = "home";
+
+    saveState();
+
+    return render();
+
+  }
+
+  setHeader(
+    group.name,
+    ""
+  );
+
+
+  const messages =
+    safeArray(
+      state.messages[group.id]
+    );
+
+
+  screen.innerHTML = `
+
+    <div class="chat-screen">
+
+      <!-- GROUP HEADER -->
+
+      <div class="chat-header">
+
+        <button
+          class="icon-btn"
+          data-action="back"
+          aria-label="Back"
+        >
+          ‹
+        </button>
+
+
+        <button
+          class="chat-header-main"
+          data-action="group-profile"
+        >
+
+          <span
+            class="group-avatar small"
+            style="--h:${group.hue}"
+          >
+            ${esc(group.icon)}
+          </span>
+
+
+          <span class="chat-header-copy">
+
+            <strong>
+              ${esc(group.name)}
+            </strong>
+
+            <span>
+              ${group.members.length}
+              members
+            </span>
+
+          </span>
+
+        </button>
+
+
+        <div class="chat-header-actions">
+
+          <button
+            class="icon-btn"
+            data-action="voice-call"
+            aria-label="Voice call"
+          >
+            ☎
+          </button>
+
+          <button
+            class="icon-btn"
+            data-action="video-call"
+            aria-label="Video call"
+          >
+            ▣
+          </button>
+
+          <button
+            class="icon-btn"
+            data-action="chat-menu"
+            aria-label="Chat menu"
+          >
+            ⋮
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- VIEW POST -->
+
+      <button
+        class="view-post-bar"
+        data-action="group-posts"
+      >
+        <span>
+          ◉
+        </span>
+
+        <strong>
+          View Post
+        </strong>
+
+        <span>
+          ›
+        </span>
+      </button>
+
+
+      <!-- MESSAGES -->
+
+      <div
+        class="messages"
+        id="messages"
+      >
+
+        ${
+          messages.length
+            ? messages
+                .map(
+                  message =>
+                    renderMessage(
+                      message,
+                      group
+                    )
+                )
+                .join("")
+            : `
+              <div class="empty chat-empty">
+
+                <div class="empty-icon">
+                  💬
+                </div>
+
+                <h3>
+                  No messages yet
+                </h3>
+
+                <p>
+                  Start the conversation.
+                </p>
+
+              </div>
+            `
+        }
+
+      </div>
+
+
+      <!-- MESSAGE INPUT -->
+
+      <form
+        class="message-composer"
+        id="messageForm"
+      >
+
+        <button
+          type="button"
+          class="composer-btn"
+          data-action="attachment"
+          aria-label="Attachment"
+        >
+          ＋
+        </button>
+
+
+        <input
+          id="messageInput"
+          type="text"
+          autocomplete="off"
+          placeholder="Message ${esc(group.name)}"
+        >
+
+
+        <button
+          type="button"
+          class="composer-btn"
+          data-action="camera"
+          aria-label="Camera"
+        >
+          ◉
+        </button>
+
+
+        <button
+          type="button"
+          class="composer-btn"
+          data-action="voice-message"
+          aria-label="Voice message"
+        >
+          🎙
+        </button>
+
+
+        <button
+          type="submit"
+          class="send-btn"
+          aria-label="Send"
+        >
+          ➤
+        </button>
+
+      </form>
+
+    </div>
+
+  `;
+
+
+  const form =
+    $("#messageForm");
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+        sendMessage();
+
+      }
+    );
+
+  }
+
+
+  /*
+   * Scroll to the newest message.
+   */
+
+  const messagesBox =
+    $("#messages");
+
+  if (messagesBox) {
+
+    requestAnimationFrame(
+      () => {
+        messagesBox.scrollTop =
+          messagesBox.scrollHeight;
+      }
+    );
+
+  }
+}
+
+
+/* ---------------------------------------------------------
+   MESSAGE
+   --------------------------------------------------------- */
+
+function renderMessage(
+  message,
+  group
+) {
+
+  const member =
+    getMember(
+      group,
+      message.member
+    );
+
+
+  const sender =
+    member || {
+      name: "Member",
+      avatar: "?",
+      hue: 210
+    };
+
+
+  const own =
+    message.member ===
+    state.currentUser.id;
+
+
+  return `
+
+    <article
+      class="
+        message-row
+        ${own ? "mine" : ""}
+      "
+    >
+
+      ${
+        own
+          ? ""
+          : `
+            <span
+              class="member-avatar"
+              style="--h:${sender.hue}"
+            >
+              ${esc(sender.avatar)}
+            </span>
+          `
+      }
+
+
+      <div class="message-content">
+
+        ${
+          own
+            ? ""
+            : `
+              <div class="message-author">
+                ${esc(sender.name)}
+              </div>
+            `
+        }
+
+
+        <div class="message-bubble">
+
+          ${
+            message.type === "voice"
+              ? `
+                <div class="voice-message">
+                  <span>🎙</span>
+                  <span>
+                    Voice message
+                  </span>
+                </div>
+              `
+              : esc(message.text)
+          }
+
+        </div>
+
+
+        <div class="message-time">
+          ${formatTime(message.createdAt)}
+        </div>
+
+      </div>
+
+    </article>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   SEND MESSAGE
+   --------------------------------------------------------- */
+
+function sendMessage() {
+
+  const input =
+    $("#messageInput");
+
+  const group =
+    getGroup(state.selectedGroup);
+
+  if (!input || !group) {
+    return;
+  }
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+    return;
+  }
+
+
+  if (!state.messages[group.id]) {
+
+    state.messages[group.id] =
+      [];
+
+  }
+
+
+  state.messages[group.id].push({
+
+    id:
+      uid("message"),
+
+    member:
+      state.currentUser.id,
+
+    text,
+
+    createdAt:
+      now(),
+
+    read:
+      true
+
+  });
+
+
+  input.value = "";
+
+  saveState();
+
+  renderGroupChat();
+}
+
+
+/* ---------------------------------------------------------
+   VOICE MESSAGE
+   --------------------------------------------------------- */
+
+function createVoiceMessage() {
+
+  const group =
+    getGroup(state.selectedGroup);
+
+  if (!group) {
+    return;
+  }
+
+
+  if (!state.messages[group.id]) {
+
+    state.messages[group.id] =
+      [];
+
+  }
+
+
+  state.messages[group.id].push({
+
+    id:
+      uid("voice"),
+
+    member:
+      state.currentUser.id,
+
+    type:
+      "voice",
+
+    text:
+      "",
+
+    createdAt:
+      now(),
+
+    read:
+      true
+
+  });
+
+
+  saveState();
+
+  renderGroupChat();
+}
+
+
+/* ---------------------------------------------------------
+   GROUP PROFILE
+   --------------------------------------------------------- */
+
+function renderGroupProfile() {
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+
+  if (!group) {
+
+    state.screen =
+      "home";
+
+    return render();
+
+  }
+
+
+  setHeader(
+    group.name,
+    "Group profile"
+  );
+
+
+  screen.innerHTML = `
+
+    <div class="profile-page">
+
+
+      <div class="profile-hero">
+
+        <button
+          class="icon-btn profile-back"
+          data-action="back"
+        >
+          ‹
+        </button>
+
+
+        <div
+          class="profile-avatar"
+          style="--h:${group.hue}"
+        >
+          ${esc(group.icon)}
+        </div>
+
+
+        <h2>
+          ${esc(group.name)}
+        </h2>
+
+
+        <p>
+          ${group.members.length}
+          members
+        </p>
+
+
+        <div class="profile-actions">
+
+          <button
+            class="secondary-btn"
+            data-action="star-group"
+          >
+            ${
+              isStarred(group.id)
+                ? "★ Starred"
+                : "☆ Star"
+            }
+          </button>
+
+
+          <button
+            class="secondary-btn"
+            data-action="group-chat"
+          >
+            Open Chat
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <section class="profile-section">
+
+        <div class="section-title">
+          Category
+        </div>
+
+        <div class="chip-list">
+
+          ${
+            safeArray(
+              group.category
+            )
+              .map(
+                category => `
+                  <span class="chip">
+                    ${esc(category)}
+                  </span>
+                `
+              )
+              .join("")
+          }
+
+        </div>
+
+      </section>
+
+
+      <section class="profile-section">
+
+        <div class="section-title">
+          Members
+        </div>
+
+
+        <div class="member-list">
+
+          ${
+            safeArray(
+              group.members
+            )
+              .map(
+                member =>
+                  renderMemberRow(
+                    member,
+                    group
+                  )
+              )
+              .join("")
+          }
+
+        </div>
+
+      </section>
+
+
+      <section class="profile-section">
+
+        <button
+          class="danger-btn"
+          data-action="leave-group"
+        >
+          Leave Group
+        </button>
+
+      </section>
+
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   MEMBER ROW
+   --------------------------------------------------------- */
+
+function renderMemberRow(
+  member,
+  group
+) {
+
+  return `
+
+    <button
+      class="member-row"
+      data-member-id="${esc(member.id)}"
+      data-group-id="${esc(group.id)}"
+    >
+
+      <span
+        class="member-avatar"
+        style="--h:${member.hue}"
+      >
+        ${esc(member.avatar)}
+      </span>
+
+
+      <span class="member-copy">
+
+        <strong>
+          ${esc(member.name)}
+        </strong>
+
+        ${
+          member.id ===
+          state.currentUser.id
+            ? `
+              <span>
+                You
+              </span>
+            `
+            : ""
+        }
+
+      </span>
+
+    </button>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   CHAT MENU
+   --------------------------------------------------------- */
+
+function openChatMenu() {
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+  if (!group) {
+    return;
+  }
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            ${esc(group.name)}
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="menu-list">
+
+
+          <button
+            class="menu-item"
+            data-action="group-profile"
+          >
+
+            <div class="menu-icon">
+              👥
+            </div>
+
+            <div>
+
+              <strong>
+                Group profile
+              </strong>
+
+              <span>
+                View members and group information.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <button
+            class="menu-item"
+            data-action="group-report"
+          >
+
+            <div class="menu-icon">
+              ⚑
+            </div>
+
+            <div>
+
+              <strong>
+                Report
+              </strong>
+
+              <span>
+                Report this group.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <button
+            class="menu-item"
+            data-action="leave-group"
+          >
+
+            <div class="menu-icon">
+              ⎋
+            </div>
+
+            <div>
+
+              <strong>
+                Exit and delete group
+              </strong>
+
+              <span>
+                Leave this group and remove it from Home.
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <button
+            class="menu-item"
+            data-action="export-chat"
+          >
+
+            <div class="menu-icon">
+              ⇧
+            </div>
+
+            <div>
+
+              <strong>
+                Export chat
+              </strong>
+
+              <span>
+                Select a member to start a temporary chat.
+              </span>
+
+            </div>
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   LEAVE GROUP
+   --------------------------------------------------------- */
+
+function leaveCurrentGroup() {
+
+  const id =
+    state.selectedGroup;
+
+  const group =
+    getGroup(id);
+
+  if (!group) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      `Leave "${group.name}" and remove it from Home?`
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  state.groups =
+    state.groups.filter(
+      item =>
+        item.id !== id
+    );
+
+
+  state.starred =
+    state.starred.filter(
+      groupId =>
+        groupId !== id
+    );
+
+
+  state.archived =
+    state.archived.filter(
+      groupId =>
+        groupId !== id
+    );
+
+
+  delete state.messages[id];
+
+
+  state.selectedGroup =
+    null;
+
+  state.screen =
+    "home";
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+  render();
+}
+
+
+/* ---------------------------------------------------------
+   START TEMPORARY CHAT
+   --------------------------------------------------------- */
+
+function startTemporaryChat(
+  memberId
+) {
+
+  const group =
+    getGroup(
+      state.selectedGroup
+    );
+
+  if (!group) {
+    return;
+  }
+
+
+  const member =
+    getMember(
+      group,
+      memberId
+    );
+
+
+  if (!member) {
+    return;
+  }
+
+
+  state.selectedMember =
+    member.id;
+
+
+  openTemporaryChatInvite(
+    member
+  );
+}
+
+
+/* ---------------------------------------------------------
+   TEMPORARY CHAT INVITATION
+   --------------------------------------------------------- */
+
+function openTemporaryChatInvite(
+  member
+) {
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Temporary Chat
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="invite-card">
+
+          <div
+            class="profile-avatar small"
+            style="--h:${member.hue}"
+          >
+            ${esc(member.avatar)}
+          </div>
+
+
+          <h3>
+            ${esc(member.name)}
+          </h3>
+
+
+          <p>
+            Send a temporary chat invitation.
+            The chat only begins after the other
+            person accepts.
+          </p>
+
+
+          <button
+            class="primary-btn"
+            data-temp-invite="${esc(member.id)}"
+          >
+            Send Invitation
+          </button>
+
+
+          <button
+            class="secondary-btn"
+            data-close
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   TEMPORARY CHAT PAGE
+   --------------------------------------------------------- */
+
+function renderTemporaryChat(
+  memberId
+) {
+
+  const member =
+    findMemberAcrossGroups(
+      memberId
+    );
+
+
+  if (!member) {
+    return;
+  }
+
+
+  setHeader(
+    member.name,
+    "Temporary chat"
+  );
+
+
+  screen.innerHTML = `
+
+    <div class="chat-screen">
+
+      <div class="chat-header">
+
+        <button
+          class="icon-btn"
+          data-action="back"
+        >
+          ‹
+        </button>
+
+
+        <div class="chat-header-main">
+
+          <span
+            class="group-avatar small"
+            style="--h:${member.hue}"
+          >
+            ${esc(member.avatar)}
+          </span>
+
+
+          <span class="chat-header-copy">
+
+            <strong>
+              ${esc(member.name)}
+            </strong>
+
+            <span>
+              Temporary chat
+            </span>
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="temporary-chat-body">
+
+        <div class="empty">
+
+          <div class="empty-icon">
+            ⏳
+          </div>
+
+          <h3>
+            Temporary chat
+          </h3>
+
+          <p>
+            Messages in this chat disappear
+            when the temporary chat ends.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="temporary-chat-footer">
+
+        <button
+          class="danger-btn"
+          data-action="finish-temp-chat"
+        >
+          Finish Chat
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   FIND MEMBER ACROSS GROUPS
+   --------------------------------------------------------- */
+
+function findMemberAcrossGroups(
+  memberId
+) {
+
+  for (
+    const group of state.groups
+  ) {
+
+    const member =
+      getMember(
+        group,
+        memberId
+      );
+
+    if (member) {
+      return member;
+    }
+
+  }
+
+  return null;
+}
