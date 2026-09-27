@@ -5004,6 +5004,59 @@ function handleAction(
       break;
 
 
+       /* ================================
+       HOME HEADER / FLOATING BUTTONS
+       ================================= */
+
+    case "open-posts":
+
+      state.postFilter =
+        "all";
+
+      state.screen =
+        "posts";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "open-search":
+
+      state.screen =
+        "search";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "open-menu":
+
+      openMainMenu();
+
+      break;
+
+
+    case "join-group":
+
+      state.screen =
+        "search";
+
+      state.searchQuery =
+        "";
+
+      saveState();
+
+      render();
+
+      break;
+
+
     case "posts":
 
       state.screen =
