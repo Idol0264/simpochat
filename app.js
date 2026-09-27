@@ -160,12 +160,77 @@ function joinGroupModal() {
 }
 
 function postModal(name="Maya") {
-  modalRoot.innerHTML = `<div class="modal-backdrop" data-close><div class="modal">
-    <div class="modal-head"><div class="modal-title">${escapeHtml(name)}’s post</div><button class="close-btn" data-close>×</button></div>
-    <div class="post-media" style="height:330px;border-radius:20px">▶</div>
-    <div style="display:flex;gap:8px;margin-top:12px"><span class="chip">128 views</span><span class="chip">♡ 19</span><span class="chip">Comments 6</span></div>
-    <p style="color:var(--muted);font-size:12px;line-height:1.5">Posted from Creators Hub. Posts disappear automatically after 2 days.</p>
-  </div></div>`;
+  modalRoot.innerHTML = `
+    <div class="post-viewer-backdrop" data-close>
+
+      <section class="post-viewer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="${escapeHtml(name)}'s post">
+
+        <div class="post-viewer-head">
+
+          <div class="post-viewer-author">
+
+            <div class="post-viewer-avatar">
+              ${escapeHtml(name.charAt(0))}
+            </div>
+
+            <div class="post-viewer-author-copy">
+              <strong>${escapeHtml(name)}</strong>
+              <span>Creators Hub · 1h ago</span>
+            </div>
+
+          </div>
+
+          <button
+            class="post-viewer-close"
+            data-close
+            aria-label="Close post">
+            ×
+          </button>
+
+        </div>
+
+        <div class="post-viewer-media">
+
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2h-7A2.5 2.5 0 0 1 4 16.5z"/>
+            <path d="m16 10 4-2v8l-4-2z"/>
+            <circle cx="10.5" cy="12" r="2.5"/>
+          </svg>
+
+        </div>
+
+        <div class="post-viewer-info">
+
+          <div class="post-viewer-stats">
+
+            <span class="post-viewer-stat">
+              128 views
+            </span>
+
+            <span class="post-viewer-stat">
+              ♡ 19 reactions
+            </span>
+
+            <span class="post-viewer-stat">
+              Comments 6
+            </span>
+
+          </div>
+
+          <p class="post-viewer-description">
+            Posted from Creators Hub.
+            Posts disappear automatically after 2 days.
+          </p>
+
+        </div>
+
+      </section>
+
+    </div>
+  `;
 }
 
 document.addEventListener("click", e => {
