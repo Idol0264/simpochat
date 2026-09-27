@@ -6539,3 +6539,231 @@ else {
   startSimpoChat();
 
 }
+
+
+/* =========================================================
+   SIMPOCHAT — HOME MAIN MENU
+   ========================================================= */
+
+function openMainMenu() {
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div
+        class="modal home-menu-modal"
+        data-stop-close
+      >
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            SimpoChat
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="menu-list">
+
+
+          <!-- New Group -->
+
+          <button
+            class="menu-item"
+            data-action="new-group"
+          >
+
+            <div class="menu-icon">
+              +
+            </div>
+
+            <div>
+
+              <strong>
+                New group
+              </strong>
+
+              <span>
+                Create a new group
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- Starred -->
+
+          <button
+            class="menu-item"
+            data-action="starred"
+          >
+
+            <div class="menu-icon">
+              ☆
+            </div>
+
+            <div>
+
+              <strong>
+                Starred
+              </strong>
+
+              <span>
+                Favourite groups
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- Read All -->
+
+          <button
+            class="menu-item"
+            data-action="read-all"
+          >
+
+            <div class="menu-icon">
+              ✓
+            </div>
+
+            <div>
+
+              <strong>
+                Read all
+              </strong>
+
+              <span>
+                Mark all unseen messages as read
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- Settings -->
+
+          <button
+            class="menu-item"
+            data-action="settings"
+          >
+
+            <div class="menu-icon">
+              ⚙
+            </div>
+
+            <div>
+
+              <strong>
+                Settings
+              </strong>
+
+              <span>
+                Profile and appearance
+              </span>
+
+            </div>
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================================
+   READ ALL UNSEEN MESSAGES
+   ========================================================= */
+
+function markAllAsRead() {
+
+  state.unseen =
+    state.unseen || {};
+
+
+  Object.keys(
+    state.unseen
+  ).forEach(
+    groupId => {
+
+      state.unseen[groupId] =
+        0;
+
+    }
+  );
+
+
+  /*
+   * Also support group objects that
+   * store their unseen count directly.
+   */
+
+  safeArray(
+    state.groups
+  ).forEach(
+    group => {
+
+      group.unseen =
+        0;
+
+      group.unseenCount =
+        0;
+
+    }
+  );
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+  render();
+
+}
+
+
+/* =========================================================
+   READ-ALL ACTION
+   ========================================================= */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        "[data-action='read-all']"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    markAllAsRead();
+
+  }
+);
