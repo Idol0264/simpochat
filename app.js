@@ -3092,3 +3092,1649 @@ function findMemberAcrossGroups(
 
   return null;
 }
+
+/* =========================================================
+   SIMPOCHAT — SECTION 4/5
+   POSTS + SEARCH + SETTINGS + VIDEO POST CREATION
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   POSTS PAGE
+   --------------------------------------------------------- */
+
+function renderPosts() {
+
+  setHeader(
+    "Posts",
+    "Video updates from your groups"
+  );
+
+
+  const groups =
+    state.groups.filter(
+      group => !isArchived(group.id)
+    );
+
+
+  const activeFilter =
+    state.postFilter || "all";
+
+
+  const visiblePosts =
+    getVisiblePosts(
+      activeFilter
+    );
+
+
+  screen.innerHTML = `
+
+    <div class="posts-page">
+
+
+      <!-- POST FILTER -->
+
+      <div class="post-filter-wrap">
+
+        <div class="post-filter">
+
+          <button
+            class="
+              filter-btn
+              ${
+                activeFilter === "all"
+                  ? "active"
+                  : ""
+              }
+            "
+            data-post-filter="all"
+          >
+            All
+          </button>
+
+
+          ${
+            groups
+              .map(
+                group => `
+
+                  <button
+                    class="
+                      filter-btn
+                      ${
+                        activeFilter ===
+                        group.id
+                          ? "active"
+                          : ""
+                      }
+                    "
+                    data-post-filter="${esc(
+                      group.id
+                    )}"
+                  >
+                    ${esc(group.name)}
+                  </button>
+
+                `
+              )
+              .join("")
+          }
+
+        </div>
+
+      </div>
+
+
+      <!-- POST GRID -->
+
+      ${
+        visiblePosts.length
+          ? `
+            <div class="post-grid">
+
+              ${visiblePosts
+                .map(
+                  post =>
+                    renderPostCard(
+                      post
+                    )
+                )
+                .join("")}
+
+            </div>
+          `
+          : `
+            <div class="empty">
+
+              <div class="empty-icon">
+                ▣
+              </div>
+
+              <h3>
+                No posts here
+              </h3>
+
+              <p>
+                Video posts from this selection
+                will appear here.
+              </p>
+
+            </div>
+          `
+      }
+
+
+      <!-- FLOATING VIDEO BUTTON -->
+
+      <button
+        class="floating-post-btn"
+        data-action="create-post"
+        aria-label="Create video post"
+      >
+
+        <span>
+          ▷
+        </span>
+
+      </button>
+
+
+    </div>
+
+  `;
+
+
+  /*
+   * Post filter buttons
+   */
+
+  document
+    .querySelectorAll(
+      "[data-post-filter]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          state.postFilter =
+            button.dataset.postFilter;
+
+          saveState();
+
+          renderPosts();
+
+        }
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
+   VISIBLE POSTS
+   --------------------------------------------------------- */
+
+function getVisiblePosts(
+  filter
+) {
+
+  const allPosts =
+    safeArray(state.posts)
+      .filter(
+        post =>
+          post.type === "video"
+      );
+
+
+  if (
+    filter === "all"
+  ) {
+
+    return allPosts;
+
+  }
+
+
+  /*
+   * Group filter:
+   * only posts that belong to
+   * that selected group.
+   */
+
+  return allPosts.filter(
+    post =>
+      post.groupId === filter
+  );
+}
+
+
+/* ---------------------------------------------------------
+   POST CARD
+   --------------------------------------------------------- */
+
+function renderPostCard(
+  post
+) {
+
+  const group =
+    getGroup(post.groupId);
+
+
+  if (!group) {
+    return "";
+  }
+
+
+  return `
+
+    <button
+      class="post-card"
+      data-post-id="${esc(post.id)}"
+    >
+
+      <!-- Video visual -->
+
+      <span
+        class="post-video-thumb"
+        style="--h:${group.hue}"
+      >
+
+        <span class="post-video-symbol">
+          ▷
+        </span>
+
+        <span class="post-video-label">
+          VIDEO
+        </span>
+
+      </span>
+
+
+      <!-- Creator -->
+
+      <span class="post-card-info">
+
+        <span class="post-creator">
+
+          <span
+            class="member-avatar tiny"
+            style="--h:${group.hue}"
+          >
+            ${esc(
+              String(post.author)
+                .charAt(0)
+                .toUpperCase()
+            )}
+          </span>
+
+          <span>
+            ${esc(post.author)}
+          </span>
+
+        </span>
+
+
+        <span class="post-group">
+          ${esc(group.name)}
+        </span>
+
+      </span>
+
+    </button>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   OPEN POST
+   --------------------------------------------------------- */
+
+function openPost(
+  postId
+) {
+
+  const post =
+    state.posts.find(
+      item =>
+        item.id === postId
+    );
+
+
+  if (!post) {
+    return;
+  }
+
+
+  const group =
+    getGroup(post.groupId);
+
+
+  if (!group) {
+    return;
+  }
+
+
+  /*
+   * Increase views when opened.
+   */
+
+  post.views =
+    Number(post.views || 0) + 1;
+
+
+  saveState();
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="post-viewer-backdrop"
+      data-close
+    >
+
+      <div
+        class="post-viewer"
+        data-stop-close
+      >
+
+
+        <!-- VIEWER HEADER -->
+
+        <div class="post-viewer-header">
+
+          <button
+            class="icon-btn"
+            data-close
+            aria-label="Close post"
+          >
+            ×
+          </button>
+
+
+          <div class="post-viewer-user">
+
+            <span
+              class="member-avatar"
+              style="--h:${group.hue}"
+            >
+              ${esc(
+                String(post.author)
+                  .charAt(0)
+                  .toUpperCase()
+              )}
+            </span>
+
+
+            <div>
+
+              <strong>
+                ${esc(post.author)}
+              </strong>
+
+              <span>
+                ${esc(group.name)}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="post-viewer-spacer">
+          </div>
+
+        </div>
+
+
+        <!-- VIDEO -->
+
+        <div class="post-viewer-video">
+
+          <div
+            class="post-video-placeholder"
+            style="--h:${group.hue}"
+          >
+
+            <span>
+              ▷
+            </span>
+
+            <small>
+              Video Post
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <!-- POST DETAILS -->
+
+        <div class="post-viewer-details">
+
+          <div class="post-stats">
+
+            <span>
+              ${Number(post.views || 0)}
+              views
+            </span>
+
+            <button
+              data-post-reaction="${esc(
+                post.id
+              )}"
+            >
+              ♡
+              ${Number(
+                post.reactions || 0
+              )}
+            </button>
+
+            <button
+              data-post-comments="${esc(
+                post.id
+              )}"
+            >
+              ◌
+              ${Number(
+                post.comments || 0
+              )}
+            </button>
+
+          </div>
+
+
+          <div class="post-action-row">
+
+            <button
+              class="secondary-btn"
+              data-post-reaction="${esc(
+                post.id
+              )}"
+            >
+              React
+            </button>
+
+
+            <button
+              class="secondary-btn"
+              data-post-comments="${esc(
+                post.id
+              )}"
+            >
+              Comments
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ---------------------------------------------------------
+   CREATE VIDEO POST
+   --------------------------------------------------------- */
+
+function openCreatePost() {
+
+  const groups =
+    state.groups.filter(
+      group =>
+        !isArchived(group.id)
+    );
+
+
+  if (!groups.length) {
+
+    alert(
+      "You need to belong to a group before creating a post."
+    );
+
+    return;
+  }
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Create Video Post
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <form id="postForm">
+
+
+          <div class="field">
+
+            <label>
+              Post to
+            </label>
+
+            <select
+              id="postGroup"
+              required
+            >
+
+              ${
+                groups
+                  .map(
+                    group => `
+                      <option
+                        value="${esc(
+                          group.id
+                        )}"
+                      >
+                        ${esc(
+                          group.name
+                        )}
+                      </option>
+                    `
+                  )
+                  .join("")
+              }
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Video
+            </label>
+
+            <input
+              id="postVideo"
+              type="file"
+              accept="video/*"
+              required
+            >
+
+          </div>
+
+
+          <p class="form-note">
+            Video posts are temporary and disappear
+            after 2 days.
+          </p>
+
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Create Post
+          </button>
+
+
+          <button
+            class="secondary-btn"
+            type="button"
+            data-close
+          >
+            Cancel
+          </button>
+
+
+        </form>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  const form =
+    $("#postForm");
+
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+        createVideoPost();
+
+      }
+    );
+
+  }
+}
+
+
+/* ---------------------------------------------------------
+   CREATE VIDEO POST
+   --------------------------------------------------------- */
+
+function createVideoPost() {
+
+  const groupId =
+    $("#postGroup")?.value;
+
+
+  const file =
+    $("#postVideo")?.files?.[0];
+
+
+  if (!groupId) {
+
+    alert(
+      "Select a group."
+    );
+
+    return;
+  }
+
+
+  if (!file) {
+
+    alert(
+      "Select a video."
+    );
+
+    return;
+  }
+
+
+  if (
+    !file.type.startsWith(
+      "video/"
+    )
+  ) {
+
+    alert(
+      "Please select a video file."
+    );
+
+    return;
+  }
+
+
+  const group =
+    getGroup(groupId);
+
+
+  if (!group) {
+    return;
+  }
+
+
+  /*
+   * The browser-only prototype stores
+   * the post metadata. The actual video
+   * upload/storage will later connect
+   * to the chosen storage service.
+   */
+
+  state.posts.unshift({
+
+    id:
+      uid("post"),
+
+    author:
+      state.currentUser.name,
+
+    groupId,
+
+    type:
+      "video",
+
+    fileName:
+      file.name,
+
+    createdAt:
+      now(),
+
+    views:
+      0,
+
+    reactions:
+      0,
+
+    comments:
+      0
+
+  });
+
+
+  saveState();
+
+  modalRoot.innerHTML = "";
+
+  state.postFilter =
+    group.id;
+
+  state.screen =
+    "posts";
+
+  render();
+
+}
+
+
+/* ---------------------------------------------------------
+   SEARCH
+   --------------------------------------------------------- */
+
+function renderSearch() {
+
+  setHeader(
+    "Search",
+    "Find groups"
+  );
+
+
+  screen.innerHTML = `
+
+    <div class="search-page">
+
+
+      <div class="search-box">
+
+        <span>
+          ⌕
+        </span>
+
+        <input
+          id="groupSearchInput"
+          type="search"
+          autocomplete="off"
+          placeholder="Search groups"
+          value="${esc(
+            state.searchQuery || ""
+          )}"
+        >
+
+      </div>
+
+
+      <div id="searchResults">
+      </div>
+
+
+    </div>
+
+  `;
+
+
+  const input =
+    $("#groupSearchInput");
+
+
+  if (input) {
+
+    input.addEventListener(
+      "input",
+      () => {
+
+        state.searchQuery =
+          input.value;
+
+        renderSearchResults();
+
+      }
+    );
+
+  }
+
+
+  renderSearchResults();
+}
+
+
+/* ---------------------------------------------------------
+   SEARCH RESULTS
+   --------------------------------------------------------- */
+
+function renderSearchResults() {
+
+  const container =
+    $("#searchResults");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  const query =
+    String(
+      state.searchQuery || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  /*
+   * No query:
+   * show all discoverable groups.
+   */
+
+  const groups =
+    state.groups.filter(
+      group => {
+
+        if (!query) {
+          return true;
+        }
+
+
+        const searchable =
+          [
+            group.name,
+            ...safeArray(
+              group.category
+            )
+          ]
+            .join(" ")
+            .toLowerCase();
+
+
+        return searchable.includes(
+          query
+        );
+
+      }
+    );
+
+
+  container.innerHTML = `
+
+    ${
+      groups.length
+        ? `
+          <div class="group-list">
+
+            ${groups
+              .map(
+                group =>
+                  renderSearchGroup(
+                    group
+                  )
+              )
+              .join("")}
+
+          </div>
+        `
+        : `
+          <div class="empty">
+
+            <div class="empty-icon">
+              ⌕
+            </div>
+
+            <h3>
+              No groups found
+            </h3>
+
+            <p>
+              Try another group name or category.
+            </p>
+
+          </div>
+        `
+    }
+
+  `;
+
+
+  container
+    .querySelectorAll(
+      "[data-request-group]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          requestToJoinGroup(
+            button.dataset.requestGroup
+          );
+
+        }
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
+   SEARCH GROUP CARD
+   --------------------------------------------------------- */
+
+function renderSearchGroup(
+  group
+) {
+
+  const alreadyMember =
+    state.groups.some(
+      item =>
+        item.id === group.id
+    );
+
+
+  const requested =
+    Boolean(
+      state.joinRequests[
+        group.id
+      ]
+    );
+
+
+  return `
+
+    <div class="group-card search-group-card">
+
+      <span
+        class="group-avatar"
+        style="--h:${group.hue}"
+      >
+        ${esc(group.icon)}
+      </span>
+
+
+      <span class="group-copy">
+
+        <span class="group-name">
+          ${esc(group.name)}
+        </span>
+
+        <span class="group-meta">
+
+          ${safeArray(
+            group.category
+          )
+            .map(esc)
+            .join(" · ")}
+
+          ·
+
+          ${group.members.length}
+          members
+
+        </span>
+
+      </span>
+
+
+      ${
+        alreadyMember
+          ? `
+            <span class="status-label">
+              Joined
+            </span>
+          `
+          : requested
+            ? `
+              <span class="status-label">
+                Requested
+              </span>
+            `
+            : `
+              <button
+                class="small-action-btn"
+                data-request-group="${esc(
+                  group.id
+                )}"
+              >
+                Join
+              </button>
+            `
+      }
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   JOIN REQUEST
+   --------------------------------------------------------- */
+
+function requestToJoinGroup(
+  groupId
+) {
+
+  const group =
+    getGroup(groupId);
+
+
+  if (!group) {
+    return;
+  }
+
+
+  if (
+    state.groups.some(
+      item =>
+        item.id === groupId
+    )
+  ) {
+    return;
+  }
+
+
+  state.joinRequests[
+    groupId
+  ] = {
+
+    createdAt:
+      now(),
+
+    status:
+      "pending"
+
+  };
+
+
+  saveState();
+
+  renderSearchResults();
+
+  alert(
+    `Join request sent to ${group.name}.`
+  );
+}
+
+
+/* ---------------------------------------------------------
+   SETTINGS / PROFILE
+   --------------------------------------------------------- */
+
+function renderSettings() {
+
+  setHeader(
+    "Settings",
+    "Profile and appearance"
+  );
+
+
+  const user =
+    state.currentUser;
+
+
+  screen.innerHTML = `
+
+    <div class="settings-page">
+
+
+      <!-- PROFILE -->
+
+      <section class="settings-section">
+
+        <div class="settings-profile">
+
+          <div
+            class="profile-avatar"
+            style="--h:${user.hue}"
+          >
+            ${esc(user.avatar)}
+          </div>
+
+
+          <div>
+
+            <h2>
+              ${esc(user.name)}
+            </h2>
+
+            <p>
+              ${esc(user.email)}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="secondary-btn"
+          data-action="edit-profile"
+        >
+          Edit Profile
+        </button>
+
+      </section>
+
+
+      <!-- APPEARANCE -->
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Appearance
+        </div>
+
+        <div class="section-note">
+          Follow your device or choose a theme.
+        </div>
+
+
+        <div class="theme-options">
+
+
+          <button
+            class="
+              theme-option
+              ${
+                state.theme === "system"
+                  ? "selected"
+                  : ""
+              }
+            "
+            data-theme-value="system"
+          >
+            Device
+          </button>
+
+
+          <button
+            class="
+              theme-option
+              ${
+                state.theme === "light"
+                  ? "selected"
+                  : ""
+              }
+            "
+            data-theme-value="light"
+          >
+            Light
+          </button>
+
+
+          <button
+            class="
+              theme-option
+              ${
+                state.theme === "dark"
+                  ? "selected"
+                  : ""
+              }
+            "
+            data-theme-value="dark"
+          >
+            Dark
+          </button>
+
+
+        </div>
+
+      </section>
+
+
+      <!-- INFORMATION -->
+
+      <section class="settings-section">
+
+        <button
+          class="menu-item"
+          data-action="about"
+        >
+
+          <div class="menu-icon">
+            ⓘ
+          </div>
+
+          <div>
+
+            <strong>
+              About SimpoChat
+            </strong>
+
+            <span>
+              Group communication platform.
+            </span>
+
+          </div>
+
+        </button>
+
+      </section>
+
+
+    </div>
+
+  `;
+
+
+  /*
+   * Theme controls
+   */
+
+  document
+    .querySelectorAll(
+      "[data-theme-value]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          state.theme =
+            button.dataset.themeValue;
+
+          saveState();
+
+          applyTheme();
+
+          renderSettings();
+
+        }
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
+   EDIT PROFILE
+   --------------------------------------------------------- */
+
+function openEditProfile() {
+
+  const user =
+    state.currentUser;
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Edit Profile
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <form id="profileForm">
+
+
+          <div class="field">
+
+            <label>
+              User name
+            </label>
+
+            <input
+              id="profileName"
+              maxlength="60"
+              value="${esc(user.name)}"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Email
+            </label>
+
+            <input
+              id="profileEmail"
+              type="email"
+              value="${esc(user.email)}"
+              required
+            >
+
+          </div>
+
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Save Profile
+          </button>
+
+
+          <button
+            class="secondary-btn"
+            type="button"
+            data-close
+          >
+            Cancel
+          </button>
+
+
+        </form>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  const form =
+    $("#profileForm");
+
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+
+        const name =
+          $("#profileName")
+            ?.value
+            .trim();
+
+
+        const email =
+          $("#profileEmail")
+            ?.value
+            .trim();
+
+
+        if (!name || !email) {
+
+          alert(
+            "Complete your profile details."
+          );
+
+          return;
+
+        }
+
+
+        state.currentUser.name =
+          name;
+
+        state.currentUser.email =
+          email;
+
+        state.currentUser.avatar =
+          name
+            .charAt(0)
+            .toUpperCase();
+
+
+        saveState();
+
+        modalRoot.innerHTML = "";
+
+        render();
+
+      }
+    );
+
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ABOUT
+   --------------------------------------------------------- */
+
+function openAbout() {
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            About SimpoChat
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="about-content">
+
+          <div class="profile-avatar">
+            S
+          </div>
+
+          <h2>
+            SimpoChat
+          </h2>
+
+          <p>
+            A group-focused communication platform
+            designed around communities, conversations
+            and temporary content.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   POST REACTION
+   --------------------------------------------------------- */
+
+function reactToPost(
+  postId
+) {
+
+  const post =
+    state.posts.find(
+      item =>
+        item.id === postId
+    );
+
+
+  if (!post) {
+    return;
+  }
+
+
+  post.reactions =
+    Number(post.reactions || 0) + 1;
+
+
+  saveState();
+
+  openPost(postId);
+}
+
+
+/* ---------------------------------------------------------
+   POST COMMENTS
+   --------------------------------------------------------- */
+
+function openPostComments(
+  postId
+) {
+
+  const post =
+    state.posts.find(
+      item =>
+        item.id === postId
+    );
+
+
+  if (!post) {
+    return;
+  }
+
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Comments
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="empty">
+
+          <div class="empty-icon">
+            ◌
+          </div>
+
+          <h3>
+            Post comments
+          </h3>
+
+          <p>
+            Comments will appear here.
+          </p>
+
+        </div>
+
+
+        <form
+          id="commentForm"
+          class="message-composer"
+        >
+
+          <input
+            id="commentInput"
+            placeholder="Write a comment..."
+            autocomplete="off"
+          >
+
+          <button
+            class="send-btn"
+            type="submit"
+          >
+            ➤
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  const form =
+    $("#commentForm");
+
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+
+        const input =
+          $("#commentInput");
+
+
+        const text =
+          input?.value.trim();
+
+
+        if (!text) {
+          return;
+        }
+
+
+        post.comments =
+          Number(
+            post.comments || 0
+          ) + 1;
+
+
+        saveState();
+
+        openPostComments(
+          postId
+        );
+
+      }
+    );
+
+  }
+}
