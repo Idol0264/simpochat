@@ -3786,6 +3786,23 @@ function getTodayPostCount() {
 
 }
 
+function postBelongsToGroup(post, groupId) {
+
+  if (!post) {
+    return false;
+  }
+
+  if (Array.isArray(post.groupIds)) {
+    return post.groupIds.includes(groupId);
+  }
+
+  if (post.groupId) {
+    return post.groupId === groupId;
+  }
+
+  return false;
+}
+
 
 /* ---------------------------------------------------------
    REMAINING DAILY POSTS
