@@ -3729,6 +3729,1401 @@ function openPost(
 }
 
 
+/* =========================================================
+   POST CREATOR — MEDIA HELPERS
+   ========================================================= */
+
+const MAX_DAILY_POSTS = 10;
+const MAX_VIDEO_SECONDS = 15;
+const PHOTO_SECONDS = 3;
+const MAX_PHOTOS_PER_POST =
+  Math.floor(MAX_VIDEO_SECONDS / PHOTO_SECONDS);
+
+/*
+ * Runtime-only media files.
+ *
+ * These are temporary until Supabase Storage
+ * is connected.
+ */
+let postDraftMedia = [];
+
+
+/* ---------------------------------------------------------
+   TODAY'S POST COUNT
+   --------------------------------------------------------- */
+
+function getTodayPostCount() {
+
+  const start =
+    new Date();
+
+  start.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  const startTime =
+    start.getTime();
+
+
+  return safeArray(
+    state.posts
+  ).filter(
+    post =>
+      Number(post.createdAt || 0) >=
+      startTime
+  ).length;
+}
+
+
+/* ---------------------------------------------------------
+   REMAINING DAILY POSTS
+   --------------------------------------------------------- */
+
+function getRemainingDailyPosts() {
+
+  return Math.max(
+    0,
+    MAX_DAILY_POSTS -
+      getTodayPostCount()
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   FORMAT SECONDS
+   --------------------------------------------------------- */
+
+function formatPostSeconds(
+  seconds
+) {
+
+  const value =
+    Math.max(
+      0,
+      Number(seconds) || 0
+    );
+
+  const minutes =
+    Math.floor(
+      value / 60
+    );
+
+  const remaining =
+    Math.floor(
+      value % 60
+    );
+
+  return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
+
+}
+
+
+/* ---------------------------------------------------------
+   CREATE TEMPORARY OBJECT URL
+   --------------------------------------------------------- */
+
+function createPostObjectUrl(
+  file
+) {
+
+  try {
+
+    return URL.createObjectURL(
+      file
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Could not create media preview URL:",
+      error
+    );
+
+    return "";
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   RELEASE TEMPORARY URL
+   --------------------------------------------------------- */
+
+function releasePostObjectUrl(
+  url
+) {
+
+  if (!url) {
+    return;
+  }
+
+  try {
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Could not release media URL:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   RESET POST DRAFT
+   --------------------------------------------------------- */
+
+function resetPostDraft() {
+
+  postDraftMedia.forEach(
+    item => {
+
+      releasePostObjectUrl(
+        item.url
+      );
+
+    }
+  );
+
+  postDraftMedia = [];
+
+}
+
+
+/* ---------------------------------------------------------
+   CALCULATE RESULTING POSTS
+   --------------------------------------------------------- */
+
+function getDraftPostCount() {
+
+  const videos =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "video"
+    ).length;
+
+  const photos =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "image"
+    ).length;
+
+
+  /*
+   * Every video becomes one post.
+   *
+   * All selected photos become one
+   * photo-collection post.
+   */
+
+  return (
+    videos +
+    (photos > 0 ? 1 : 0)
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   RENDER DRAFT MEDIA PREVIEW
+   --------------------------------------------------------- */
+
+function renderPostDraftPreview() {
+
+  const container =
+    document.querySelector(
+      "#postMediaPreview"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  if (!postDraftMedia.length) {
+
+    container.innerHTML = `
+
+      <div class="post-preview-empty">
+
+        <div class="post-preview-empty-icon">
+          +
+        </div>
+
+        <strong>
+          Preview will appear here
+        </strong>
+
+        <span>
+          Select videos or photos to begin.
+        </span>
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  const videos =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "video"
+    );
+
+  const photos =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "image"
+    );
+
+
+  let html = "";
+
+
+  /*
+   * VIDEO PREVIEWS
+   */
+
+  videos.forEach(
+    (item, index) => {
+
+      const actualIndex =
+        postDraftMedia.indexOf(
+          item
+        );
+
+
+      html += `
+
+        <div
+          class="post-media-editor"
+          data-media-editor="${actualIndex}"
+        >
+
+          <div class="post-media-editor-head">
+
+            <div>
+
+              <strong>
+                Video ${index + 1}
+              </strong>
+
+              <span
+                data-duration-label="${actualIndex}"
+              >
+                Reading duration…
+              </span>
+
+            </div>
+
+            <button
+              type="button"
+              class="post-remove-media"
+              data-remove-media="${actualIndex}"
+              aria-label="Remove video"
+            >
+              ×
+            </button>
+
+          </div>
+
+
+          <div class="post-video-preview-wrap">
+
+            <video
+              class="post-video-preview"
+              data-preview-video="${actualIndex}"
+              src="${esc(item.url)}"
+              controls
+              playsinline
+              preload="metadata"
+            ></video>
+
+          </div>
+
+
+          <div class="post-trim-panel">
+
+            <div class="post-trim-title">
+              Trim this video
+            </div>
+
+
+            <div class="post-trim-info">
+
+              <span>
+                Start:
+                <strong
+                  data-start-label="${actualIndex}"
+                >
+                  00:00
+                </strong>
+              </span>
+
+              <span>
+                End:
+                <strong
+                  data-end-label="${actualIndex}"
+                >
+                  00:00
+                </strong>
+              </span>
+
+              <span>
+                Plays:
+                <strong
+                  data-length-label="${actualIndex}"
+                >
+                  00:00
+                </strong>
+              </span>
+
+            </div>
+
+
+            <label class="post-range-row">
+
+              <span>
+                Start point
+              </span>
+
+              <input
+                type="range"
+                min="0"
+                max="0"
+                step="0.1"
+                value="0"
+                data-start-range="${actualIndex}"
+              >
+
+            </label>
+
+
+            <label class="post-range-row">
+
+              <span>
+                Clip length
+              </span>
+
+              <input
+                type="range"
+                min="0.1"
+                max="15"
+                step="0.1"
+                value="15"
+                data-length-range="${actualIndex}"
+              >
+
+            </label>
+
+
+            <button
+              type="button"
+              class="secondary-btn post-preview-clip-btn"
+              data-preview-clip="${actualIndex}"
+            >
+              Preview selected clip
+            </button>
+
+
+          </div>
+
+        </div>
+
+      `;
+
+    }
+  );
+
+
+  /*
+   * PHOTO COLLECTION
+   */
+
+  if (photos.length) {
+
+    html += `
+
+      <div
+        class="post-media-editor photo-collection-editor"
+      >
+
+        <div class="post-media-editor-head">
+
+          <div>
+
+            <strong>
+              Photo post
+            </strong>
+
+            <span>
+              ${photos.length}
+              ${
+                photos.length === 1
+                  ? "photo"
+                  : "photos"
+              }
+              · ${
+                photos.length *
+                PHOTO_SECONDS
+              } seconds
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="post-photo-preview-grid">
+
+          ${
+            photos
+              .map(
+                (item, index) => {
+
+                  const actualIndex =
+                    postDraftMedia.indexOf(
+                      item
+                    );
+
+                  return `
+
+                    <div
+                      class="post-photo-preview-item"
+                    >
+
+                      <img
+                        src="${esc(item.url)}"
+                        alt="Selected photo ${index + 1}"
+                      >
+
+                      <button
+                        type="button"
+                        class="post-photo-remove"
+                        data-remove-media="${actualIndex}"
+                      >
+                        ×
+                      </button>
+
+                    </div>
+
+                  `;
+
+                }
+              )
+              .join("")
+          }
+
+        </div>
+
+
+        <div class="post-photo-timing">
+
+          Each photo plays for
+          ${PHOTO_SECONDS} seconds.
+          Total:
+          <strong>
+            ${photos.length * PHOTO_SECONDS}s
+          </strong>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  container.innerHTML =
+    html;
+
+
+  /*
+   * Attach video metadata listeners.
+   */
+
+  videos.forEach(
+    item => {
+
+      const index =
+        postDraftMedia.indexOf(
+          item
+        );
+
+
+      const video =
+        document.querySelector(
+          `[data-preview-video="${index}"]`
+        );
+
+
+      if (!video) {
+        return;
+      }
+
+
+      video.addEventListener(
+        "loadedmetadata",
+        () => {
+
+          const duration =
+            Number(
+              video.duration
+            );
+
+
+          if (
+            !Number.isFinite(
+              duration
+            ) ||
+            duration <= 0
+          ) {
+            return;
+          }
+
+
+          item.duration =
+            duration;
+
+
+          item.start =
+            Math.min(
+              Number(item.start || 0),
+              Math.max(
+                0,
+                duration - 0.1
+              )
+            );
+
+
+          item.length =
+            Math.min(
+              Number(
+                item.length ||
+                Math.min(
+                  MAX_VIDEO_SECONDS,
+                  duration
+                )
+              ),
+              MAX_VIDEO_SECONDS,
+              duration
+            );
+
+
+          if (
+            item.start +
+              item.length >
+            duration
+          ) {
+
+            item.start =
+              Math.max(
+                0,
+                duration -
+                  item.length
+              );
+
+          }
+
+
+          const startRange =
+            document.querySelector(
+              `[data-start-range="${index}"]`
+            );
+
+
+          const lengthRange =
+            document.querySelector(
+              `[data-length-range="${index}"]`
+            );
+
+
+          if (startRange) {
+
+            startRange.max =
+              Math.max(
+                0,
+                duration -
+                  item.length
+              );
+
+            startRange.value =
+              item.start;
+
+          }
+
+
+          if (lengthRange) {
+
+            lengthRange.max =
+              Math.min(
+                MAX_VIDEO_SECONDS,
+                duration
+              );
+
+            lengthRange.value =
+              item.length;
+
+          }
+
+
+          updatePostVideoEditor(
+            index
+          );
+
+        },
+        {
+          once: true
+        }
+      );
+
+
+      /*
+       * If metadata is already ready.
+       */
+
+      if (
+        video.readyState >= 1
+      ) {
+
+        video.dispatchEvent(
+          new Event(
+            "loadedmetadata"
+          )
+        );
+
+      }
+
+    }
+  );
+
+
+  /*
+   * Start-range controls.
+   */
+
+  document
+    .querySelectorAll(
+      "[data-start-range]"
+    )
+    .forEach(
+      range => {
+
+        range.addEventListener(
+          "input",
+          () => {
+
+            const index =
+              Number(
+                range.dataset.startRange
+              );
+
+            const item =
+              postDraftMedia[index];
+
+
+            if (!item) {
+              return;
+            }
+
+
+            item.start =
+              Number(
+                range.value
+              );
+
+
+            const maxStart =
+              Math.max(
+                0,
+                Number(item.duration || 0) -
+                  Number(item.length || 0)
+              );
+
+
+            if (
+              item.start >
+              maxStart
+            ) {
+
+              item.start =
+                maxStart;
+
+              range.value =
+                maxStart;
+
+            }
+
+
+            updatePostVideoEditor(
+              index
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * Clip-length controls.
+   */
+
+  document
+    .querySelectorAll(
+      "[data-length-range]"
+    )
+    .forEach(
+      range => {
+
+        range.addEventListener(
+          "input",
+          () => {
+
+            const index =
+              Number(
+                range.dataset.lengthRange
+              );
+
+            const item =
+              postDraftMedia[index];
+
+
+            if (!item) {
+              return;
+            }
+
+
+            item.length =
+              Math.min(
+                MAX_VIDEO_SECONDS,
+                Number(
+                  range.value
+                )
+              );
+
+
+            const duration =
+              Number(
+                item.duration || 0
+              );
+
+
+            if (
+              duration > 0
+            ) {
+
+              item.length =
+                Math.min(
+                  item.length,
+                  duration
+                );
+
+              const maxStart =
+                Math.max(
+                  0,
+                  duration -
+                    item.length
+                );
+
+
+              if (
+                item.start >
+                maxStart
+              ) {
+
+                item.start =
+                  maxStart;
+
+              }
+
+
+              const startRange =
+                document.querySelector(
+                  `[data-start-range="${index}"]`
+                );
+
+
+              if (startRange) {
+
+                startRange.max =
+                  maxStart;
+
+                startRange.value =
+                  item.start;
+
+              }
+
+            }
+
+
+            updatePostVideoEditor(
+              index
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * Preview selected clip.
+   */
+
+  document
+    .querySelectorAll(
+      "[data-preview-clip]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const index =
+              Number(
+                button.dataset.previewClip
+              );
+
+            previewPostClip(
+              index
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * Remove selected media.
+   */
+
+  document
+    .querySelectorAll(
+      "[data-remove-media]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const index =
+              Number(
+                button.dataset.removeMedia
+              );
+
+
+            removePostDraftMedia(
+              index
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   UPDATE VIDEO EDITOR
+   --------------------------------------------------------- */
+
+function updatePostVideoEditor(
+  index
+) {
+
+  const item =
+    postDraftMedia[index];
+
+
+  if (!item) {
+    return;
+  }
+
+
+  const duration =
+    Number(
+      item.duration || 0
+    );
+
+
+  const start =
+    Number(
+      item.start || 0
+    );
+
+
+  const length =
+    Math.min(
+      MAX_VIDEO_SECONDS,
+      Number(
+        item.length ||
+        Math.min(
+          MAX_VIDEO_SECONDS,
+          duration
+        )
+      )
+    );
+
+
+  const end =
+    Math.min(
+      duration,
+      start + length
+    );
+
+
+  item.start =
+    start;
+
+  item.length =
+    end - start;
+
+  item.end =
+    end;
+
+
+  const startLabel =
+    document.querySelector(
+      `[data-start-label="${index}"]`
+    );
+
+
+  const endLabel =
+    document.querySelector(
+      `[data-end-label="${index}"]`
+    );
+
+
+  const lengthLabel =
+    document.querySelector(
+      `[data-length-label="${index}"]`
+    );
+
+
+  const durationLabel =
+    document.querySelector(
+      `[data-duration-label="${index}"]`
+    );
+
+
+  if (startLabel) {
+
+    startLabel.textContent =
+      formatPostSeconds(
+        start
+      );
+
+  }
+
+
+  if (endLabel) {
+
+    endLabel.textContent =
+      formatPostSeconds(
+        end
+      );
+
+  }
+
+
+  if (lengthLabel) {
+
+    lengthLabel.textContent =
+      formatPostSeconds(
+        item.length
+      );
+
+  }
+
+
+  if (durationLabel) {
+
+    durationLabel.textContent =
+      `Original: ${formatPostSeconds(
+        duration
+      )}`;
+
+  }
+
+
+  const video =
+    document.querySelector(
+      `[data-preview-video="${index}"]`
+    );
+
+
+  if (video) {
+
+    video.dataset.trimStart =
+      String(start);
+
+    video.dataset.trimEnd =
+      String(end);
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   PREVIEW SELECTED VIDEO CLIP
+   --------------------------------------------------------- */
+
+function previewPostClip(
+  index
+) {
+
+  const item =
+    postDraftMedia[index];
+
+
+  const video =
+    document.querySelector(
+      `[data-preview-video="${index}"]`
+    );
+
+
+  if (
+    !item ||
+    !video ||
+    !Number.isFinite(
+      item.duration
+    )
+  ) {
+    return;
+  }
+
+
+  const start =
+    Number(
+      item.start || 0
+    );
+
+
+  const end =
+    Number(
+      item.end ||
+      Math.min(
+        item.duration,
+        start +
+          Math.min(
+            MAX_VIDEO_SECONDS,
+            item.duration
+          )
+      )
+    );
+
+
+  video.currentTime =
+    start;
+
+
+  video.play().catch(
+    () => {}
+  );
+
+
+  const stopPreview =
+    () => {
+
+      if (
+        video.currentTime >=
+        end
+      ) {
+
+        video.pause();
+
+        video.currentTime =
+          start;
+
+        video.removeEventListener(
+          "timeupdate",
+          stopPreview
+        );
+
+      }
+
+    };
+
+
+  video.addEventListener(
+    "timeupdate",
+    stopPreview
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   REMOVE DRAFT MEDIA
+   --------------------------------------------------------- */
+
+function removePostDraftMedia(
+  index
+) {
+
+  const item =
+    postDraftMedia[index];
+
+
+  if (!item) {
+    return;
+  }
+
+
+  releasePostObjectUrl(
+    item.url
+  );
+
+
+  postDraftMedia.splice(
+    index,
+    1
+  );
+
+
+  renderPostDraftPreview();
+
+}
+
+
+/* ---------------------------------------------------------
+   HANDLE MEDIA SELECTION
+   --------------------------------------------------------- */
+
+function handlePostMediaSelection(
+  fileList
+) {
+
+  const files =
+    Array.from(
+      fileList || []
+    );
+
+
+  if (!files.length) {
+    return;
+  }
+
+
+  const images =
+    files.filter(
+      file =>
+        file.type.startsWith(
+          "image/"
+        )
+    );
+
+
+  const videos =
+    files.filter(
+      file =>
+        file.type.startsWith(
+          "video/"
+        )
+    );
+
+
+  if (
+    images.length >
+    MAX_PHOTOS_PER_POST
+  ) {
+
+    alert(
+      `You can select a maximum of ${MAX_PHOTOS_PER_POST} photos for one photo post.`
+    );
+
+  }
+
+
+  const acceptedImages =
+    images.slice(
+      0,
+      MAX_PHOTOS_PER_POST
+    );
+
+
+  /*
+   * Replace the previous draft.
+   */
+
+  resetPostDraft();
+
+
+  /*
+   * Photos.
+   */
+
+  acceptedImages.forEach(
+    file => {
+
+      postDraftMedia.push({
+
+        kind:
+          "image",
+
+        file,
+
+        url:
+          createPostObjectUrl(
+            file
+          )
+
+      });
+
+    }
+  );
+
+
+  /*
+   * Videos.
+   */
+
+  videos.forEach(
+    file => {
+
+      postDraftMedia.push({
+
+        kind:
+          "video",
+
+        file,
+
+        url:
+          createPostObjectUrl(
+            file
+          ),
+
+        duration:
+          0,
+
+        start:
+          0,
+
+        length:
+          MAX_VIDEO_SECONDS,
+
+        end:
+          MAX_VIDEO_SECONDS
+
+      });
+
+    }
+  );
+
+
+  renderPostDraftPreview();
+
+
+  const remaining =
+    getRemainingDailyPosts();
+
+
+  const resulting =
+    getDraftPostCount();
+
+
+  if (
+    resulting >
+    remaining
+  ) {
+
+    const note =
+      document.querySelector(
+        "#postDailyLimitNote"
+      );
+
+
+    if (note) {
+
+      note.textContent =
+        `This selection creates ${resulting} posts, but you have only ${remaining} post${remaining === 1 ? "" : "s"} remaining today.`;
+
+      note.classList.add(
+        "limit-warning"
+      );
+
+    }
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   DAILY LIMIT NOTE
+   --------------------------------------------------------- */
+
+function updatePostDailyLimitNote() {
+
+  const note =
+    document.querySelector(
+      "#postDailyLimitNote"
+    );
+
+
+  if (!note) {
+    return;
+  }
+
+
+  const used =
+    getTodayPostCount();
+
+
+  const remaining =
+    getRemainingDailyPosts();
+
+
+  const draftCount =
+    getDraftPostCount();
+
+
+  note.textContent =
+    draftCount > 0
+      ? `${used}/${MAX_DAILY_POSTS} used today · This selection creates ${draftCount} post${draftCount === 1 ? "" : "s"} · ${Math.max(0, remaining - draftCount)} remaining after posting.`
+      : `${used}/${MAX_DAILY_POSTS} used today · ${remaining} post${remaining === 1 ? "" : "s"} remaining.`;
+
+
+  note.classList.toggle(
+    "limit-warning",
+    draftCount >
+      remaining
+  );
+
+}
+
+
 /* ---------------------------------------------------------
    CREATE VIDEO POST
    --------------------------------------------------------- */
