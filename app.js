@@ -5978,13 +5978,20 @@ function createVideoPost() {
 
 
   state.postFilter =
-    "all";
-
-  state.screen =
-    "posts";
-
-
-  render();
+  "all";
+   
+   state.screen =
+      "posts";
+   
+   saveState();
+   
+   render();
+   
+   setTimeout(() => {
+      
+      updatePostDailyLimitNote();
+   
+   }, 0);
 
 }
       
