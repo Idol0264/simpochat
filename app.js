@@ -1219,7 +1219,6 @@ function openGroupActions(
 
     <div
       class="modal-backdrop"
-      data-close
     >
 
       <div class="modal">
