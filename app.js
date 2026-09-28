@@ -3874,22 +3874,8 @@ function openCreatePost() {
 
 function createVideoPost() {
 
-  const groupId =
-    $("#postGroup")?.value;
-
-
   const file =
     $("#postVideo")?.files?.[0];
-
-
-  if (!groupId) {
-
-    alert(
-      "Select a group."
-    );
-
-    return;
-  }
 
 
   if (!file) {
@@ -3916,20 +3902,98 @@ function createVideoPost() {
   }
 
 
-  const group =
-    getGroup(groupId);
+  const allGroupsCheckbox =
+    $("#postAllGroups");
 
 
-  if (!group) {
+  const selectedGroupIds =
+    [
+      ...document.querySelectorAll(
+        ".post-group-checkbox:checked"
+      )
+    ]
+      .map(
+        checkbox =>
+          checkbox.value
+      )
+      .filter(Boolean);
+
+
+  /*
+   * ALL GROUPS
+   *
+   * Store every group the creator
+   * currently belongs to.
+   */
+
+  let groupIds = [];
+
+
+  if (
+    allGroupsCheckbox?.checked
+  ) {
+
+    groupIds =
+      state.groups
+        .filter(
+          group =>
+            !isArchived(group.id)
+        )
+        .map(
+          group =>
+            group.id
+        );
+
+  } else {
+
+    groupIds =
+      selectedGroupIds;
+
+  }
+
+
+  /*
+   * At least one group must
+   * receive the post.
+   */
+
+  if (!groupIds.length) {
+
+    alert(
+      "Select at least one group."
+    );
+
     return;
   }
 
 
   /*
-   * The browser-only prototype stores
-   * the post metadata. The actual video
-   * upload/storage will later connect
-   * to the chosen storage service.
+   * Make sure every selected
+   * group still exists.
+   */
+
+  groupIds =
+    groupIds.filter(
+      id =>
+        getGroup(id)
+    );
+
+
+  if (!groupIds.length) {
+
+    alert(
+      "The selected groups are no longer available."
+    );
+
+    return;
+  }
+
+
+  /*
+   * Create the post.
+   *
+   * groupIds is now the important
+   * visibility field.
    */
 
   state.posts.unshift({
@@ -3940,7 +4004,7 @@ function createVideoPost() {
     author:
       state.currentUser.name,
 
-    groupId,
+    groupIds,
 
     type:
       "video",
@@ -3967,11 +4031,17 @@ function createVideoPost() {
 
   modalRoot.innerHTML = "";
 
+
+  /*
+   * Return to Posts.
+   */
+
   state.postFilter =
-    group.id;
+    "all";
 
   state.screen =
     "posts";
+
 
   render();
 
