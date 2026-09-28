@@ -5118,6 +5118,9 @@ document.addEventListener(
 
     /* -------------------------------------
    CLOSE MODALS / POST VIEWER
+   -----------------------------------------*/
+     /* -------------------------------------
+   CLOSE MODALS / POST VIEWER
    ------------------------------------- */
 
 const clickedElement =
@@ -5145,18 +5148,28 @@ const clickedPostViewerBackdrop =
 
 
 /*
- * CLOSE BUTTONS
+ * REAL CLOSE BUTTONS
  *
- * This handles:
- * - modal X
- * - modal Cancel
- * - full-screen post X
+ * IMPORTANT:
+ *
+ * Do NOT search for [data-close]
+ * globally because the backdrop
+ * itself also has data-close.
+ *
+ * Only elements INSIDE the modal
+ * or post viewer can act as a
+ * close button.
  */
 
 const closeControl =
   clickedElement.closest(
-    "[data-close]"
+    ".modal [data-close], .post-viewer [data-close]"
   );
+
+
+/*
+ * CLOSE BUTTON / CANCEL
+ */
 
 if (
   closeControl &&
@@ -5174,10 +5187,10 @@ if (
 
 
 /*
- * CLICKING DIRECTLY ON A MODAL BACKDROP
- * closes the modal.
+ * CLICK DIRECTLY ON MODAL BACKDROP
  *
- * Clicking inside the modal does NOT.
+ * Clicking inside the modal must
+ * NOT close it.
  */
 
 if (
@@ -5195,9 +5208,8 @@ if (
 
 
 /*
- * CLICKING DIRECTLY ON THE
- * FULL-SCREEN POST VIEWER BACKDROP
- * closes the viewer.
+ * CLICK DIRECTLY ON POST VIEWER
+ * BACKDROP
  */
 
 if (
