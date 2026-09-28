@@ -5078,65 +5078,59 @@ document.addEventListener(
     }
 
 
-    /* -------------------------------------
+        /* -------------------------------------
        CLOSE MODALS
        ------------------------------------- */
 
+    const clickedElement =
+      event.target;
+
+    const clickedModal =
+      clickedElement.closest(
+        ".modal"
+      );
+
+    const clickedBackdrop =
+      clickedElement.closest(
+        ".modal-backdrop"
+      );
+
+
+    /*
+     * Close / Cancel controls.
+     */
+
     if (
-  target.hasAttribute(
-    "data-close"
-  )
-) {
+      clickedElement.closest(
+        "[data-close]"
+      ) &&
+      clickedModal
+    ) {
 
-  const modalBackdrop =
-    target.closest(
-      ".modal-backdrop"
-    );
+      modalRoot.innerHTML = "";
 
-  const modal =
-    target.closest(
-      ".modal"
-    );
+      return;
+
+    }
 
 
-  /*
-   * A close element inside the modal
-   * should close the modal.
-   */
+    /*
+     * Clicking directly on the backdrop
+     * closes the modal.
+     */
 
-  if (
-    target.closest(
-      "[data-close]"
-    ) &&
-    !modal
-  ) {
+    if (
+      clickedBackdrop &&
+      !clickedModal &&
+      clickedElement ===
+        clickedBackdrop
+    ) {
 
-    modalRoot.innerHTML = "";
+      modalRoot.innerHTML = "";
 
-    return;
+      return;
 
-  }
-
-
-  /*
-   * Clicking directly on the dark
-   * backdrop closes the modal.
-   *
-   * Clicking inside the modal does NOT.
-   */
-
-  if (
-    modalBackdrop &&
-    target === modalBackdrop
-  ) {
-
-    modalRoot.innerHTML = "";
-
-    return;
-
-  }
-
-}
+    }
 
     /* -------------------------------------
        GROUP ACTION MENU
