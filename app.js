@@ -3632,39 +3632,74 @@ function openCreatePost() {
         <form id="postForm">
 
 
+          <!-- POST VISIBILITY -->
+
           <div class="field">
 
             <label>
               Post to
             </label>
 
-            <select
-              id="postGroup"
-              required
-            >
+
+            <div class="post-target-list">
+
+
+              <!-- ALL GROUPS -->
+
+              <label class="post-target-option all-groups-option">
+
+                <input
+                  type="checkbox"
+                  id="postAllGroups"
+                  checked
+                >
+
+                <span>
+                  All groups
+                </span>
+
+              </label>
+
+
+              <!-- INDIVIDUAL GROUPS -->
 
               ${
                 groups
                   .map(
                     group => `
-                      <option
-                        value="${esc(
-                          group.id
-                        )}"
+
+                      <label
+                        class="post-target-option"
                       >
-                        ${esc(
-                          group.name
-                        )}
-                      </option>
+
+                        <input
+                          type="checkbox"
+                          class="post-group-checkbox"
+                          value="${esc(
+                            group.id
+                          )}"
+                        >
+
+                        <span>
+                          ${esc(
+                            group.name
+                          )}
+                        </span>
+
+                      </label>
+
                     `
                   )
                   .join("")
               }
 
-            </select>
+
+            </div>
 
           </div>
 
+
+          <!-- VIDEO -->
 
           <div class="field">
 
@@ -3714,6 +3749,103 @@ function openCreatePost() {
   `;
 
 
+  /*
+   * ALL GROUPS checkbox
+   */
+
+  const allGroups =
+    $("#postAllGroups");
+
+
+  const groupCheckboxes =
+    [
+      ...document.querySelectorAll(
+        ".post-group-checkbox"
+      )
+    ];
+
+
+  /*
+   * Selecting ALL clears
+   * individual groups.
+   */
+
+  if (allGroups) {
+
+    allGroups.addEventListener(
+      "change",
+      () => {
+
+        if (allGroups.checked) {
+
+          groupCheckboxes.forEach(
+            checkbox => {
+              checkbox.checked = false;
+            }
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /*
+   * Selecting any specific group
+   * automatically removes ALL.
+   */
+
+  groupCheckboxes.forEach(
+    checkbox => {
+
+      checkbox.addEventListener(
+        "change",
+        () => {
+
+          if (checkbox.checked) {
+
+            if (allGroups) {
+              allGroups.checked = false;
+            }
+
+          }
+
+
+          /*
+           * If the user unchecks the
+           * last specific group,
+           * return to ALL groups.
+           */
+
+          const selected =
+            groupCheckboxes.some(
+              item =>
+                item.checked
+            );
+
+
+          if (
+            !selected &&
+            allGroups
+          ) {
+
+            allGroups.checked = true;
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * Form submit
+   */
+
   const form =
     $("#postForm");
 
@@ -3732,6 +3864,7 @@ function openCreatePost() {
     );
 
   }
+
 }
 
 
