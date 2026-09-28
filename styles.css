@@ -2912,3 +2912,553 @@ body::after {
   }
 
 }
+
+/* =========================================================
+   SIMPOCHAT — ADVANCED POST CREATOR
+   ========================================================= */
+
+.post-creator-modal {
+  padding-bottom:
+    calc(
+      18px +
+      env(safe-area-inset-bottom)
+    );
+}
+
+.post-creator-subtitle {
+  margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.post-target-list {
+  display: grid;
+
+  gap: 7px;
+}
+
+.post-target-option {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  min-height: 49px;
+
+  padding: 10px 12px;
+
+  color: var(--text);
+
+  background:
+    var(--surface);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 15px;
+
+  cursor: pointer;
+
+  transition:
+    border-color .18s ease,
+    background .18s ease,
+    transform .18s ease;
+}
+
+.post-target-option:active {
+  transform: scale(.985);
+}
+
+.post-target-option input {
+  width: 19px !important;
+  height: 19px !important;
+
+  flex: 0 0 auto;
+
+  margin: 0;
+
+  accent-color:
+    var(--accent);
+}
+
+.post-target-option span {
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.all-groups-option {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(109, 74, 255, .13),
+      rgba(165, 108, 255, .06)
+    );
+
+  border-color:
+    rgba(109, 74, 255, .35);
+}
+
+
+/* ---------------------------------------------------------
+   MEDIA PICKER
+   --------------------------------------------------------- */
+
+.post-media-picker {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-height: 68px;
+
+  padding: 12px;
+
+  color: var(--text);
+
+  background:
+    var(--surface);
+
+  border:
+    1px dashed
+    var(--accent);
+
+  border-radius: 18px;
+
+  cursor: pointer;
+}
+
+.post-media-picker:active {
+  transform: scale(.985);
+}
+
+.post-media-picker-icon {
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 auto;
+
+  border-radius: 14px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-2)
+    );
+
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.post-media-picker span:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.post-media-picker strong {
+  font-size: 12px;
+}
+
+.post-media-picker small {
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+
+/* ---------------------------------------------------------
+   PREVIEW AREA
+   --------------------------------------------------------- */
+
+.post-media-preview {
+  display: grid;
+
+  gap: 11px;
+
+  margin-bottom: 13px;
+}
+
+.post-preview-empty {
+  min-height: 150px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  color: var(--muted);
+
+  background:
+    var(--surface);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 19px;
+}
+
+.post-preview-empty-icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 4px;
+
+  border-radius: 16px;
+
+  color: var(--accent);
+
+  background:
+    rgba(109, 74, 255, .12);
+
+  border:
+    1px solid
+    rgba(109, 74, 255, .25);
+
+  font-size: 25px;
+}
+
+.post-preview-empty strong {
+  color: var(--text);
+
+  font-size: 12px;
+}
+
+.post-preview-empty span {
+  font-size: 10px;
+}
+
+
+/* ---------------------------------------------------------
+   MEDIA EDITOR
+   --------------------------------------------------------- */
+
+.post-media-editor {
+  overflow: hidden;
+
+  background:
+    var(--surface);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 19px;
+
+  box-shadow:
+    var(--shadow-soft);
+}
+
+.post-media-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding: 12px;
+}
+
+.post-media-editor-head > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.post-media-editor-head strong {
+  color: var(--text);
+
+  font-size: 12px;
+}
+
+.post-media-editor-head span {
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.post-remove-media,
+.post-photo-remove {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 auto;
+
+  color: var(--text);
+
+  background:
+    var(--surface-strong);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 11px;
+
+  font-size: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   VIDEO PREVIEW
+   --------------------------------------------------------- */
+
+.post-video-preview-wrap {
+  position: relative;
+
+  width: 100%;
+
+  background:
+    #000;
+}
+
+.post-video-preview {
+  display: block;
+
+  width: 100%;
+
+  max-height: 310px;
+
+  object-fit: contain;
+
+  background:
+    #000;
+}
+
+
+/* ---------------------------------------------------------
+   TRIM PANEL
+   --------------------------------------------------------- */
+
+.post-trim-panel {
+  padding: 13px;
+}
+
+.post-trim-title {
+  margin-bottom: 9px;
+
+  color: var(--text);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.post-trim-info {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 6px;
+
+  margin-bottom: 12px;
+}
+
+.post-trim-info span {
+  min-width: 0;
+
+  padding: 8px;
+
+  color: var(--muted);
+
+  background:
+    var(--surface-strong);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 11px;
+
+  font-size: 9px;
+
+  text-align: center;
+}
+
+.post-trim-info strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--text);
+
+  font-size: 10px;
+}
+
+.post-range-row {
+  display: grid;
+
+  gap: 6px;
+
+  margin-bottom: 11px;
+}
+
+.post-range-row span {
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.post-range-row input[type="range"] {
+  width: 100%;
+
+  accent-color:
+    var(--accent);
+}
+
+.post-preview-clip-btn {
+  width: 100%;
+}
+
+
+/* ---------------------------------------------------------
+   PHOTO COLLECTION
+   --------------------------------------------------------- */
+
+.post-photo-preview-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 5px;
+
+  padding: 0 12px 12px;
+}
+
+.post-photo-preview-item {
+  position: relative;
+
+  aspect-ratio: 1 / 1;
+
+  overflow: hidden;
+
+  background:
+    var(--surface-strong);
+
+  border-radius: 12px;
+}
+
+.post-photo-preview-item img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+.post-photo-remove {
+  position: absolute;
+
+  top: 5px;
+  right: 5px;
+
+  width: 25px;
+  height: 25px;
+
+  color: white;
+
+  background:
+    rgba(0, 0, 0, .65);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, .25);
+
+  font-size: 15px;
+}
+
+.post-photo-timing {
+  padding:
+    0
+    12px
+    13px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.post-photo-timing strong {
+  color: var(--text);
+}
+
+
+/* ---------------------------------------------------------
+   DAILY LIMIT
+   --------------------------------------------------------- */
+
+.post-daily-limit-note {
+  margin:
+    4px
+    0
+    9px;
+
+  padding: 10px 11px;
+
+  color: var(--muted);
+
+  background:
+    var(--surface);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 13px;
+
+  font-size: 10px;
+
+  line-height: 1.45;
+}
+
+.post-daily-limit-note.limit-warning {
+  color:
+    #ffb4b4;
+
+  border-color:
+    rgba(255, 80, 80, .4);
+
+  background:
+    rgba(255, 80, 80, .07);
+}
+
+.post-expiry-note {
+  margin-top: 8px;
+}
+
+.post-creator-actions {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, .65fr);
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
