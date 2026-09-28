@@ -5361,18 +5361,18 @@ function openCreatePost() {
           <!-- DAILY LIMIT -->
 
           <div
-            id="postDailyLimitNote"
-            class="post-daily-limit-note"
+          id="postDailyLimitNote"
+          class="post-daily-limit-note"
           >
-            0/${MAX_DAILY_POSTS}
-            used today ·
-            ${remaining}
-            ${
-              remaining === 1
-                ? "post"
-                : "posts"
-            }
-            remaining.
+          ${getTodayPostCount()}/${MAX_DAILY_POSTS}
+          used today ·
+          ${getRemainingDailyPosts()}
+          ${
+             getRemainingDailyPosts() === 1
+             ? "post"
+             : "posts"
+          }
+          remaining.
           </div>
 
 
