@@ -5084,23 +5084,60 @@ document.addEventListener(
        ------------------------------------- */
 
     if (
-      target.hasAttribute(
-        "data-close"
-      )
-    ) {
+  target.hasAttribute(
+    "data-close"
+  )
+) {
 
-      if (
-        target.dataset.stopClose !==
-        undefined
-      ) {
-        return;
-      }
+  const modalBackdrop =
+    target.closest(
+      ".modal-backdrop"
+    );
 
-      modalRoot.innerHTML = "";
+  const modal =
+    target.closest(
+      ".modal"
+    );
 
-      return;
-    }
 
+  /*
+   * A close element inside the modal
+   * should close the modal.
+   */
+
+  if (
+    target.closest(
+      "[data-close]"
+    ) &&
+    !modal
+  ) {
+
+    modalRoot.innerHTML = "";
+
+    return;
+
+  }
+
+
+  /*
+   * Clicking directly on the dark
+   * backdrop closes the modal.
+   *
+   * Clicking inside the modal does NOT.
+   */
+
+  if (
+    modalBackdrop &&
+    target === modalBackdrop
+  ) {
+
+    modalRoot.innerHTML = "";
+
+    return;
+
+  }
+
+}
 
     /* -------------------------------------
        GROUP ACTION MENU
