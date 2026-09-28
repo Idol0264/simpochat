@@ -5147,6 +5147,25 @@ function openCreatePost() {
   }
 
 
+  const remaining =
+    getRemainingDailyPosts();
+
+
+  if (
+    remaining <= 0
+  ) {
+
+    alert(
+      "You have reached your 10-post limit for today. Upgrade to Pro for the higher posting limit."
+    );
+
+    return;
+  }
+
+
+  resetPostDraft();
+
+
   modalRoot.innerHTML = `
 
     <div
@@ -5154,17 +5173,30 @@ function openCreatePost() {
       data-close
     >
 
-      <div class="modal">
+      <div
+        class="modal post-creator-modal"
+        data-stop-close
+      >
 
         <div class="modal-head">
 
-          <div class="modal-title">
-            Create Video Post
+          <div>
+
+            <div class="modal-title">
+              Create Post
+            </div>
+
+            <div class="post-creator-subtitle">
+              Video or photo post
+            </div>
+
           </div>
+
 
           <button
             class="close-btn"
             data-close
+            aria-label="Close"
           >
             ×
           </button>
@@ -5175,7 +5207,7 @@ function openCreatePost() {
         <form id="postForm">
 
 
-          <!-- POST VISIBILITY -->
+          <!-- POST TARGET -->
 
           <div class="field">
 
@@ -5187,9 +5219,12 @@ function openCreatePost() {
             <div class="post-target-list">
 
 
-              <!-- ALL GROUPS -->
-
-              <label class="post-target-option all-groups-option">
+              <label
+                class="
+                  post-target-option
+                  all-groups-option
+                "
+              >
 
                 <input
                   type="checkbox"
@@ -5203,8 +5238,6 @@ function openCreatePost() {
 
               </label>
 
-
-              <!-- INDIVIDUAL GROUPS -->
 
               ${
                 groups
@@ -5236,51 +5269,131 @@ function openCreatePost() {
                   .join("")
               }
 
+            </div>
+
+          </div>
+
+
+          <!-- MEDIA PICKER -->
+
+          <div class="field">
+
+            <label>
+              Media
+            </label>
+
+
+            <label
+              class="post-media-picker"
+              for="postMedia"
+            >
+
+              <span
+                class="post-media-picker-icon"
+              >
+                +
+              </span>
+
+
+              <span>
+
+                <strong>
+                  Select videos or photos
+                </strong>
+
+                <small>
+                  Multiple videos or up to
+                  ${MAX_PHOTOS_PER_POST}
+                  photos
+                </small>
+
+              </span>
+
+            </label>
+
+
+            <input
+              id="postMedia"
+              type="file"
+              accept="video/*,image/*"
+              multiple
+              hidden
+            >
+
+          </div>
+
+
+          <!-- PREVIEW -->
+
+          <div
+            id="postMediaPreview"
+            class="post-media-preview"
+          >
+
+            <div class="post-preview-empty">
+
+              <div class="post-preview-empty-icon">
+                +
+              </div>
+
+              <strong>
+                Preview will appear here
+              </strong>
+
+              <span>
+                Select videos or photos to begin.
+              </span>
 
             </div>
 
           </div>
 
 
-          <!-- VIDEO -->
+          <!-- DAILY LIMIT -->
 
-          <div class="field">
+          <div
+            id="postDailyLimitNote"
+            class="post-daily-limit-note"
+          >
+            0/${MAX_DAILY_POSTS}
+            used today ·
+            ${remaining}
+            ${
+              remaining === 1
+                ? "post"
+                : "posts"
+            }
+            remaining.
+          </div>
 
-            <label>
-              Video
-            </label>
 
-            <input
-              id="postVideo"
-              type="file"
-              accept="video/*"
-              required
-            >
+          <div class="form-note post-expiry-note">
+
+            Posts disappear automatically
+            after 2 days.
 
           </div>
 
 
-          <p class="form-note">
-            Video posts are temporary and disappear
-            after 2 days.
-          </p>
+          <div class="post-creator-actions">
+
+            <button
+              class="primary-btn"
+              type="submit"
+            >
+              Create Post
+            </button>
 
 
-          <button
-            class="primary-btn"
-            type="submit"
-          >
-            Create Post
-          </button>
+            <button
+              class="secondary-btn"
+              type="button"
+              data-close
+            >
+              Cancel
+            </button>
 
-
-          <button
-            class="secondary-btn"
-            type="button"
-            data-close
-          >
-            Cancel
-          </button>
+          </div>
 
 
         </form>
@@ -5293,7 +5406,7 @@ function openCreatePost() {
 
 
   /*
-   * ALL GROUPS checkbox
+   * ALL GROUPS
    */
 
   const allGroups =
@@ -5308,24 +5421,48 @@ function openCreatePost() {
     ];
 
 
-  /*
-   * Selecting ALL clears
-   * individual groups.
-   */
-
   if (allGroups) {
 
     allGroups.addEventListener(
       "change",
       () => {
 
-        if (allGroups.checked) {
+        if (
+          allGroups.checked
+        ) {
 
           groupCheckboxes.forEach(
             checkbox => {
-              checkbox.checked = false;
+
+              checkbox.checked =
+                false;
+
             }
           );
+
+        }
+
+
+        /*
+         * If ALL is unchecked and
+         * nothing else is selected,
+         * restore ALL.
+         */
+
+        const selected =
+          groupCheckboxes.some(
+            checkbox =>
+              checkbox.checked
+          );
+
+
+        if (
+          !allGroups.checked &&
+          !selected
+        ) {
+
+          allGroups.checked =
+            true;
 
         }
 
@@ -5336,8 +5473,7 @@ function openCreatePost() {
 
 
   /*
-   * Selecting any specific group
-   * automatically removes ALL.
+   * INDIVIDUAL GROUPS
    */
 
   groupCheckboxes.forEach(
@@ -5347,20 +5483,16 @@ function openCreatePost() {
         "change",
         () => {
 
-          if (checkbox.checked) {
+          if (
+            checkbox.checked &&
+            allGroups
+          ) {
 
-            if (allGroups) {
-              allGroups.checked = false;
-            }
+            allGroups.checked =
+              false;
 
           }
 
-
-          /*
-           * If the user unchecks the
-           * last specific group,
-           * return to ALL groups.
-           */
 
           const selected =
             groupCheckboxes.some(
@@ -5374,7 +5506,8 @@ function openCreatePost() {
             allGroups
           ) {
 
-            allGroups.checked = true;
+            allGroups.checked =
+              true;
 
           }
 
@@ -5386,7 +5519,33 @@ function openCreatePost() {
 
 
   /*
-   * Form submit
+   * MEDIA INPUT
+   */
+
+  const mediaInput =
+    $("#postMedia");
+
+
+  if (mediaInput) {
+
+    mediaInput.addEventListener(
+      "change",
+      () => {
+
+        handlePostMediaSelection(
+          mediaInput.files
+        );
+
+        updatePostDailyLimitNote();
+
+      }
+    );
+
+  }
+
+
+  /*
+   * FORM SUBMIT
    */
 
   const form =
