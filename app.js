@@ -3288,25 +3288,136 @@ function getVisiblePosts(
       );
 
 
+  /*
+   * Groups this viewer belongs to.
+   *
+   * In the current prototype,
+   * every group in state.groups
+   * represents a group the user
+   * belongs to.
+   */
+
+  const viewerGroupIds =
+    state.groups.map(
+      group =>
+        group.id
+    );
+
+
+  /*
+   * First determine which posts
+   * this viewer is allowed to see.
+   */
+
+  const allowedPosts =
+    allPosts.filter(
+      post => {
+
+        /*
+         * New post format:
+         *
+         * groupIds: ["business", "tech"]
+         */
+
+        if (
+          Array.isArray(
+            post.groupIds
+          )
+        ) {
+
+          return post.groupIds.some(
+            groupId =>
+              viewerGroupIds.includes(
+                groupId
+              )
+          );
+
+        }
+
+
+        /*
+         * Backward compatibility
+         * for older prototype posts.
+         */
+
+        if (post.groupId) {
+
+          return viewerGroupIds.includes(
+            post.groupId
+          );
+
+        }
+
+
+        return false;
+
+      }
+    );
+
+
+  /*
+   * ALL means:
+   *
+   * Show every post this viewer
+   * is allowed to see.
+   */
+
   if (
     filter === "all"
   ) {
 
-    return allPosts;
+    return allowedPosts;
 
   }
 
 
   /*
-   * Group filter:
-   * only posts that belong to
-   * that selected group.
+   * Specific group filter:
+   *
+   * The viewer must belong to
+   * that group AND the creator
+   * must have selected that group.
    */
 
-  return allPosts.filter(
-    post =>
-      post.groupId === filter
+  if (
+    !viewerGroupIds.includes(
+      filter
+    )
+  ) {
+
+    return [];
+
+  }
+
+
+  return allowedPosts.filter(
+    post => {
+
+      if (
+        Array.isArray(
+          post.groupIds
+        )
+      ) {
+
+        return post.groupIds.includes(
+          filter
+        );
+
+      }
+
+
+      /*
+       * Backward compatibility.
+       */
+
+      return (
+        post.groupId ===
+        filter
+      );
+
+    }
   );
+
 }
 
 
