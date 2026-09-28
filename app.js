@@ -5078,59 +5078,102 @@ document.addEventListener(
     }
 
 
-        /* -------------------------------------
-       CLOSE MODALS
-       ------------------------------------- */
+    /* -------------------------------------
+   CLOSE MODALS / POST VIEWER
+   ------------------------------------- */
 
-    const clickedElement =
-      event.target;
+const clickedElement =
+  event.target;
 
-    const clickedModal =
-      clickedElement.closest(
-        ".modal"
-      );
+const clickedModal =
+  clickedElement.closest(
+    ".modal"
+  );
 
-    const clickedBackdrop =
-      clickedElement.closest(
-        ".modal-backdrop"
-      );
+const clickedPostViewer =
+  clickedElement.closest(
+    ".post-viewer"
+  );
 
+const clickedModalBackdrop =
+  clickedElement.closest(
+    ".modal-backdrop"
+  );
 
-    /*
-     * Close / Cancel controls.
-     */
-
-    if (
-      clickedElement.closest(
-        "[data-close]"
-      ) &&
-      clickedModal
-    ) {
-
-      modalRoot.innerHTML = "";
-
-      return;
-
-    }
+const clickedPostViewerBackdrop =
+  clickedElement.closest(
+    ".post-viewer-backdrop"
+  );
 
 
-    /*
-     * Clicking directly on the backdrop
-     * closes the modal.
-     */
+/*
+ * CLOSE BUTTONS
+ *
+ * This handles:
+ * - modal X
+ * - modal Cancel
+ * - full-screen post X
+ */
 
-    if (
-      clickedBackdrop &&
-      !clickedModal &&
-      clickedElement ===
-        clickedBackdrop
-    ) {
+const closeControl =
+  clickedElement.closest(
+    "[data-close]"
+  );
 
-      modalRoot.innerHTML = "";
+if (
+  closeControl &&
+  (
+    clickedModal ||
+    clickedPostViewer
+  )
+) {
 
-      return;
+  modalRoot.innerHTML = "";
 
-    }
+  return;
+
+}
+
+
+/*
+ * CLICKING DIRECTLY ON A MODAL BACKDROP
+ * closes the modal.
+ *
+ * Clicking inside the modal does NOT.
+ */
+
+if (
+  clickedModalBackdrop &&
+  !clickedModal &&
+  clickedElement ===
+    clickedModalBackdrop
+) {
+
+  modalRoot.innerHTML = "";
+
+  return;
+
+}
+
+
+/*
+ * CLICKING DIRECTLY ON THE
+ * FULL-SCREEN POST VIEWER BACKDROP
+ * closes the viewer.
+ */
+
+if (
+  clickedPostViewerBackdrop &&
+  !clickedPostViewer &&
+  clickedElement ===
+    clickedPostViewerBackdrop
+) {
+
+  modalRoot.innerHTML = "";
+
+  return;
+
+}
 
     /* -------------------------------------
        GROUP ACTION MENU
