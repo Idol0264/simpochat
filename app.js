@@ -3754,8 +3754,7 @@ let postDraftMedia = [];
 
 function getTodayPostCount() {
 
-  const start =
-    new Date();
+  const start = new Date();
 
   start.setHours(
     0,
@@ -3767,14 +3766,24 @@ function getTodayPostCount() {
   const startTime =
     start.getTime();
 
-
   return safeArray(
     state.posts
-  ).filter(
-    post =>
-      Number(post.createdAt || 0) >=
-      startTime
-  ).length;
+  ).filter(post => {
+
+    const createdAt =
+      Number(
+        post.createdAt || 0
+      );
+
+    return (
+      createdAt >= startTime &&
+      createdAt <
+        startTime +
+        24 * 60 * 60 * 1000
+    );
+
+  }).length;
+
 }
 
 
