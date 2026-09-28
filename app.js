@@ -5576,33 +5576,47 @@ function openCreatePost() {
 
 function createVideoPost() {
 
-  const file =
-    $("#postVideo")?.files?.[0];
-
-
-  if (!file) {
-
-    alert(
-      "Select a video."
-    );
-
-    return;
-  }
-
-
   if (
-    !file.type.startsWith(
-      "video/"
-    )
+    !postDraftMedia.length
   ) {
 
     alert(
-      "Please select a video file."
+      "Select at least one video or photo."
     );
 
     return;
   }
 
+
+  const remaining =
+    getRemainingDailyPosts();
+
+
+  /*
+   * Determine the number of
+   * actual posts this batch creates.
+   */
+
+  const resultingPosts =
+    getDraftPostCount();
+
+
+  if (
+    resultingPosts >
+    remaining
+  ) {
+
+    alert(
+      `This selection creates ${resultingPosts} posts, but you only have ${remaining} post${remaining === 1 ? "" : "s"} remaining today.`
+    );
+
+    return;
+  }
+
+
+  /*
+   * Resolve target groups.
+   */
 
   const allGroupsCheckbox =
     $("#postAllGroups");
@@ -5621,13 +5635,6 @@ function createVideoPost() {
       .filter(Boolean);
 
 
-  /*
-   * ALL GROUPS
-   *
-   * Store every group the creator
-   * currently belongs to.
-   */
-
   let groupIds = [];
 
 
@@ -5639,7 +5646,9 @@ function createVideoPost() {
       state.groups
         .filter(
           group =>
-            !isArchived(group.id)
+            !isArchived(
+              group.id
+            )
         )
         .map(
           group =>
@@ -5654,11 +5663,6 @@ function createVideoPost() {
   }
 
 
-  /*
-   * At least one group must
-   * receive the post.
-   */
-
   if (!groupIds.length) {
 
     alert(
@@ -5668,11 +5672,6 @@ function createVideoPost() {
     return;
   }
 
-
-  /*
-   * Make sure every selected
-   * group still exists.
-   */
 
   groupIds =
     groupIds.filter(
@@ -5692,51 +5691,282 @@ function createVideoPost() {
 
 
   /*
-   * Create the post.
-   *
-   * groupIds is now the important
-   * visibility field.
+   * Validate every video.
    */
 
-  state.posts.unshift({
+  const invalidVideo =
+    postDraftMedia.find(
+      item => {
 
-    id:
-      uid("post"),
+        if (
+          item.kind !==
+          "video"
+        ) {
 
-    author:
-      state.currentUser.name,
+          return false;
 
-    groupIds,
-
-    type:
-      "video",
-
-    fileName:
-      file.name,
-
-    createdAt:
-      now(),
-
-    views:
-      0,
-
-    reactions:
-      0,
-
-    comments:
-      0
-
-  });
+        }
 
 
-  saveState();
+        const length =
+          Number(
+            item.length || 0
+          );
 
-  modalRoot.innerHTML = "";
+
+        return (
+          !Number.isFinite(
+            length
+          ) ||
+          length <= 0 ||
+          length >
+            MAX_VIDEO_SECONDS
+        );
+
+      }
+    );
+
+
+  if (invalidVideo) {
+
+    alert(
+      "Every video post must be 15 seconds or less."
+    );
+
+    return;
+  }
 
 
   /*
-   * Return to Posts.
+   * Validate photos.
    */
+
+  const photoCount =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "image"
+    ).length;
+
+
+  if (
+    photoCount >
+    MAX_PHOTOS_PER_POST
+  ) {
+
+    alert(
+      `A photo post can contain a maximum of ${MAX_PHOTOS_PER_POST} photos.`
+    );
+
+    return;
+  }
+
+
+  const createdAt =
+    now();
+
+
+  /*
+   * Create VIDEO posts.
+   *
+   * Every selected video becomes
+   * its own post.
+   */
+
+  postDraftMedia
+    .filter(
+      item =>
+        item.kind === "video"
+    )
+    .forEach(
+      item => {
+
+        const start =
+          Number(
+            item.start || 0
+          );
+
+
+        const length =
+          Math.min(
+            MAX_VIDEO_SECONDS,
+            Number(
+              item.length ||
+              0
+            )
+          );
+
+
+        const end =
+          Math.min(
+            Number(
+              item.duration ||
+              length
+            ),
+            start +
+              length
+          );
+
+
+        state.posts.unshift({
+
+          id:
+            uid("post"),
+
+          author:
+            state.currentUser.name,
+
+          authorId:
+            state.currentUser.id,
+
+          groupIds:
+            [...groupIds],
+
+          type:
+            "video",
+
+          fileName:
+            item.file.name,
+
+          /*
+           * Temporary local preview URL.
+           *
+           * Supabase Storage will replace
+           * this later.
+           */
+
+          mediaUrl:
+            item.url,
+
+          originalDuration:
+            Number(
+              item.duration || 0
+            ),
+
+          trimStart:
+            start,
+
+          trimEnd:
+            end,
+
+          duration:
+            end - start,
+
+          createdAt,
+
+          expiresAt:
+            createdAt +
+            TWO_DAYS_MS,
+
+          views:
+            0,
+
+          reactions:
+            0,
+
+          comments:
+            0
+
+        });
+
+      }
+    );
+
+
+  /*
+   * Create ONE PHOTO COLLECTION
+   * from all selected photos.
+   */
+
+  const photos =
+    postDraftMedia.filter(
+      item =>
+        item.kind === "image"
+    );
+
+
+  if (
+    photos.length
+  ) {
+
+    state.posts.unshift({
+
+      id:
+        uid("post"),
+
+      author:
+        state.currentUser.name,
+
+      authorId:
+        state.currentUser.id,
+
+      groupIds:
+        [...groupIds],
+
+      type:
+        "photos",
+
+      photos:
+        photos.map(
+          item => ({
+
+            fileName:
+              item.file.name,
+
+            mediaUrl:
+              item.url
+
+          })
+        ),
+
+      photoDuration:
+        PHOTO_SECONDS,
+
+      duration:
+        photos.length *
+        PHOTO_SECONDS,
+
+      createdAt,
+
+      expiresAt:
+        createdAt +
+        TWO_DAYS_MS,
+
+      views:
+        0,
+
+      reactions:
+        0,
+
+      comments:
+        0
+
+    });
+
+  }
+
+
+  /*
+   * Save prototype state.
+   */
+
+  saveState();
+
+
+  /*
+   * Do not release the object URLs
+   * here because the current-session
+   * post viewer still needs them.
+   *
+   * They will be cleaned up when
+   * the browser session ends or when
+   * Supabase media replaces them.
+   */
+
+  postDraftMedia = [];
+
+
+  modalRoot.innerHTML = "";
+
 
   state.postFilter =
     "all";
@@ -5748,6 +5978,7 @@ function createVideoPost() {
   render();
 
 }
+      
 
 
 /* ---------------------------------------------------------
