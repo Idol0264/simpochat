@@ -3428,13 +3428,50 @@ function renderPostCard(
   post
 ) {
 
+  /*
+   * New posts use groupIds.
+   * Older prototype posts may still
+   * use groupId.
+   */
+
+  const postGroupIds =
+    Array.isArray(post.groupIds)
+      ? post.groupIds
+      : post.groupId
+        ? [post.groupId]
+        : [];
+
+
+  const postGroups =
+    postGroupIds
+      .map(
+        id =>
+          getGroup(id)
+      )
+      .filter(Boolean);
+
+
   const group =
-    getGroup(post.groupId);
+    postGroups[0];
 
 
   if (!group) {
     return "";
   }
+
+
+  /*
+   * Display the groups this post
+   * belongs to.
+   */
+
+  const groupNames =
+    postGroups
+      .map(
+        item =>
+          item.name
+      )
+      .join(" · ");
 
 
   return `
@@ -3444,7 +3481,7 @@ function renderPostCard(
       data-post-id="${esc(post.id)}"
     >
 
-      <!-- Video visual -->
+      <!-- VIDEO VISUAL -->
 
       <span
         class="post-video-thumb"
@@ -3462,7 +3499,7 @@ function renderPostCard(
       </span>
 
 
-      <!-- Creator -->
+      <!-- CREATOR -->
 
       <span class="post-card-info">
 
@@ -3487,7 +3524,7 @@ function renderPostCard(
 
 
         <span class="post-group">
-          ${esc(group.name)}
+          ${esc(groupNames)}
         </span>
 
       </span>
@@ -3495,6 +3532,7 @@ function renderPostCard(
     </button>
 
   `;
+
 }
 
 
