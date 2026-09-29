@@ -3689,3 +3689,211 @@ body::after {
   position: relative;
   z-index: 2;
 }
+
+/* =========================================================
+   NEW GROUP — FINAL MOBILE FIT
+   ========================================================= */
+
+/* Keep the New Group form inside the usable phone area. */
+#newGroupForm {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  max-height: calc(100vh - 205px);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 0 2px 8px 0;
+
+  scrollbar-width: none;
+}
+
+#newGroupForm::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* Reduce vertical spacing inside New Group. */
+#newGroupForm .field {
+  margin-bottom: 10px;
+}
+
+
+/* Compact field labels. */
+#newGroupForm .field > label {
+  margin-bottom: 5px;
+
+  font-size: 10px;
+}
+
+
+/* Compact group-name input. */
+#newGroupForm .field input:not([type="radio"]) {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 12px;
+
+  border-radius: 13px;
+
+  font-size: 12px;
+}
+
+
+/* Category area stays compact. */
+#newGroupForm .category-picker {
+  width: 100%;
+}
+
+#newGroupForm .category-grid {
+  gap: 6px;
+}
+
+#newGroupForm .category-option {
+  min-height: 34px;
+
+  padding: 0 10px;
+
+  border-radius: 10px;
+
+  font-size: 9px;
+}
+
+
+/* More/Hide categories button. */
+#newGroupForm .category-more-btn {
+  min-height: 36px;
+
+  margin-top: 7px;
+
+  border-radius: 10px;
+
+  font-size: 9px;
+}
+
+
+/* Group access / approval choices. */
+#newGroupForm .group-setting-options {
+  display: grid;
+
+  gap: 6px;
+}
+
+
+#newGroupForm .group-setting-option {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  min-height: 0;
+
+  padding: 8px 9px;
+
+  color: var(--text);
+
+  background: var(--surface);
+
+  border: 1px solid var(--line);
+
+  border-radius: 12px;
+}
+
+
+/* Compact radio circles. */
+#newGroupForm .group-setting-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+
+  min-width: 16px;
+  min-height: 16px;
+
+  flex: 0 0 16px;
+
+  margin: 1px 0 0;
+
+  border-width: 1.5px;
+}
+
+
+/* Smaller selected dot. */
+#newGroupForm
+.group-setting-option
+input[type="radio"]:checked::after {
+  width: 6px;
+  height: 6px;
+}
+
+
+/* Access option text. */
+#newGroupForm .group-setting-option span {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+#newGroupForm .group-setting-option strong {
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+
+#newGroupForm .group-setting-option small {
+  color: var(--muted);
+
+  font-size: 8px;
+
+  line-height: 1.35;
+}
+
+
+/* Compact Create / Cancel buttons. */
+#newGroupForm .new-group-actions {
+  gap: 7px;
+
+  margin-top: 6px;
+}
+
+
+#newGroupForm .new-group-actions button {
+  min-height: 40px;
+
+  border-radius: 12px;
+
+  font-size: 10px;
+}
+
+
+/* Very small phones. */
+@media (max-width: 390px) {
+
+  #newGroupForm {
+    max-height: calc(100vh - 190px);
+  }
+
+  #newGroupForm .field {
+    margin-bottom: 8px;
+  }
+
+  #newGroupForm .field input:not([type="radio"]) {
+    height: 40px;
+  }
+
+  #newGroupForm .category-option {
+    min-height: 32px;
+
+    padding-left: 9px;
+    padding-right: 9px;
+
+    font-size: 8px;
+  }
+
+}
