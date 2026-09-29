@@ -7651,17 +7651,25 @@ function handleAction(
 
     case "archived":
 
-      state.screen =
-        "archived";
+  /* Close the main menu before opening Archived. */
+  if (typeof modalRoot !== "undefined") {
+    modalRoot.innerHTML = "";
+  }
 
-      state.selectionMode =
-        false;
+  state.screen =
+    "archived";
 
-      saveState();
+  state.selectionMode =
+    false;
 
-      render();
+  state.selectedItems =
+    [];
 
-      break;
+  saveState();
+
+  render();
+
+  break;
 
 
        /* ================================
