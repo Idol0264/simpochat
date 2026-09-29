@@ -2045,12 +2045,19 @@ function createGroup() {
   const input =
     $("#newGroupName");
 
+
   if (!input) {
     return;
   }
 
+
   const name =
     input.value.trim();
+
+
+  /*
+   * Selected categories.
+   */
 
   const categories =
     [
@@ -2066,6 +2073,54 @@ function createGroup() {
       .filter(Boolean);
 
 
+  /*
+   * Group access setting.
+   *
+   * open =
+   * anyone can join directly.
+   *
+   * approval =
+   * people must request to join.
+   */
+
+  const joinPolicyInput =
+    document.querySelector(
+      'input[name="joinPolicy"]:checked'
+    );
+
+
+  const joinPolicy =
+    joinPolicyInput
+      ? joinPolicyInput.value
+      : "open";
+
+
+  /*
+   * Approval authority.
+   *
+   * any-admin =
+   * any administrator can approve.
+   *
+   * creator-only =
+   * only the original creator can approve.
+   */
+
+  const joinApprovalInput =
+    document.querySelector(
+      'input[name="joinApproval"]:checked'
+    );
+
+
+  const joinApproval =
+    joinApprovalInput
+      ? joinApprovalInput.value
+      : "any-admin";
+
+
+  /*
+   * Validate group name.
+   */
+
   if (!name) {
 
     alert(
@@ -2078,6 +2133,10 @@ function createGroup() {
   }
 
 
+  /*
+   * At least one category.
+   */
+
   if (
     categories.length < 1
   ) {
@@ -2089,6 +2148,10 @@ function createGroup() {
     return;
   }
 
+
+  /*
+   * Maximum three categories.
+   */
 
   if (
     categories.length > 3
@@ -2109,9 +2172,16 @@ function createGroup() {
   const id =
     uid("group");
 
+
   const user =
     state.currentUser;
 
+
+  /*
+   * The person creating the group
+   * is permanently identified as
+   * the original creator.
+   */
 
   const group = {
 
@@ -2130,15 +2200,46 @@ function createGroup() {
     category:
       categories,
 
+
+    /*
+     * Creator
+     */
+
+    creatorId:
+      user.id,
+
+
+    /*
+     * The creator is also the
+     * first administrator.
+     */
+
     admin:
       true,
+
+
+    /*
+     * Group join rules.
+     */
+
+    joinPolicy,
+
+    joinApproval,
+
 
     unseen:
       0,
 
+
+    /*
+     * Creator starts as the
+     * first member.
+     */
+
     members: [
 
       {
+
         id:
           user.id,
 
@@ -2184,8 +2285,23 @@ function createGroup() {
   state.selectedGroup =
     id;
 
+
   state.previousScreen =
     "home";
+
+
+  /*
+   * Remove any menu/modal overlay.
+   *
+   * This prevents the screen from
+   * becoming blocked after creation.
+   */
+
+  if (typeof modalRoot !== "undefined") {
+
+    modalRoot.innerHTML = "";
+
+  }
 
 
   /*
@@ -2200,19 +2316,23 @@ function createGroup() {
   state.selectionMode =
     false;
 
+
   state.selectedItems =
     [];
 
 
   /*
-   * THIS SAVE IS IMPORTANT.
-   * Without it the new group
-   * would disappear after refresh.
+   * Save the new group.
+   *
+   * This keeps the group and its
+   * join settings after refresh.
    */
 
   saveState();
 
+
   render();
+
 }
 
 /* =========================================================
