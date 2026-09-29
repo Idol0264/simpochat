@@ -7754,15 +7754,25 @@ function handleAction(
 
     case "settings":
 
-      state.screen =
-        "settings";
+  /* Close the main menu before opening Settings. */
+  if (typeof modalRoot !== "undefined") {
+    modalRoot.innerHTML = "";
+  }
 
-      saveState();
+  state.screen =
+    "settings";
 
-      render();
+  state.selectionMode =
+    false;
 
-      break;
+  state.selectedItems =
+    [];
 
+  saveState();
+
+  render();
+
+  break;
 
     /* ================================
        GROUP
