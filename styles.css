@@ -3606,3 +3606,86 @@ body::after {
   }
 
 }
+
+/* =========================================================
+   NEW GROUP — STEP 5 FIXES
+   ========================================================= */
+
+/* Make sure elements using the HTML hidden
+   attribute are actually hidden. */
+[hidden] {
+  display: none !important;
+}
+
+
+/* Compact radio selection circles. */
+
+.group-setting-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 17px;
+  height: 17px;
+
+  min-width: 17px;
+  min-height: 17px;
+
+  margin: 0 10px 0 0;
+
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+
+  background: transparent;
+
+  position: relative;
+
+  flex: 0 0 17px;
+}
+
+
+/* Selected radio circle. */
+
+.group-setting-option input[type="radio"]:checked {
+  border-color: var(--accent);
+}
+
+
+/* Small dot inside selected circle. */
+
+.group-setting-option input[type="radio"]:checked::after {
+  content: "";
+
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(
+    -50%,
+    -50%
+  );
+
+  border-radius: 50%;
+
+  background: var(--accent);
+}
+
+
+/* Keep the whole option aligned properly. */
+
+.group-setting-option {
+  display: flex;
+  align-items: flex-start;
+}
+
+
+/* Prevent the category More button from
+   accidentally behaving like a category. */
+
+.category-more-btn {
+  position: relative;
+  z-index: 2;
+}
