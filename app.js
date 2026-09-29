@@ -7762,14 +7762,26 @@ function handleAction(
 
     case "new-group":
 
-      state.screen =
-        "new-group";
+  /*
+   * Close the menu overlay before opening
+   * the full New Group screen.
+   *
+   * Without this, the invisible menu layer
+   * can remain above the page and block taps.
+   */
 
-      saveState();
+  if (typeof modalRoot !== "undefined") {
+    modalRoot.innerHTML = "";
+  }
 
-      render();
+  state.screen =
+    "new-group";
 
-      break;
+  saveState();
+
+  render();
+
+  break;
 
 
     case "group-chat":
