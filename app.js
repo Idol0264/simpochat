@@ -7628,17 +7628,25 @@ function handleAction(
 
     case "starred":
 
-      state.screen =
-        "starred";
+  /* Close the main menu before opening Starred. */
+  if (typeof modalRoot !== "undefined") {
+    modalRoot.innerHTML = "";
+  }
 
-      state.selectionMode =
-        false;
+  state.screen =
+    "starred";
 
-      saveState();
+  state.selectionMode =
+    false;
 
-      render();
+  state.selectedItems =
+    [];
 
-      break;
+  saveState();
+
+  render();
+
+  break;
 
 
     case "archived":
