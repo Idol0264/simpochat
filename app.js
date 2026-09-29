@@ -1597,6 +1597,8 @@ function renderNewGroup() {
     <form id="newGroupForm">
 
 
+      <!-- GROUP NAME -->
+
       <div class="field">
 
         <label
@@ -1616,6 +1618,8 @@ function renderNewGroup() {
       </div>
 
 
+      <!-- CATEGORIES -->
+
       <div class="field">
 
         <label>
@@ -1623,47 +1627,224 @@ function renderNewGroup() {
         </label>
 
         <div
-          class="theme-options"
+          class="category-picker"
           id="categoryPicker"
         >
 
-          ${CATEGORIES
-            .map(category => `
+          <!-- FIRST CATEGORIES -->
 
-              <button
-                type="button"
-                class="theme-option"
-                data-cat="${esc(category)}"
-              >
-                ${esc(category)}
-              </button>
+          <div
+            class="category-grid"
+            id="categoryGrid"
+          >
 
-            `)
-            .join("")}
+            ${CATEGORIES
+              .slice(0, 4)
+              .map(category => `
+
+                <button
+                  type="button"
+                  class="category-option"
+                  data-cat="${esc(category)}"
+                >
+                  ${esc(category)}
+                </button>
+
+              `)
+              .join("")}
+
+          </div>
+
+
+          <!-- MORE CATEGORIES BUTTON -->
+
+          <button
+            type="button"
+            class="category-more-btn"
+            id="moreCategoriesToggle"
+            aria-expanded="false"
+          >
+            More categories
+          </button>
+
+
+          <!-- REMAINING CATEGORIES -->
+
+          <div
+            class="category-grid category-grid-more"
+            id="moreCategories"
+            hidden
+          >
+
+            ${CATEGORIES
+              .slice(4)
+              .map(category => `
+
+                <button
+                  type="button"
+                  class="category-option"
+                  data-cat="${esc(category)}"
+                >
+                  ${esc(category)}
+                </button>
+
+              `)
+              .join("")}
+
+          </div>
 
         </div>
 
       </div>
 
 
-      <div style="height:10px"></div>
+      <!-- GROUP ACCESS -->
+
+      <div class="field">
+
+        <label>
+          Group access
+        </label>
+
+        <div class="group-setting-options">
+
+          <label class="group-setting-option">
+
+            <input
+              type="radio"
+              name="joinPolicy"
+              value="open"
+              checked
+            >
+
+            <span>
+
+              <strong>
+                Anyone can join
+              </strong>
+
+              <small>
+                People can join the group without approval.
+              </small>
+
+            </span>
+
+          </label>
 
 
-      <button
-        class="primary-btn"
-        type="submit"
+          <label class="group-setting-option">
+
+            <input
+              type="radio"
+              name="joinPolicy"
+              value="approval"
+            >
+
+            <span>
+
+              <strong>
+                Approval required
+              </strong>
+
+              <small>
+                People must request to join before becoming members.
+              </small>
+
+            </span>
+
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <!-- JOIN APPROVAL AUTHORITY -->
+
+      <div
+        class="field"
+        id="joinApprovalField"
+        hidden
       >
-        Create Group
-      </button>
+
+        <label>
+          Who can approve join requests?
+        </label>
+
+        <div class="group-setting-options">
+
+          <label class="group-setting-option">
+
+            <input
+              type="radio"
+              name="joinApproval"
+              value="any-admin"
+              checked
+            >
+
+            <span>
+
+              <strong>
+                Any admin
+              </strong>
+
+              <small>
+                Any group administrator can approve requests.
+              </small>
+
+            </span>
+
+          </label>
 
 
-      <button
-        class="secondary-btn"
-        type="button"
-        data-action="back"
-      >
-        Cancel
-      </button>
+          <label class="group-setting-option">
+
+            <input
+              type="radio"
+              name="joinApproval"
+              value="creator-only"
+            >
+
+            <span>
+
+              <strong>
+                Creator only
+              </strong>
+
+              <small>
+                Only the original group creator can approve requests.
+              </small>
+
+            </span>
+
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="new-group-actions">
+
+        <button
+          class="primary-btn"
+          type="submit"
+        >
+          Create Group
+        </button>
+
+
+        <button
+          class="secondary-btn"
+          type="button"
+          data-action="back"
+        >
+          Cancel
+        </button>
+
+      </div>
 
 
     </form>
@@ -1672,7 +1853,7 @@ function renderNewGroup() {
 
 
   /*
-   * Category selection.
+   * CATEGORY SELECTION
    * Maximum = 3.
    */
 
@@ -1694,6 +1875,11 @@ function renderNewGroup() {
                 )
             ];
 
+
+          /*
+           * Unselect category.
+           */
+
           if (
             button.classList.contains(
               "selected"
@@ -1707,6 +1893,10 @@ function renderNewGroup() {
             return;
           }
 
+
+          /*
+           * Maximum of 3 categories.
+           */
 
           if (
             selected.length >= 3
@@ -1731,14 +1921,102 @@ function renderNewGroup() {
 
 
   /*
-   * IMPORTANT:
-   * Form submit is handled directly.
-   * This makes Create Group reliable
-   * on mobile.
+   * MORE CATEGORIES
+   */
+
+  const moreCategoriesToggle =
+    $("#moreCategoriesToggle");
+
+  const moreCategories =
+    $("#moreCategories");
+
+
+  if (
+    moreCategoriesToggle &&
+    moreCategories
+  ) {
+
+    moreCategoriesToggle.addEventListener(
+      "click",
+      () => {
+
+        const opening =
+          moreCategories.hidden;
+
+
+        moreCategories.hidden =
+          !opening;
+
+
+        moreCategoriesToggle.textContent =
+          opening
+            ? "Hide categories"
+            : "More categories";
+
+
+        moreCategoriesToggle.setAttribute(
+          "aria-expanded",
+          String(opening)
+        );
+
+      }
+    );
+
+  }
+
+
+  /*
+   * GROUP ACCESS
+   *
+   * Approval options only appear when
+   * "Approval required" is selected.
+   */
+
+  const joinPolicyInputs =
+    document.querySelectorAll(
+      'input[name="joinPolicy"]'
+    );
+
+  const joinApprovalField =
+    $("#joinApprovalField");
+
+
+  joinPolicyInputs.forEach(
+    input => {
+
+      input.addEventListener(
+        "change",
+        () => {
+
+          const approvalRequired =
+            input.value === "approval" &&
+            input.checked;
+
+
+          if (joinApprovalField) {
+
+            joinApprovalField.hidden =
+              !approvalRequired;
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+   * FORM SUBMIT
+   *
+   * Handle submit directly so the Create Group
+   * button works reliably on mobile.
    */
 
   const form =
     $("#newGroupForm");
+
 
   if (form) {
 
@@ -1754,6 +2032,7 @@ function renderNewGroup() {
     );
 
   }
+
 }
 
 
