@@ -7322,10 +7322,28 @@ function renderSettings() {
         <div class="settings-profile">
 
           <div
-            class="profile-avatar"
-            style="--h:${user.hue}"
+          class="profile-avatar"
+          style="--h:${user.hue}"
           >
-            ${esc(user.avatar)}
+          ${
+             user.avatarImage
+             ? `
+             <img
+             src="${esc(user.avatarImage)}"
+             alt="Profile photo"
+             >
+             `
+             : `
+             ${esc(
+                user.avatar ||
+                user.name
+                ?.charAt(0)
+                ?.toUpperCase() ||
+                "?"
+             )}
+             `
+          }
+          
           </div>
 
 
