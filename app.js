@@ -8045,7 +8045,8 @@ if (
 
 
     handleAction(
-      action
+       action,
+       target
     );
 
   }
