@@ -8364,21 +8364,27 @@ function handleAction(
 
 
     case "group-profile":
-
-      if (
-        state.selectedGroup
-      ) {
-
-        state.screen =
-          "group-profile";
-
-        saveState();
-
-        render();
-
-      }
-
-      break;
+        
+        if (
+           state.selectedGroup
+        ) {
+           /* Close the three-dot menu first. */
+        if (
+           typeof modalRoot !== "undefined"
+        ) {
+           modalRoot.innerHTML = "";
+        }
+           
+           state.screen =
+              "group-profile";
+           
+           saveState();
+           
+           render();
+        
+        }
+        
+        break;
 
 
     case "back":
