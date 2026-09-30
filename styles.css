@@ -4849,3 +4849,431 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   TEMPORARY CHAT INBOX
+   ========================================================= */
+
+.temporary-chat-inbox {
+  width: 100%;
+  min-height: calc(100vh - 150px);
+
+  padding-bottom: 100px;
+}
+
+
+/* ---------------------------------------------------------
+   TOP BAR
+   --------------------------------------------------------- */
+
+.temporary-chat-topbar {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 14px;
+}
+
+.temporary-chat-topbar .icon-btn {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  border-radius: 13px;
+}
+
+.temporary-chat-topbar > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.temporary-chat-topbar strong {
+  color: var(--text);
+
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.temporary-chat-topbar span {
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 650;
+}
+
+
+/* ---------------------------------------------------------
+   TWO MENUS / TABS
+   --------------------------------------------------------- */
+
+.temporary-chat-tabs {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 6px;
+
+  padding: 5px;
+
+  margin-bottom: 14px;
+
+  background:
+    var(--surface);
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 17px;
+}
+
+.temporary-chat-tab {
+  min-width: 0;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 8px;
+
+  color: var(--muted);
+
+  background: transparent;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.temporary-chat-tab.active {
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-2)
+    );
+
+  box-shadow:
+    0 8px 20px
+      rgba(109, 74, 255, .18);
+}
+
+.temporary-chat-tab b {
+  min-width: 18px;
+  height: 18px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0 5px;
+
+  color: white;
+
+  background:
+    rgba(255,255,255,.18);
+
+  border-radius: 9px;
+
+  font-size: 8px;
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+   --------------------------------------------------------- */
+
+.temporary-chat-empty {
+  min-height: 280px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 35px 25px;
+
+  text-align: center;
+}
+
+.temporary-chat-empty-icon {
+  width: 62px;
+  height: 62px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 14px;
+
+  color: var(--accent);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 12%,
+      var(--surface)
+    );
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--accent) 20%,
+      var(--line)
+    );
+
+  border-radius: 20px;
+
+  font-size: 26px;
+}
+
+.temporary-chat-empty h3 {
+  margin: 0 0 7px;
+
+  color: var(--text);
+
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.temporary-chat-empty p {
+  max-width: 290px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE TEMPORARY CHATS
+   --------------------------------------------------------- */
+
+.temporary-chat-list {
+  display: grid;
+
+  gap: 8px;
+}
+
+.temporary-chat-item {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 11px;
+
+  color: var(--text);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--surface-strong),
+      var(--surface)
+    );
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 17px;
+
+  text-align: left;
+
+  box-shadow:
+    var(--shadow-soft);
+}
+
+.temporary-chat-item:active {
+  transform: scale(.985);
+}
+
+.temporary-chat-avatar {
+  width: 45px;
+  height: 45px;
+
+  flex: 0 0 45px;
+
+  display: grid;
+  place-items: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      hsl(
+        var(--h, 265)
+        70%
+        55%
+      ),
+      hsl(
+        calc(var(--h, 265) + 45)
+        70%
+        60%
+      )
+    );
+
+  border-radius: 15px;
+
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.temporary-chat-copy {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.temporary-chat-copy strong {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--text);
+
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.temporary-chat-copy small {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--muted);
+
+  font-size: 9px;
+}
+
+.temporary-chat-arrow {
+  color: var(--muted);
+
+  font-size: 22px;
+}
+
+
+/* ---------------------------------------------------------
+   RECEIVED INVITES
+   --------------------------------------------------------- */
+
+.temporary-chat-invite-list {
+  display: grid;
+
+  gap: 10px;
+}
+
+.temporary-chat-invite-card {
+  padding: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--surface-strong),
+      var(--surface)
+    );
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 18px;
+
+  box-shadow:
+    var(--shadow-soft);
+}
+
+.temporary-chat-invite-head {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.temporary-chat-invite-card > p {
+  margin:
+    11px
+    0
+    12px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  line-height: 1.45;
+}
+
+.temporary-chat-invite-actions {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 7px;
+}
+
+.temporary-chat-invite-actions button {
+  min-height: 38px;
+
+  border-radius: 12px;
+
+  font-size: 9px;
+}
+
+
+/* ---------------------------------------------------------
+   SMALL PHONES
+   --------------------------------------------------------- */
+
+@media (max-width: 390px) {
+
+  .temporary-chat-tabs {
+    border-radius: 15px;
+  }
+
+  .temporary-chat-tab {
+    min-height: 40px;
+
+    font-size: 8px;
+  }
+
+  .temporary-chat-avatar {
+    width: 42px;
+    height: 42px;
+
+    flex-basis: 42px;
+
+    border-radius: 14px;
+  }
+
+}
