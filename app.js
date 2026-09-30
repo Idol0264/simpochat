@@ -3389,6 +3389,8 @@ function renderTemporaryChat(
 
     <div class="chat-screen">
 
+      <!-- GROUP HEADER -->
+
       <div class="chat-header">
 
         <button
