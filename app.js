@@ -751,14 +751,93 @@ function render() {
   applyTheme();
 
      const temporaryChatFab =
-    document.querySelector(
-      "#temporaryChatFab"
-    );
+  document.querySelector(
+    "#temporaryChatFab"
+  );
 
-  if (temporaryChatFab) {
-    temporaryChatFab.hidden =
-      state.screen !== "home";
-  }
+if (temporaryChatFab) {
+  const onHome =
+    state.screen === "home";
+
+  const deletingSelectedGroups =
+    onHome &&
+    state.selectionMode &&
+    state.selectedItems.length > 0;
+
+  temporaryChatFab.hidden =
+    !onHome;
+
+  /*
+   * HOME:
+   *
+   * No groups selected:
+   * → Temporary Chat button
+   *
+   * Groups selected:
+   * → Delete button
+   */
+  temporaryChatFab.dataset.action =
+    deletingSelectedGroups
+      ? "remove-selected"
+      : "open-temporary-chat";
+
+  temporaryChatFab.setAttribute(
+    "aria-label",
+    deletingSelectedGroups
+      ? "Delete selected groups"
+      : "Temporary Chat"
+  );
+
+  temporaryChatFab.setAttribute(
+    "title",
+    deletingSelectedGroups
+      ? "Delete selected groups"
+      : "Temporary Chat"
+  );
+
+  temporaryChatFab.innerHTML =
+    deletingSelectedGroups
+      ? `
+        <svg
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 7h14M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M7 7l.8 12.2a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7M10 11v6M14 11v6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      `
+      : `
+        <svg
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M7.5 10h9M7.5 13.5h6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          />
+        </svg>
+      `;
+}
 
   document
     .querySelectorAll(".nav-btn")
