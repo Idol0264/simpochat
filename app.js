@@ -2465,15 +2465,16 @@ function renderGroupChat() {
         <span>
           ›
         </span>
-      </button>
-
-
-      <!-- MESSAGES -->
-
-      <div
+        </button>
+        
+        </div>
+        
+        
+        <!-- MESSAGES -->
+        
+        <div
         class="messages"
-        id="messages"
-      >
+        >
 
         ${
           messages.length
