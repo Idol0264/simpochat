@@ -8180,15 +8180,13 @@ function handleAction(
 
 
     case "temporary-chat-invites":
-
-      state.temporaryChatTab =
-        "invites";
-
-      saveState();
-
-      render();
-
-      break;
+        
+        state.temporaryChatTab =
+           "invites";
+        
+        scrollTemporaryChatTo("invites");
+        
+        break;
       
 
        /* ================================
@@ -10136,3 +10134,167 @@ document.addEventListener(
 
   }
 );
+
+
+/* =========================================================
+   TEMPORARY CHAT — SWIPE CONTROLLER
+   ========================================================= */
+
+function scrollTemporaryChatTo(tab) {
+
+  const swipe =
+    document.querySelector(
+      "#temporaryChatSwipe"
+    );
+
+  if (!swipe) {
+    return;
+  }
+
+  const index =
+    tab === "invites"
+      ? 1
+      : 0;
+
+  swipe.scrollTo({
+    left:
+      index *
+      swipe.clientWidth,
+    behavior: "smooth"
+  });
+
+  updateTemporaryChatTabs(
+    tab
+  );
+}
+
+
+/* ---------------------------------------------------------
+   UPDATE ACTIVE TAB
+   --------------------------------------------------------- */
+
+function updateTemporaryChatTabs(
+  activeTab
+) {
+
+  document
+    .querySelectorAll(
+      ".temporary-chat-tab"
+    )
+    .forEach(button => {
+
+      const isActive =
+        (
+          activeTab ===
+          "messages" &&
+          button.dataset.action ===
+            "temporary-chat-messages"
+        ) ||
+        (
+          activeTab ===
+          "invites" &&
+          button.dataset.action ===
+            "temporary-chat-invites"
+        );
+
+      button.classList.toggle(
+        "active",
+        isActive
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
+   WATCH HORIZONTAL SWIPING
+   --------------------------------------------------------- */
+
+function bindTemporaryChatSwipe() {
+
+  const swipe =
+    document.querySelector(
+      "#temporaryChatSwipe"
+    );
+
+  if (!swipe) {
+    return;
+  }
+
+  let ticking = false;
+
+  swipe.addEventListener(
+    "scroll",
+    () => {
+
+      if (ticking) {
+        return;
+      }
+
+      ticking = true;
+
+      requestAnimationFrame(() => {
+
+        const width =
+          swipe.clientWidth;
+
+        if (!width) {
+          ticking = false;
+          return;
+        }
+
+        const index =
+          Math.round(
+            swipe.scrollLeft /
+              width
+          );
+
+        const tab =
+          index === 1
+            ? "invites"
+            : "messages";
+
+        if (
+          state.temporaryChatTab !==
+          tab
+        ) {
+
+          state.temporaryChatTab =
+            tab;
+
+          updateTemporaryChatTabs(
+            tab
+          );
+
+          saveState();
+        }
+
+        ticking = false;
+
+      });
+
+    },
+    {
+      passive: true
+    }
+  );
+
+  const initialTab =
+    state.temporaryChatTab ===
+    "invites"
+      ? "invites"
+      : "messages";
+
+  requestAnimationFrame(() => {
+
+    swipe.scrollLeft =
+      initialTab === "invites"
+        ? swipe.clientWidth
+        : 0;
+
+    updateTemporaryChatTabs(
+      initialTab
+    );
+
+  });
+}
