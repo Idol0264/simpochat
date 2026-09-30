@@ -3572,6 +3572,115 @@ function renderTemporaryChatInbox() {
 
 
 /* ---------------------------------------------------------
+   TEMPORARY CHAT — PRIVATE MESSAGES
+   --------------------------------------------------------- */
+
+function renderTemporaryMessages(
+  temporaryChats
+) {
+
+  if (!temporaryChats.length) {
+
+    return `
+
+      <div class="temporary-chat-empty">
+
+        <div class="temporary-chat-empty-icon">
+          💬
+        </div>
+
+        <h3>
+          No temporary chats
+        </h3>
+
+        <p>
+          Accepted temporary chat
+          conversations will appear here.
+        </p>
+
+      </div>
+
+    `;
+  }
+
+
+  return `
+
+    <div class="temporary-chat-list">
+
+      ${temporaryChats
+        .map(chat => {
+
+          const member =
+            findMemberAcrossGroups(
+              chat.memberId
+            );
+
+          if (!member) {
+            return "";
+          }
+
+          const group =
+            getGroup(
+              chat.groupId
+            );
+
+          return `
+
+            <button
+              class="temporary-chat-item"
+              data-temp-chat-member="${esc(
+                member.id
+              )}"
+            >
+
+              <span
+                class="temporary-chat-avatar"
+                style="--h:${member.hue}"
+              >
+                ${esc(member.avatar)}
+              </span>
+
+
+              <span
+                class="temporary-chat-copy"
+              >
+
+                <strong>
+                  ${esc(member.name)}
+                </strong>
+
+                <small>
+                  ${
+                    group
+                      ? `From ${esc(group.name)}`
+                      : "Temporary Chat"
+                  }
+                </small>
+
+              </span>
+
+
+              <span
+                class="temporary-chat-arrow"
+              >
+                ›
+              </span>
+
+            </button>
+
+          `;
+
+        })
+        .join("")}
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
