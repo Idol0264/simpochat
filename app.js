@@ -3389,9 +3389,11 @@ function renderTemporaryChat(
 
     <div class="chat-screen">
 
-      <!-- GROUP HEADER -->
+      <div class="chat-sticky-header">
 
-      <div class="chat-header">
+        <!-- GROUP HEADER -->
+
+        <div class="chat-header">
 
         <button
           class="icon-btn"
