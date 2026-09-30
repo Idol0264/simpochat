@@ -3559,22 +3559,28 @@ function renderTemporaryChatInbox() {
 
       <!-- CONTENT -->
 
-      ${
-        state.temporaryChatTab ===
-        "messages"
-
-          ? renderTemporaryMessages(
-              temporaryChats
-            )
-
-          : renderTemporaryInvites(
-              temporaryInvites
-            )
-      }
-
-    </div>
-
-  `;
+      <div
+      class="temporary-chat-swipe"
+      id="temporaryChatSwipe"
+      >
+      <section
+      class="temporary-chat-swipe-page"
+      data-tab="messages"
+      >
+      ${renderTemporaryMessages(temporaryChats)}
+      </section>
+      
+      <section
+      class="temporary-chat-swipe-page"
+      data-tab="invites"
+      >
+      ${renderTemporaryInvites(temporaryInvites)}
+      </section>
+      </div>
+      
+      </div>
+      
+      `;
 }
 
 
