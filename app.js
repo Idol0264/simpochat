@@ -7732,7 +7732,22 @@ function handleAction(
        HOME HEADER / FLOATING BUTTONS
        ================================= */
 
-    case "open-posts":
+   case "open-temporary-chat":
+        
+        state.screen =
+           "temporary-chat-inbox";
+        
+        state.temporaryChatTab =
+           "messages";
+        
+        saveState();
+        
+        render();
+        
+        break;
+
+        
+     case "open-posts":
 
       state.postFilter =
         "all";
