@@ -1983,6 +1983,105 @@ body::after {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* =========================================================
+   TEMPORARY CHAT FLOATING BUTTON
+   Smaller than the main + button
+   Home screen only
+   ========================================================= */
+
+.temporary-chat-fab {
+  position: fixed;
+
+  right:
+    max(
+      18px,
+      calc(
+        (100vw - var(--max-width)) / 2 + 18px
+      )
+    );
+
+  bottom:
+    calc(
+      148px +
+      env(safe-area-inset-bottom)
+    );
+
+  z-index: 24;
+
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-2)
+    );
+
+  border: 0;
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 14px 30px
+      rgba(109, 74, 255, .28);
+
+  transition:
+    transform .18s ease,
+    opacity .18s ease;
+}
+
+.temporary-chat-fab:hover {
+  transform: translateY(-2px);
+}
+
+.temporary-chat-fab:active {
+  transform: scale(.94);
+}
+
+.temporary-chat-fab svg {
+  width: 22px;
+  height: 22px;
+
+  fill: none;
+
+  stroke: currentColor;
+}
+
+.temporary-chat-fab[hidden] {
+  display: none !important;
+}
+
+
+/* Very small phones */
+
+@media (max-width: 390px) {
+
+  .temporary-chat-fab {
+    width: 50px;
+    height: 50px;
+
+    bottom:
+      calc(
+        144px +
+        env(safe-area-inset-bottom)
+      );
+
+    border-radius: 16px;
+  }
+
+  .temporary-chat-fab svg {
+    width: 21px;
+    height: 21px;
+  }
+
+}
+
 .fab svg {
   display: block;
 
