@@ -2351,13 +2351,15 @@ function renderGroupChat() {
 
   if (!group) {
 
-    state.screen = "home";
+    state.screen =
+      "home";
 
     saveState();
 
     return render();
 
   }
+
 
   setHeader(
     group.name,
@@ -2369,114 +2371,128 @@ function renderGroupChat() {
     safeArray(
       state.messages[group.id]
     );
-   
-   
-   <div class="chat-screen">
-      
+
+
+  screen.innerHTML = `
+
+    <div class="chat-screen">
+
+
+      <!-- STICKY CHAT HEADER -->
+
       <div class="chat-sticky-header">
-      
-      <!-- GROUP HEADER -->
-      
-      <div class="chat-header">
-      screen.innerHTML = `
-
-    
-        <button
-          class="icon-btn"
-          data-action="back"
-          aria-label="Back"
-        >
-          ‹
-        </button>
 
 
-        <button
-          class="chat-header-main"
-          data-action="group-profile"
-        >
+        <!-- GROUP HEADER -->
 
-          <span
-            class="group-avatar small"
-            style="--h:${group.hue}"
+        <div class="chat-header">
+
+
+          <button
+            class="icon-btn"
+            data-action="back"
+            aria-label="Back"
           >
-            ${esc(group.icon)}
-          </span>
+            ‹
+          </button>
 
 
-          <span class="chat-header-copy">
+          <button
+            class="chat-header-main"
+            data-action="group-profile"
+          >
 
-            <strong>
-              ${esc(group.name)}
-            </strong>
-
-            <span>
-              ${group.members.length}
-              members
+            <span
+              class="group-avatar small"
+              style="--h:${group.hue}"
+            >
+              ${esc(group.icon)}
             </span>
 
+
+            <span class="chat-header-copy">
+
+              <strong>
+                ${esc(group.name)}
+              </strong>
+
+              <span>
+                ${group.members.length}
+                members
+              </span>
+
+            </span>
+
+          </button>
+
+
+          <div class="chat-header-actions">
+
+
+            <button
+              class="icon-btn"
+              data-action="voice-call"
+              aria-label="Voice call"
+            >
+              ☎
+            </button>
+
+
+            <button
+              class="icon-btn"
+              data-action="video-call"
+              aria-label="Video call"
+            >
+              ▣
+            </button>
+
+
+            <button
+              class="icon-btn"
+              data-action="chat-menu"
+              aria-label="Chat menu"
+            >
+              ⋮
+            </button>
+
+
+          </div>
+
+
+        </div>
+
+
+        <!-- VIEW POST -->
+
+        <button
+          class="view-post-bar"
+          data-action="group-posts"
+        >
+
+          <span>
+            ◉
+          </span>
+
+          <strong>
+            View Post
+          </strong>
+
+          <span>
+            ›
           </span>
 
         </button>
 
-
-        <div class="chat-header-actions">
-
-          <button
-            class="icon-btn"
-            data-action="voice-call"
-            aria-label="Voice call"
-          >
-            ☎
-          </button>
-
-          <button
-            class="icon-btn"
-            data-action="video-call"
-            aria-label="Video call"
-          >
-            ▣
-          </button>
-
-          <button
-            class="icon-btn"
-            data-action="chat-menu"
-            aria-label="Chat menu"
-          >
-            ⋮
-          </button>
-
-        </div>
 
       </div>
 
 
-      <!-- VIEW POST -->
+      <!-- MESSAGES -->
 
-      <button
-        class="view-post-bar"
-        data-action="group-posts"
-      >
-        <span>
-          ◉
-        </span>
-
-        <strong>
-          View Post
-        </strong>
-
-        <span>
-          ›
-        </span>
-        </button>
-        
-        </div>
-        
-        
-        <!-- MESSAGES -->
-        
-        <div
+      <div
         class="messages"
-        >
+        id="messages"
+      >
 
         ${
           messages.length
@@ -2517,6 +2533,7 @@ function renderGroupChat() {
         class="message-composer"
         id="messageForm"
       >
+
 
         <button
           type="button"
@@ -2564,15 +2581,22 @@ function renderGroupChat() {
           ➤
         </button>
 
+
       </form>
+
 
     </div>
 
   `;
 
 
+  /* -------------------------------------------------------
+     MESSAGE FORM
+     ------------------------------------------------------- */
+
   const form =
     $("#messageForm");
+
 
   if (form) {
 
@@ -2590,23 +2614,27 @@ function renderGroupChat() {
   }
 
 
-  /*
-   * Scroll to the newest message.
-   */
+  /* -------------------------------------------------------
+     SCROLL TO NEWEST MESSAGE
+     ------------------------------------------------------- */
 
   const messagesBox =
     $("#messages");
+
 
   if (messagesBox) {
 
     requestAnimationFrame(
       () => {
+
         messagesBox.scrollTop =
           messagesBox.scrollHeight;
+
       }
     );
 
   }
+
 }
 
 
