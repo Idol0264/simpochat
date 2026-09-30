@@ -9383,6 +9383,43 @@ function acceptTemporaryChatInvite(
 
 
 /* ---------------------------------------------------------
+   REJECT TEMPORARY CHAT INVITE
+   --------------------------------------------------------- */
+
+function rejectTemporaryChatInvite(
+  inviteId
+) {
+
+  const invite =
+    safeArray(
+      state.temporaryInvites
+    ).find(
+      item =>
+        item.id === inviteId &&
+        item.to ===
+          state.currentUser.id &&
+        item.status ===
+          "pending"
+    );
+
+
+  if (!invite) {
+    return;
+  }
+
+
+  invite.status =
+    "rejected";
+
+
+  saveState();
+
+  render();
+
+}
+
+
+/* ---------------------------------------------------------
    TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
