@@ -9299,6 +9299,90 @@ function openTemporaryMemberPicker() {
 
 
 /* ---------------------------------------------------------
+   ACCEPT TEMPORARY CHAT INVITE
+   --------------------------------------------------------- */
+
+function acceptTemporaryChatInvite(
+  inviteId
+) {
+
+  const invite =
+    safeArray(
+      state.temporaryInvites
+    ).find(
+      item =>
+        item.id === inviteId &&
+        item.to ===
+          state.currentUser.id &&
+        item.status ===
+          "pending"
+    );
+
+
+  if (!invite) {
+    return;
+  }
+
+
+  invite.status =
+    "accepted";
+
+
+  state.temporaryChats =
+    safeArray(
+      state.temporaryChats
+    );
+
+
+  const alreadyExists =
+    state.temporaryChats.some(
+      chat =>
+        chat.memberId ===
+          invite.from &&
+        chat.status ===
+          "active"
+    );
+
+
+  if (!alreadyExists) {
+
+    state.temporaryChats.push({
+
+      id:
+        uid("temp-chat"),
+
+      memberId:
+        invite.from,
+
+      groupId:
+        invite.groupId || null,
+
+      createdAt:
+        now(),
+
+      status:
+        "active",
+
+      messages:
+        []
+
+    });
+
+  }
+
+
+  state.temporaryChatTab =
+    "messages";
+
+
+  saveState();
+
+  render();
+
+}
+
+
+/* ---------------------------------------------------------
    TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
