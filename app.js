@@ -775,6 +775,13 @@ function render() {
   if (state.screen === "home") {
     return renderHome();
   }
+   
+   if (
+      state.screen ===
+      "temporary-chat-inbox"
+   ) {
+      return renderTemporaryChatInbox();
+   }
 
   if (state.screen === "starred") {
     return renderGroupCollection(
