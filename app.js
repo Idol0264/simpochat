@@ -3581,6 +3581,9 @@ function renderTemporaryChatInbox() {
       </div>
       
       `;
+   
+   bindTemporaryChatSwipe();
+
 }
 
 
