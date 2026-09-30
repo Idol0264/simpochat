@@ -8016,6 +8016,28 @@ if (
     }
 
 
+         /* -------------------------------------
+       EXISTING TEMPORARY CHAT
+       ------------------------------------- */
+
+    if (
+      target.dataset.tempChatMember
+    ) {
+
+      state.selectedMember =
+        target.dataset.tempChatMember;
+
+      state.screen =
+        "temporary-chat";
+
+      saveState();
+
+      render();
+
+      return;
+    }
+
+
     /* -------------------------------------
        MEMBER
        ------------------------------------- */
