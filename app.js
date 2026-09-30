@@ -811,6 +811,13 @@ function render() {
     return renderNewGroup();
   }
 
+ if (state.screen === "temporary-chat") {
+    return renderTemporaryChat(
+       state.selectedMember
+    );
+
+  }
+
   if (state.screen === "group-chat") {
     return renderGroupChat();
   }
