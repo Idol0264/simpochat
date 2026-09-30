@@ -2369,13 +2369,16 @@ function renderGroupChat() {
     safeArray(
       state.messages[group.id]
     );
-
-<div class="chat-screen">
-
+   
+   
+   <div class="chat-screen">
+      
+      <div class="chat-sticky-header">
+      
       <!-- GROUP HEADER -->
-
+      
       <div class="chat-header">
-  screen.innerHTML = `
+      screen.innerHTML = `
 
     
         <button
