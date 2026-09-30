@@ -2370,15 +2370,14 @@ function renderGroupChat() {
       state.messages[group.id]
     );
 
-
-  screen.innerHTML = `
-
-    <div class="chat-screen">
+<div class="chat-screen">
 
       <!-- GROUP HEADER -->
 
       <div class="chat-header">
+  screen.innerHTML = `
 
+    
         <button
           class="icon-btn"
           data-action="back"
@@ -3389,10 +3388,6 @@ function renderTemporaryChat(
   screen.innerHTML = `
 
     <div class="chat-screen">
-
-      <div class="chat-sticky-header">
-
-        <!-- GROUP HEADER -->
 
         <div class="chat-header">
 
