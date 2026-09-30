@@ -8008,7 +8008,8 @@ if (
     ) {
 
       sendTemporaryChatInvite(
-        target.dataset.tempInvite
+         target.dataset.tempInvite,
+         state.selectedGroup
       );
 
       return;
