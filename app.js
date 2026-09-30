@@ -8170,15 +8170,13 @@ function handleAction(
 
 
     case "temporary-chat-messages":
-
-      state.temporaryChatTab =
-        "messages";
-
-      saveState();
-
-      render();
-
-      break;
+        
+        state.temporaryChatTab =
+           "messages";
+        
+        scrollTemporaryChatTo("messages");
+        
+        break;
 
 
     case "temporary-chat-invites":
