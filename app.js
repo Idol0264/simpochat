@@ -3681,6 +3681,145 @@ function renderTemporaryMessages(
 
 
 /* ---------------------------------------------------------
+   TEMPORARY CHAT — RECEIVED INVITES
+   --------------------------------------------------------- */
+
+function renderTemporaryInvites(
+  temporaryInvites
+) {
+
+  if (!temporaryInvites.length) {
+
+    return `
+
+      <div class="temporary-chat-empty">
+
+        <div class="temporary-chat-empty-icon">
+          ✉
+        </div>
+
+        <h3>
+          No received invites
+        </h3>
+
+        <p>
+          Temporary Chat invitations from
+          members of your groups will appear here.
+        </p>
+
+      </div>
+
+    `;
+  }
+
+
+  return `
+
+    <div class="temporary-chat-invite-list">
+
+      ${temporaryInvites
+        .map(invite => {
+
+          const member =
+            findMemberAcrossGroups(
+              invite.from
+            );
+
+          if (!member) {
+            return "";
+          }
+
+          const group =
+            getGroup(
+              invite.groupId
+            );
+
+          return `
+
+            <div
+              class="temporary-chat-invite-card"
+            >
+
+              <div
+                class="temporary-chat-invite-head"
+              >
+
+                <span
+                  class="temporary-chat-avatar"
+                  style="--h:${member.hue}"
+                >
+                  ${esc(member.avatar)}
+                </span>
+
+
+                <div
+                  class="temporary-chat-copy"
+                >
+
+                  <strong>
+                    ${esc(member.name)}
+                  </strong>
+
+                  <small>
+                    ${
+                      group
+                        ? `From ${esc(group.name)}`
+                        : "Group member"
+                    }
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <p>
+                Wants to start a
+                temporary chat with you.
+              </p>
+
+
+              <div
+                class="temporary-chat-invite-actions"
+              >
+
+                <button
+                  class="secondary-btn"
+                  data-action="reject-temporary-invite"
+                  data-invite-id="${esc(
+                    invite.id
+                  )}"
+                >
+                  Reject
+                </button>
+
+
+                <button
+                  class="primary-btn"
+                  data-action="accept-temporary-invite"
+                  data-invite-id="${esc(
+                    invite.id
+                  )}"
+                >
+                  Accept
+                </button>
+
+              </div>
+
+            </div>
+
+          `;
+
+        })
+        .join("")}
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
