@@ -3417,6 +3417,161 @@ function openTemporaryChatInvite(
 
 
 /* ---------------------------------------------------------
+   TEMPORARY CHAT INBOX
+   --------------------------------------------------------- */
+
+function renderTemporaryChatInbox() {
+
+  setHeader(
+    "Temporary Chat",
+    "Private conversations"
+  );
+
+  state.temporaryChatTab =
+    state.temporaryChatTab ||
+    "messages";
+
+
+  const temporaryChats =
+    safeArray(
+      state.temporaryChats
+    );
+
+  const temporaryInvites =
+    safeArray(
+      state.temporaryInvites
+    ).filter(
+      invite =>
+        invite.to ===
+          state.currentUser.id &&
+        invite.status ===
+          "pending"
+    );
+
+
+  screen.innerHTML = `
+
+    <div class="temporary-chat-inbox">
+
+      <!-- BACK -->
+
+      <div class="temporary-chat-topbar">
+
+        <button
+          class="icon-btn"
+          data-action="back"
+          aria-label="Back"
+          title="Back"
+        >
+          ‹
+        </button>
+
+        <div>
+          <strong>
+            Temporary Chat
+          </strong>
+
+          <span>
+            Chats disappear when they end
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- TWO MENUS -->
+
+      <div
+        class="temporary-chat-tabs"
+        role="tablist"
+      >
+
+        <button
+          class="
+            temporary-chat-tab
+            ${
+              state.temporaryChatTab ===
+              "messages"
+                ? "active"
+                : ""
+            }
+          "
+          data-action="temporary-chat-messages"
+          role="tab"
+        >
+
+          <span>
+            Private Messages
+          </span>
+
+          ${
+            temporaryChats.length
+              ? `
+                <b>
+                  ${temporaryChats.length}
+                </b>
+              `
+              : ""
+          }
+
+        </button>
+
+
+        <button
+          class="
+            temporary-chat-tab
+            ${
+              state.temporaryChatTab ===
+              "invites"
+                ? "active"
+                : ""
+            }
+          "
+          data-action="temporary-chat-invites"
+          role="tab"
+        >
+
+          <span>
+            Received Invites
+          </span>
+
+          ${
+            temporaryInvites.length
+              ? `
+                <b>
+                  ${temporaryInvites.length}
+                </b>
+              `
+              : ""
+          }
+
+        </button>
+
+      </div>
+
+
+      <!-- CONTENT -->
+
+      ${
+        state.temporaryChatTab ===
+        "messages"
+
+          ? renderTemporaryMessages(
+              temporaryChats
+            )
+
+          : renderTemporaryInvites(
+              temporaryInvites
+            )
+      }
+
+    </div>
+
+  `;
+}
+
+
+/* ---------------------------------------------------------
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
