@@ -2623,17 +2623,21 @@ function renderMessage(
     );
 
 
-  const sender =
-    member || {
-      name: "Member",
-      avatar: "?",
-      hue: 210
-    };
-
-
   const own =
     message.member ===
     state.currentUser.id;
+
+
+  const sender =
+    own
+      ? state.currentUser
+      : (
+          member || {
+            name: "Member",
+            avatar: "?",
+            hue: 210
+          }
+        );
 
 
   return `
@@ -2645,31 +2649,26 @@ function renderMessage(
       "
     >
 
-      ${
-        own
-          ? ""
-          : `
-            <span
-              class="member-avatar"
-              style="--h:${sender.hue}"
-            >
-              ${esc(sender.avatar)}
-            </span>
-          `
-      }
+      <span
+        class="member-avatar message-avatar"
+        style="--h:${sender.hue || 210}"
+        aria-hidden="true"
+      >
+        ${esc(sender.avatar || "?")}
+      </span>
 
 
       <div class="message-content">
 
-        ${
-          own
-            ? ""
-            : `
-              <div class="message-author">
-                ${esc(sender.name)}
-              </div>
-            `
-        }
+        <div class="message-author">
+
+          ${esc(
+            own
+              ? "You"
+              : sender.name
+          )}
+
+        </div>
 
 
         <div class="message-bubble">
@@ -2678,10 +2677,15 @@ function renderMessage(
             message.type === "voice"
               ? `
                 <div class="voice-message">
-                  <span>🎙</span>
+
+                  <span>
+                    🎙
+                  </span>
+
                   <span>
                     Voice message
                   </span>
+
                 </div>
               `
               : esc(message.text)
@@ -2691,7 +2695,11 @@ function renderMessage(
 
 
         <div class="message-time">
-          ${formatTime(message.createdAt)}
+
+          ${formatTime(
+            message.createdAt
+          )}
+
         </div>
 
       </div>
