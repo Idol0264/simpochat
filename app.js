@@ -9446,22 +9446,25 @@ function sendTemporaryChatInvite(
 
 
   state.temporaryInvites.push({
-
-    id:
-      uid("invite"),
-
-    from:
-      state.currentUser.id,
-
-    to:
-      member.id,
-
-    createdAt:
-      now(),
-
-    status:
-      "pending"
-
+     
+     id:
+        uid("invite"),
+     
+     from:
+        state.currentUser.id,
+     
+     to:
+        member.id,
+     
+     groupId:
+        groupId || null,
+     
+     createdAt:
+        now(),
+     
+     status:
+        "pending"
+  
   });
 
 
