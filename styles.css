@@ -5277,3 +5277,38 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   TEMPORARY CHAT — SWIPE BETWEEN TABS
+   ========================================================= */
+
+.temporary-chat-swipe {
+  width: 100%;
+
+  display: flex;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-snap-type: x mandatory;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
+
+  overscroll-behavior-x: contain;
+}
+
+.temporary-chat-swipe::-webkit-scrollbar {
+  display: none;
+}
+
+.temporary-chat-swipe-page {
+  width: 100%;
+  min-width: 100%;
+
+  flex: 0 0 100%;
+
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
