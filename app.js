@@ -7520,6 +7520,76 @@ function openEditProfile() {
         </div>
 
 
+        <!-- PROFILE PHOTO -->
+
+        <div class="profile-photo-editor">
+
+          <div
+            class="profile-photo-preview"
+            id="profilePhotoPreview"
+            style="--h:${user.hue}"
+          >
+
+            ${
+              user.avatarImage
+                ? `
+                  <img
+                    src="${esc(user.avatarImage)}"
+                    alt="Profile photo"
+                  >
+                `
+                : `
+                  ${esc(
+                    user.avatar ||
+                    user.name
+                      ?.charAt(0)
+                      ?.toUpperCase() ||
+                    "?"
+                  )}
+                `
+            }
+
+          </div>
+
+
+          <input
+            type="file"
+            id="profilePhotoInput"
+            accept="image/*"
+            hidden
+          >
+
+
+          <button
+            class="secondary-btn"
+            type="button"
+            data-action="choose-profile-photo"
+          >
+            ${
+              user.avatarImage
+                ? "Change Photo"
+                : "Add Photo"
+            }
+          </button>
+
+
+          ${
+            user.avatarImage
+              ? `
+                <button
+                  class="secondary-btn"
+                  type="button"
+                  data-action="remove-profile-photo"
+                >
+                  Remove Photo
+                </button>
+              `
+              : ""
+          }
+
+        </div>
+
+
         <form id="profileForm">
 
 
@@ -7581,6 +7651,141 @@ function openEditProfile() {
   `;
 
 
+  /*
+   * PROFILE PHOTO PICKER
+   */
+
+  const photoInput =
+    $("#profilePhotoInput");
+
+
+  const photoPreview =
+    $("#profilePhotoPreview");
+
+
+  if (photoInput) {
+
+    photoInput.addEventListener(
+      "change",
+      () => {
+
+        const file =
+          photoInput.files?.[0];
+
+
+        if (!file) {
+          return;
+        }
+
+
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
+
+          alert(
+            "Please choose an image."
+          );
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload = event => {
+
+          const image =
+            event.target?.result;
+
+
+          if (!image || !photoPreview) {
+            return;
+          }
+
+
+          photoPreview.innerHTML = `
+
+            <img
+              src="${esc(image)}"
+              alt="Profile photo preview"
+            >
+
+          `;
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+      }
+    );
+
+  }
+
+
+  /*
+   * CHANGE / ADD PROFILE PHOTO
+   */
+
+  const choosePhotoButton =
+    document.querySelector(
+      '[data-action="choose-profile-photo"]'
+    );
+
+
+  if (choosePhotoButton) {
+
+    choosePhotoButton.addEventListener(
+      "click",
+      () => {
+
+        photoInput?.click();
+
+      }
+    );
+
+  }
+
+
+  /*
+   * REMOVE PROFILE PHOTO
+   */
+
+  const removePhotoButton =
+    document.querySelector(
+      '[data-action="remove-profile-photo"]'
+    );
+
+
+  if (removePhotoButton) {
+
+    removePhotoButton.addEventListener(
+      "click",
+      () => {
+
+        state.currentUser.avatarImage =
+          null;
+
+
+        saveState();
+
+        openEditProfile();
+
+      }
+    );
+
+  }
+
+
+  /*
+   * SAVE PROFILE
+   */
+
   const form =
     $("#profileForm");
 
@@ -7620,8 +7825,17 @@ function openEditProfile() {
         state.currentUser.name =
           name;
 
+
         state.currentUser.email =
           email;
+
+
+        /*
+         * Keep the first letter as the
+         * fallback avatar.
+         *
+         * Do NOT remove avatarImage.
+         */
 
         state.currentUser.avatar =
           name
@@ -7639,6 +7853,7 @@ function openEditProfile() {
     );
 
   }
+
 }
 
 
