@@ -8573,14 +8573,12 @@ function goBack() {
 
 
   else if (
-    state.screen ===
-    "group-profile"
+     state.screen ===
+     "group-profile"
   ) {
-
-    state.screen =
-      state.previousScreen ||
-      "home";
-
+     
+     state.screen =
+        "group-chat";
   }
 
 
