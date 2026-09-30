@@ -9424,7 +9424,8 @@ function rejectTemporaryChatInvite(
    --------------------------------------------------------- */
 
 function sendTemporaryChatInvite(
-  memberId
+   memberId,
+   groupId
 ) {
 
   const member =
