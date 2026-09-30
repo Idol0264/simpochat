@@ -8057,9 +8057,10 @@ if (
    ACTION ROUTER
    --------------------------------------------------------- */
 
-handleAction(
-   action
-);
+function handleAction(
+   action,
+   actionTarget
+) {
 
   switch (action) {
 
