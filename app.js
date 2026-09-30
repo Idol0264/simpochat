@@ -750,6 +750,16 @@ function render() {
 
   applyTheme();
 
+     const temporaryChatFab =
+    document.querySelector(
+      "#temporaryChatFab"
+    );
+
+  if (temporaryChatFab) {
+    temporaryChatFab.hidden =
+      state.screen !== "home";
+  }
+
   document
     .querySelectorAll(".nav-btn")
     .forEach(button => {
