@@ -8131,6 +8131,30 @@ function handleAction(
   break;
 
 
+    case "temporary-chat-messages":
+
+      state.temporaryChatTab =
+        "messages";
+
+      saveState();
+
+      render();
+
+      break;
+
+
+    case "temporary-chat-invites":
+
+      state.temporaryChatTab =
+        "invites";
+
+      saveState();
+
+      render();
+
+      break;
+      
+
        /* ================================
        HOME HEADER / FLOATING BUTTONS
        ================================= */
