@@ -8369,11 +8369,11 @@ function handleAction(
            state.selectedGroup
         ) {
            /* Close the three-dot menu first. */
-        if (
-           typeof modalRoot !== "undefined"
-        ) {
-           modalRoot.innerHTML = "";
-        }
+           if (
+              typeof modalRoot !== "undefined"
+           ) {
+              modalRoot.innerHTML = "";
+           }
            
            state.screen =
               "group-profile";
