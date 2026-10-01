@@ -2010,6 +2010,107 @@ function renderNewGroup() {
   `;
 
 
+   
+  /* ---------------------------------------------------------
+     GROUP PHOTO PICKER
+     --------------------------------------------------------- */
+
+  const newGroupPhotoInput =
+    $("#newGroupPhotoInput");
+
+  const newGroupPhotoPreview =
+    $("#newGroupPhotoPreview");
+
+  const newGroupPhotoLetter =
+    $("#newGroupPhotoLetter");
+
+  const removeNewGroupPhoto =
+    $("#removeNewGroupPhoto");
+
+  if (
+    newGroupPhotoInput &&
+    newGroupPhotoPreview &&
+    newGroupPhotoLetter
+  ) {
+
+    newGroupPhotoInput.addEventListener(
+      "change",
+      () => {
+
+        const file =
+          newGroupPhotoInput.files?.[0];
+
+        if (!file) {
+          return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+          alert("Please choose an image.");
+          newGroupPhotoInput.value = "";
+          return;
+        }
+
+        const reader =
+          new FileReader();
+
+        reader.onload = () => {
+
+          pendingNewGroupPhoto =
+            String(reader.result || "");
+
+          newGroupPhotoPreview.style.backgroundImage =
+            `url("${pendingNewGroupPhoto}")`;
+
+          newGroupPhotoPreview.classList.add(
+            "has-photo"
+          );
+
+          newGroupPhotoLetter.hidden = true;
+
+          if (removeNewGroupPhoto) {
+            removeNewGroupPhoto.hidden = false;
+          }
+
+        };
+
+        reader.readAsDataURL(file);
+
+      }
+    );
+
+  }
+
+  if (removeNewGroupPhoto) {
+
+    removeNewGroupPhoto.addEventListener(
+      "click",
+      () => {
+
+        pendingNewGroupPhoto = "";
+
+        if (newGroupPhotoInput) {
+          newGroupPhotoInput.value = "";
+        }
+
+        if (newGroupPhotoPreview) {
+          newGroupPhotoPreview.style.backgroundImage =
+            "";
+          newGroupPhotoPreview.classList.remove(
+            "has-photo"
+          );
+        }
+
+        if (newGroupPhotoLetter) {
+          newGroupPhotoLetter.hidden = false;
+        }
+
+        removeNewGroupPhoto.hidden = true;
+
+      }
+    );
+
+  }
+
   /*
    * CATEGORY SELECTION
    * Maximum = 3.
