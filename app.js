@@ -2458,6 +2458,9 @@ function createGroup() {
 
     category:
       categories,
+     
+    photo:
+      pendingNewGroupPhoto || "",
 
 
     /*
