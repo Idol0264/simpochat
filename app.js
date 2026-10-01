@@ -1725,6 +1725,57 @@ function renderNewGroup() {
       </div>
 
 
+      
+      <!-- GROUP PHOTO -->
+
+      <div class="field">
+
+        <label>
+          Group photo
+        </label>
+
+        <div class="group-photo-picker">
+
+          <div
+            class="group-photo-preview"
+            id="newGroupPhotoPreview"
+            style="--h:265"
+          >
+            <span id="newGroupPhotoLetter">G</span>
+          </div>
+
+          <div class="group-photo-picker-actions">
+
+            <label class="secondary-btn group-photo-button">
+              Choose photo
+
+              <input
+                id="newGroupPhotoInput"
+                type="file"
+                accept="image/*"
+                hidden
+              >
+            </label>
+
+            <button
+              type="button"
+              class="secondary-btn"
+              id="removeNewGroupPhoto"
+              hidden
+            >
+              Remove
+            </button>
+
+          </div>
+
+          <div class="form-note">
+            Add a photo for your group. You can also change it later from Group Profile.
+          </div>
+
+        </div>
+
+      </div>
+
       <!-- CATEGORIES -->
 
       <div class="field">
