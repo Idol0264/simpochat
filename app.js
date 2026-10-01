@@ -3157,10 +3157,20 @@ function renderGroupProfile() {
 
 
         <div
-          class="profile-avatar"
-          style="--h:${group.hue}"
+        class="profile-avatar ${group.photo ? "has-photo" : ""}"
+        style="
+        --h:${group.hue};
+        ${group.photo
+          ? `background-image:url("${esc(group.photo)}");`
+          : ""
+        }
+        "
         >
-          ${esc(group.icon)}
+        ${
+           group.photo
+           ? ""
+           : esc(group.icon)
+        }
         </div>
 
 
