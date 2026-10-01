@@ -5447,3 +5447,14 @@ span:last-child {
   max-width: 320px;
   text-align: center;
 }
+
+/* =========================================================
+   GROUP PROFILE — GROUP PHOTO
+   ========================================================= */
+
+.profile-avatar.has-photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+}
