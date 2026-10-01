@@ -467,6 +467,8 @@ function loadState() {
 
 let state = loadState();
 
+let pendingNewGroupPhoto = "";
+
 /* ---------------------------------------------------------
    SAVE STATE
    --------------------------------------------------------- */
