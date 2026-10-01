@@ -1672,11 +1672,13 @@ function openGroup(id) {
    --------------------------------------------------------- */
 
 function renderNewGroup() {
-
-  setHeader(
-    "New Group",
-    "Create a group"
-  );
+   
+   pendingNewGroupPhoto = "";
+   
+   setHeader(
+      "New Group",
+      "Create a group"
+   );
 
   screen.innerHTML = `
 
