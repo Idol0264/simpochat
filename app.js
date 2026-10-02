@@ -1152,10 +1152,21 @@ function renderGroupCard(
       }
 
       <span
-        class="group-avatar"
-        style="--h:${group.hue}"
+      class="group-avatar ${group.photo ? "has-photo" : ""}"
+      style="--h:${group.hue}"
       >
-        ${esc(group.icon)}
+      ${
+         group.photo
+         ? `
+         <img
+         src="${group.photo}"
+         alt="${esc(group.name)}"
+         >
+         `
+         : esc(group.icon)
+      }
+      </span>
+      ${esc(group.icon)}
       </span>
 
       <span class="group-copy">
