@@ -469,6 +469,10 @@ let state = loadState();
 
 let pendingNewGroupPhoto = "";
 
+let activeCameraStream = null;
+
+let cameraMediaItems = [];
+
 /* ---------------------------------------------------------
    SAVE STATE
    --------------------------------------------------------- */
