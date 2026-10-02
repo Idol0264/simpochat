@@ -2940,6 +2940,8 @@ if (messageInput) {
 
   }
 
+     attachMessageLongPress();
+
 }
 
 
