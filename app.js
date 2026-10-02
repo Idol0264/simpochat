@@ -8999,6 +8999,13 @@ function handleAction(
       break;
 
 
+    case "emoji":
+
+      openEmojiPicker();
+
+      break;
+
+
     case "group-posts":
 
       state.postFilter =
