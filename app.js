@@ -3341,23 +3341,23 @@ function sendMessage() {
 
 
   state.messages[group.id].push({
+  id:
+    uid("message"),
 
-    id:
-      uid("message"),
+  member:
+    state.currentUser.id,
 
-    member:
-      state.currentUser.id,
+  text,
 
-    text,
+  createdAt:
+    now(),
 
-    createdAt:
-      now(),
+  read:
+    true,
 
-    read:
-      true
-
-  });
-
+  replyTo:
+    pendingReplyMessageId || null
+});
 
   input.value = "";
 
