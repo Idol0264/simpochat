@@ -41,6 +41,9 @@ const modalRoot = $("#modal-root");
 let longPressTimer = null;
 let longPressTriggered = false;
 
+let messageActionTimer = null;
+let activeMessageActionId = null;
+
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random()
     .toString(36)
