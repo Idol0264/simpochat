@@ -2820,14 +2820,15 @@ function renderGroupChat() {
         >
           ＋
         </button>
-
-
-        <input
-          id="messageInput"
-          type="text"
-          autocomplete="off"
-          placeholder="Message ${esc(group.name)}"
-        >
+        
+        
+        <textarea
+        id="messageInput"
+        rows="1"
+        autocomplete="off"
+        placeholder="Message ${esc(group.name)}"
+        aria-label="Message"
+        ></textarea>
         
         
         <button
