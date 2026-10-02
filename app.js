@@ -3154,8 +3154,8 @@ function renderGroupProfile() {
         >
           ‹
         </button>
-
-
+        
+        
         <div
         class="profile-avatar ${group.photo ? "has-photo" : ""}"
         style="--h:${group.hue}"
@@ -3171,12 +3171,6 @@ function renderGroupProfile() {
            : esc(group.icon)
         }
         </div>
-
-
-        <h2>
-          ${esc(group.name)}
-        </h2>
-
 
         <p>
           ${group.members.length}
