@@ -9607,6 +9607,126 @@ function openAttachmentMenu() {
 
 
 /* ---------------------------------------------------------
+   EMOJI PICKER
+   --------------------------------------------------------- */
+
+function openEmojiPicker() {
+
+  const emojis = [
+    "😀","😃","😄","😁","😆","😅","😂","🤣",
+    "😊","😇","🙂","🙃","😉","😌","😍","🥰",
+    "😘","😗","😙","😚","😋","😛","😝","😜",
+    "🤪","🤨","🧐","🤓","😎","🤩","🥳","😏",
+    "😢","😭","😤","😡","🤬","😱","😴","🤔",
+    "🤗","🤭","🤫","🤥","😶","🙄","😬","😮",
+    "👍","👎","👏","🙌","🙏","❤️","🔥","🎉",
+    "💯","😂","🤣","😍","🥰","😘","💔","✨",
+    "🎯","💪","👋","🤝","✌️","👌","❤️‍🔥","💜"
+  ];
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop emoji-picker-backdrop"
+      data-close
+    >
+
+      <div class="modal emoji-picker-modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Emoji
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div class="emoji-grid">
+
+          ${
+            emojis
+              .map(
+                emoji => `
+                  <button
+                    type="button"
+                    class="emoji-option"
+                    data-emoji="${emoji}"
+                  >
+                    ${emoji}
+                  </button>
+                `
+              )
+              .join("")
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+  document
+    .querySelectorAll("[data-emoji]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const input =
+            document.querySelector(
+              "#messageInput"
+            );
+
+          if (!input) {
+            return;
+          }
+
+          const emoji =
+            button.dataset.emoji || "";
+
+          const start =
+            input.selectionStart ??
+            input.value.length;
+
+          const end =
+            input.selectionEnd ??
+            input.value.length;
+
+          input.value =
+            input.value.slice(0, start) +
+            emoji +
+            input.value.slice(end);
+
+          const cursor =
+            start + emoji.length;
+
+          input.focus();
+
+          input.setSelectionRange(
+            cursor,
+            cursor
+          );
+
+          modalRoot.innerHTML = "";
+
+        }
+      );
+
+    });
+}
+
+
+/* ---------------------------------------------------------
    CAMERA
    --------------------------------------------------------- */
 
