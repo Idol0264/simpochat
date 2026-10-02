@@ -10076,376 +10076,654 @@ function openCamera() {
 
     function renderCameraGallery() {
 
-    const items =
-      document.querySelector(
-        "#cameraGalleryItems"
+  const items =
+    document.querySelector(
+      "#cameraGalleryItems"
+    );
+
+  const count =
+    document.querySelector(
+      "#cameraGalleryCount"
+    );
+
+
+  if (!items || !count) {
+    return;
+  }
+
+
+  count.textContent =
+    `${cameraMediaItems.length} selected`;
+
+
+  items.innerHTML = `
+
+    <div class="camera-gallery-actions">
+
+      <button
+        type="button"
+        class="camera-gallery-action remove"
+        id="cameraGalleryRemove"
+        aria-label="Remove selected pictures"
+        title="Remove selected"
+      >
+        🚫
+      </button>
+
+      <button
+        type="button"
+        class="camera-gallery-action preview"
+        id="cameraGalleryPreview"
+        aria-label="Preview selected pictures"
+        title="Preview selected"
+      >
+        🕵🏾‍♂️
+      </button>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="camera-gallery-add"
+      id="cameraGalleryAdd"
+      aria-label="Open phone gallery"
+    >
+      +
+    </button>
+
+
+    ${cameraMediaItems
+      .map(
+        item => `
+
+          <div
+            class="camera-gallery-thumb ${
+              item.selected
+                ? "selected"
+                : ""
+            }"
+            data-camera-media-id="${esc(
+              item.id
+            )}"
+            title="${esc(item.name)}"
+          >
+
+            <img
+              src="${esc(item.url)}"
+              alt=""
+            >
+
+            <span
+              class="camera-gallery-source"
+            >
+              ${
+                item.source ===
+                "camera"
+                  ? "●"
+                  : ""
+              }
+            </span>
+
+          </div>
+
+        `
+      )
+      .join("")}
+
+  `;
+
+
+  const newGalleryAdd =
+    document.querySelector(
+      "#cameraGalleryAdd"
+    );
+
+
+  newGalleryAdd?.addEventListener(
+    "click",
+    openPhoneGallery
+  );
+
+
+  /* =======================================================
+     LONG PRESS + DRAG REORDER
+     ======================================================= */
+
+  let pressTimer = null;
+
+  let dragMediaId = null;
+
+  let isDragging = false;
+
+  let suppressClick = false;
+
+
+  function clearPressTimer() {
+
+    if (pressTimer) {
+
+      clearTimeout(
+        pressTimer
       );
 
-    const count =
-      document.querySelector(
-        "#cameraGalleryCount"
+      pressTimer = null;
+
+    }
+
+  }
+
+
+  function getThumbFromPoint(
+    clientX,
+    clientY
+  ) {
+
+    const element =
+      document.elementFromPoint(
+        clientX,
+        clientY
       );
 
 
-    if (!items || !count) {
+    return element?.closest(
+      ".camera-gallery-thumb"
+    );
+
+  }
+
+
+  function reorderMedia(
+    draggedId,
+    targetId
+  ) {
+
+    if (
+      !draggedId ||
+      !targetId ||
+      draggedId === targetId
+    ) {
       return;
     }
 
 
-    count.textContent =
-      `${cameraMediaItems.length} selected`;
-
-
-    items.innerHTML = `
-
-      <div class="camera-gallery-actions">
-
-        <button
-          type="button"
-          class="camera-gallery-action remove"
-          id="cameraGalleryRemove"
-          aria-label="Remove selected pictures"
-          title="Remove selected"
-        >
-          🚫
-        </button>
-
-        <button
-          type="button"
-          class="camera-gallery-action preview"
-          id="cameraGalleryPreview"
-          aria-label="Preview selected pictures"
-          title="Preview selected"
-        >
-          🕵🏾‍♂️
-        </button>
-
-      </div>
-
-
-      <button
-        type="button"
-        class="camera-gallery-add"
-        id="cameraGalleryAdd"
-        aria-label="Open phone gallery"
-      >
-        +
-      </button>
-
-
-      ${cameraMediaItems
-        .map(
-          item => `
-
-            <div
-              class="camera-gallery-thumb ${
-                item.selected
-                  ? "selected"
-                  : ""
-              }"
-              data-camera-media-id="${esc(
-                item.id
-              )}"
-              title="${esc(item.name)}"
-            >
-
-              <img
-                src="${esc(item.url)}"
-                alt=""
-              >
-
-              <span
-                class="camera-gallery-source"
-              >
-                ${
-                  item.source ===
-                  "camera"
-                    ? "●"
-                    : ""
-                }
-              </span>
-
-            </div>
-
-          `
-        )
-        .join("")}
-
-    `;
-
-
-    const newGalleryAdd =
-      document.querySelector(
-        "#cameraGalleryAdd"
+    const fromIndex =
+      cameraMediaItems.findIndex(
+        item =>
+          item.id ===
+          draggedId
       );
 
 
-    newGalleryAdd?.addEventListener(
-      "click",
-      openPhoneGallery
+    const toIndex =
+      cameraMediaItems.findIndex(
+        item =>
+          item.id ===
+          targetId
+      );
+
+
+    if (
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex === toIndex
+    ) {
+      return;
+    }
+
+
+    const moved =
+      cameraMediaItems.splice(
+        fromIndex,
+        1
+      )[0];
+
+
+    cameraMediaItems.splice(
+      toIndex,
+      0,
+      moved
     );
 
 
-    /*
-     * LONG PRESS SELECTION
-     */
+    renderCameraGallery();
 
-    let pressTimer = null;
+    isDragging = true;
 
+    suppressClick = true;
 
-    items
-      .querySelectorAll(
-        ".camera-gallery-thumb"
-      )
-      .forEach(
-        thumb => {
-
-          const mediaId =
-            thumb.dataset
-              .cameraMediaId;
+  }
 
 
-          const startPress =
-            event => {
+  items
+    .querySelectorAll(
+      ".camera-gallery-thumb"
+    )
+    .forEach(
+      thumb => {
 
-              event.preventDefault();
-
-
-              pressTimer =
-                setTimeout(
-                  () => {
-
-                    const item =
-                      cameraMediaItems
-                        .find(
-                          media =>
-                            media.id ===
-                            mediaId
-                        );
+        const mediaId =
+          thumb.dataset
+            .cameraMediaId;
 
 
-                    if (!item) {
-                      return;
-                    }
+        let startX = 0;
+
+        let startY = 0;
+
+        let movedBeforeLongPress =
+          false;
 
 
-                    item.selected =
-                      !item.selected;
+        const startPress =
+          event => {
+
+            const point =
+              event.touches?.[0] ||
+              event;
+
+            startX =
+              point.clientX;
+
+            startY =
+              point.clientY;
+
+            movedBeforeLongPress =
+              false;
 
 
-                    renderCameraGallery();
-
-                  },
-                  500
-                );
-
-            };
+            clearPressTimer();
 
 
-          const cancelPress =
-            () => {
+            pressTimer =
+              setTimeout(
+                () => {
 
-              if (pressTimer) {
-
-                clearTimeout(
-                  pressTimer
-                );
-
-                pressTimer =
-                  null;
-
-              }
-
-            };
+                  const item =
+                    cameraMediaItems
+                      .find(
+                        media =>
+                          media.id ===
+                          mediaId
+                      );
 
 
-          thumb.addEventListener(
-            "touchstart",
-            startPress,
-            {
-              passive: false
-            }
-          );
+                  if (!item) {
+                    return;
+                  }
 
 
-          thumb.addEventListener(
-            "touchend",
-            cancelPress
-          );
+                  dragMediaId =
+                    mediaId;
+
+                  isDragging =
+                    true;
+
+                  suppressClick =
+                    true;
 
 
-          thumb.addEventListener(
-            "touchcancel",
-            cancelPress
-          );
-
-
-          thumb.addEventListener(
-            "mousedown",
-            startPress
-          );
-
-
-          thumb.addEventListener(
-            "mouseup",
-            cancelPress
-          );
-
-
-          thumb.addEventListener(
-            "mouseleave",
-            cancelPress
-          );
-
-
-          thumb.addEventListener(
-            "click",
-            () => {
-
-              const item =
-                cameraMediaItems
-                  .find(
-                    media =>
-                      media.id ===
-                      mediaId
+                  thumb.classList.add(
+                    "dragging"
                   );
 
 
-              if (!item) {
-                return;
-              }
+                  items.classList.add(
+                    "reordering"
+                  );
+
+                },
+                500
+              );
+
+          };
 
 
-              /*
-               * Once selection mode
-               * has started, normal taps
-               * select/deselect pictures.
-               */
+        const movePress =
+          event => {
 
-              if (
-                cameraMediaItems
-                  .some(
-                    media =>
-                      media.selected
-                  )
-              ) {
+            const point =
+              event.touches?.[0] ||
+              event;
 
-                item.selected =
-                  !item.selected;
+            const dx =
+              Math.abs(
+                point.clientX -
+                startX
+              );
 
-                renderCameraGallery();
+            const dy =
+              Math.abs(
+                point.clientY -
+                startY
+              );
 
-              }
+
+            if (
+              !isDragging &&
+              (
+                dx > 10 ||
+                dy > 10
+              )
+            ) {
+
+              movedBeforeLongPress =
+                true;
+
+              clearPressTimer();
+
+              return;
 
             }
-          );
-
-        }
-      );
 
 
-    /*
-     * REMOVE SELECTED
-     */
-
-    const removeButton =
-      document.querySelector(
-        "#cameraGalleryRemove"
-      );
+            if (!isDragging) {
+              return;
+            }
 
 
-    removeButton?.addEventListener(
-      "click",
-      () => {
-
-        cameraMediaItems =
-          cameraMediaItems.filter(
-            item =>
-              !item.selected
-          );
+            event.preventDefault();
 
 
-        renderCameraGallery();
+            const target =
+              getThumbFromPoint(
+                point.clientX,
+                point.clientY
+              );
+
+
+            if (!target) {
+              return;
+            }
+
+
+            const targetId =
+              target.dataset
+                .cameraMediaId;
+
+
+            if (
+              targetId &&
+              targetId !==
+                dragMediaId
+            ) {
+
+              reorderMedia(
+                dragMediaId,
+                targetId
+              );
+
+            }
+
+          };
+
+
+        const endPress =
+          () => {
+
+            clearPressTimer();
+
+
+            document
+              .querySelectorAll(
+                ".camera-gallery-thumb.dragging"
+              )
+              .forEach(
+                element =>
+                  element.classList.remove(
+                    "dragging"
+                  )
+              );
+
+
+            items.classList.remove(
+              "reordering"
+            );
+
+
+            if (isDragging) {
+
+              isDragging =
+                false;
+
+              dragMediaId =
+                null;
+
+              suppressClick =
+                true;
+
+              setTimeout(
+                () => {
+                  suppressClick =
+                    false;
+                },
+                80
+              );
+
+              return;
+
+            }
+
+
+            dragMediaId =
+              null;
+
+          };
+
+
+        thumb.addEventListener(
+          "touchstart",
+          startPress,
+          {
+            passive: true
+          }
+        );
+
+
+        thumb.addEventListener(
+          "touchmove",
+          movePress,
+          {
+            passive: false
+          }
+        );
+
+
+        thumb.addEventListener(
+          "touchend",
+          endPress
+        );
+
+
+        thumb.addEventListener(
+          "touchcancel",
+          endPress
+        );
+
+
+        thumb.addEventListener(
+          "mousedown",
+          startPress
+        );
+
+
+        thumb.addEventListener(
+          "mousemove",
+          movePress
+        );
+
+
+        thumb.addEventListener(
+          "mouseup",
+          endPress
+        );
+
+
+        thumb.addEventListener(
+          "mouseleave",
+          () => {
+
+            if (!isDragging) {
+              clearPressTimer();
+            }
+
+          }
+        );
+
+
+        thumb.addEventListener(
+          "click",
+          () => {
+
+            if (suppressClick) {
+              return;
+            }
+
+
+            const item =
+              cameraMediaItems
+                .find(
+                  media =>
+                    media.id ===
+                    mediaId
+                );
+
+
+            if (!item) {
+              return;
+            }
+
+
+            /*
+             * Once selection mode
+             * has started, normal taps
+             * select/deselect pictures.
+             */
+
+            if (
+              cameraMediaItems
+                .some(
+                  media =>
+                    media.selected
+                )
+            ) {
+
+              item.selected =
+                !item.selected;
+
+              renderCameraGallery();
+
+            }
+
+          }
+        );
 
       }
     );
 
 
-    /*
-     * PREVIEW SELECTED
-     */
+  /* =======================================================
+     REMOVE SELECTED
+     ======================================================= */
 
-    const previewButton =
-      document.querySelector(
-        "#cameraGalleryPreview"
-      );
-
-
-    previewButton?.addEventListener(
-      "click",
-      () => {
-
-        const selected =
-          cameraMediaItems.filter(
-            item =>
-              item.selected
-          );
+  const removeButton =
+    document.querySelector(
+      "#cameraGalleryRemove"
+    );
 
 
-        if (!selected.length) {
-          return;
-        }
+  removeButton?.addEventListener(
+    "click",
+    () => {
+
+      cameraMediaItems =
+        cameraMediaItems.filter(
+          item =>
+            !item.selected
+        );
 
 
-        const previewItem =
-          selected[0];
+      renderCameraGallery();
+
+    }
+  );
 
 
-        modalRoot.innerHTML = `
+  /* =======================================================
+     PREVIEW SELECTED
+     ======================================================= */
 
-          <div
-            class="camera-preview-screen"
+  const previewButton =
+    document.querySelector(
+      "#cameraGalleryPreview"
+    );
+
+
+  previewButton?.addEventListener(
+    "click",
+    () => {
+
+      const selected =
+        cameraMediaItems.filter(
+          item =>
+            item.selected
+        );
+
+
+      if (!selected.length) {
+        return;
+      }
+
+
+      const previewItem =
+        selected[0];
+
+
+      modalRoot.innerHTML = `
+
+        <div
+          class="camera-preview-screen"
+        >
+
+          <button
+            type="button"
+            class="camera-preview-close"
+            id="cameraPreviewClose"
+            aria-label="Close preview"
+          >
+            ×
+          </button>
+
+          <img
+            class="camera-preview-image"
+            src="${esc(
+              previewItem.url
+            )}"
+            alt=""
           >
 
-            <button
-              type="button"
-              class="camera-preview-close"
-              id="cameraPreviewClose"
-              aria-label="Close preview"
-            >
-              ×
-            </button>
+        </div>
 
-            <img
-              class="camera-preview-image"
-              src="${esc(
-                previewItem.url
-              )}"
-              alt=""
-            >
-
-          </div>
-
-        `;
+      `;
 
 
-        document
-          .querySelector(
-            "#cameraPreviewClose"
-          )
-          ?.addEventListener(
-            "click",
-            () => {
+      document
+        .querySelector(
+          "#cameraPreviewClose"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
 
-              openCamera();
+            openCamera();
 
-            }
-          );
+          }
+        );
 
-      }
-    );
+    }
+  );
 
-  }
+}
 
 
   /* -------------------------------------------------------
