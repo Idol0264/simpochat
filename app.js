@@ -2976,34 +2976,62 @@ function renderMessage(
         );
 
 
+  const actionsVisible =
+    own &&
+    activeMessageActionId ===
+      message.id;
+
+
   return `
 
     <article
       class="
         message-row
         ${own ? "mine" : ""}
+        ${actionsVisible ? "message-actions-open" : ""}
       "
+      data-message-id="${esc(message.id)}"
     >
 
       <span
-      class="member-avatar message-avatar ${sender.avatarImage ? "has-photo" : ""}"
-      style="--h:${sender.hue || 210}"
-      aria-hidden="true"
+        class="member-avatar message-avatar ${sender.avatarImage ? "has-photo" : ""}"
+        style="--h:${sender.hue || 210}"
+        aria-hidden="true"
       >
-      ${
-         sender.avatarImage
-         ? `
-         <img
-         src="${esc(sender.avatarImage)}"
-         alt="${esc(sender.name || "Profile photo")}"
-         >
-         `
-         : esc(sender.avatar || "?")
-      }
+        ${
+          sender.avatarImage
+            ? `
+              <img
+                src="${esc(sender.avatarImage)}"
+                alt="${esc(sender.name || "Profile photo")}"
+              >
+            `
+            : esc(sender.avatar || "?")
+        }
       </span>
 
 
       <div class="message-content">
+
+        ${
+          actionsVisible
+            ? `
+              <div class="message-action message-action-reply">
+                <button
+                  type="button"
+                  class="message-action-btn"
+                  data-message-action="reply"
+                  data-message-id="${esc(message.id)}"
+                  aria-label="Reply to message"
+                  title="Reply"
+                >
+                  ↥
+                </button>
+              </div>
+            `
+            : ""
+        }
+
 
         <div class="message-author">
 
@@ -3016,7 +3044,10 @@ function renderMessage(
         </div>
 
 
-        <div class="message-bubble">
+        <div
+          class="message-bubble"
+          data-message-id="${esc(message.id)}"
+        >
 
           ${
             message.type === "voice"
@@ -3046,6 +3077,26 @@ function renderMessage(
           )}
 
         </div>
+
+
+        ${
+          actionsVisible
+            ? `
+              <div class="message-action message-action-delete">
+                <button
+                  type="button"
+                  class="message-action-btn"
+                  data-message-action="delete"
+                  data-message-id="${esc(message.id)}"
+                  aria-label="Delete message"
+                  title="Delete"
+                >
+                  ↧
+                </button>
+              </div>
+            `
+            : ""
+        }
 
       </div>
 
