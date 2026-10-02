@@ -2824,15 +2824,16 @@ function renderGroupChat() {
           autocomplete="off"
           placeholder="Message ${esc(group.name)}"
         >
-
-
+        
+        
         <button
           type="button"
           class="composer-btn"
-          data-action="camera"
-          aria-label="Camera"
+          data-action="emoji"
+          aria-label="Emoji"
+          title="Emoji"
         >
-          ◉
+          😊
         </button>
 
 
