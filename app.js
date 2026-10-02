@@ -3107,6 +3107,153 @@ function renderMessage(
 
 
 /* ---------------------------------------------------------
+   MESSAGE LONG PRESS
+   --------------------------------------------------------- */
+
+function attachMessageLongPress() {
+
+  const messagesBox =
+    document.querySelector("#messages");
+
+  if (!messagesBox) {
+    return;
+  }
+
+
+  messagesBox
+    .querySelectorAll(
+      ".message-row.mine"
+    )
+    .forEach(row => {
+
+      const messageId =
+        row.dataset.messageId;
+
+      if (!messageId) {
+        return;
+      }
+
+
+      const startPress = event => {
+
+        if (
+          event.target.closest(
+            "[data-message-action]"
+          )
+        ) {
+          return;
+        }
+
+
+        clearTimeout(
+          messageActionTimer
+        );
+
+
+        messageActionTimer =
+          setTimeout(() => {
+
+            activeMessageActionId =
+              messageId;
+
+            renderGroupChat();
+
+          }, 550);
+
+      };
+
+
+      const cancelPress = () => {
+
+        clearTimeout(
+          messageActionTimer
+        );
+
+        messageActionTimer =
+          null;
+
+      };
+
+
+      row.addEventListener(
+        "touchstart",
+        startPress,
+        { passive: true }
+      );
+
+      row.addEventListener(
+        "touchend",
+        cancelPress
+      );
+
+      row.addEventListener(
+        "touchcancel",
+        cancelPress
+      );
+
+      row.addEventListener(
+        "mousedown",
+        startPress
+      );
+
+      row.addEventListener(
+        "mouseup",
+        cancelPress
+      );
+
+      row.addEventListener(
+        "mouseleave",
+        cancelPress
+      );
+
+    });
+
+
+  messagesBox
+    .querySelectorAll(
+      "[data-message-action]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.stopPropagation();
+
+          const action =
+            button.dataset.messageAction;
+
+          const messageId =
+            button.dataset.messageId;
+
+
+          if (action === "reply") {
+
+            alert(
+              "Reply action ready for Step 4B."
+            );
+
+          }
+
+
+          if (action === "delete") {
+
+            alert(
+              "Delete action ready for Step 4C."
+            );
+
+          }
+
+        }
+      );
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
    SEND MESSAGE
    --------------------------------------------------------- */
 
