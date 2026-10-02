@@ -8032,6 +8032,13 @@ function openEditProfile() {
           email;
 
 
+
+         if (pendingProfilePhoto !== null) {
+            state.currentUser.avatarImage =
+               pendingProfilePhoto;
+         }
+
+
         /*
          * Keep the first letter as the
          * fallback avatar.
