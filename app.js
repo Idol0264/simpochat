@@ -7333,6 +7333,25 @@ function renderSearchResults() {
       );
 
     });
+
+     container
+    .querySelectorAll(
+      "[data-open-group]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          openGroup(
+            button.dataset.openGroup
+          );
+
+        }
+      );
+
+    });
 }
 
 
