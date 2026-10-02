@@ -2893,8 +2893,8 @@ function renderGroupChat() {
   }
 
 const messageInput =
-  $("#messageInput");
-
+   $("#messageInput");
+   
 if (messageInput) {
 
   messageInput.addEventListener(
