@@ -6867,3 +6867,84 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   SIMPOCHAT CAMERA — DRAG / REORDER VISUAL EFFECT
+   ========================================================= */
+
+.camera-gallery-items.reordering {
+  touch-action: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+
+.camera-gallery-thumb {
+  transition:
+    transform .16s ease,
+    opacity .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+
+.camera-gallery-thumb.dragging {
+  opacity: .58;
+
+  transform:
+    scale(.92)
+    translateY(-3px);
+
+  z-index: 10;
+
+  border-color:
+    var(--accent);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(109,74,255,.25),
+    0 10px 22px
+    rgba(0,0,0,.30);
+}
+
+
+/* The thumbnail being moved toward */
+
+.camera-gallery-thumb.drag-target {
+  transform:
+    scale(1.06);
+
+  border-color:
+    rgba(255,255,255,.75);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(255,255,255,.20);
+}
+
+
+/* Keep selected state visible while dragging */
+
+.camera-gallery-thumb.dragging.selected {
+  border-color:
+    var(--accent);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(109,74,255,.32),
+    0 10px 22px
+    rgba(0,0,0,.30);
+}
+
+
+/* Small phones */
+
+@media (max-width: 390px) {
+
+  .camera-gallery-thumb.dragging {
+    transform:
+      scale(.90)
+      translateY(-2px);
+  }
+
+}
