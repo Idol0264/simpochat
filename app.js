@@ -43,6 +43,7 @@ let longPressTriggered = false;
 
 let messageActionTimer = null;
 let activeMessageActionId = null;
+let pendingReplyMessageId = null;
 
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random()
