@@ -9351,6 +9351,19 @@ function handleAction(
       break;
 
 
+    case "cancel-reply":
+        
+        pendingReplyMessageId =
+           null;
+        
+        activeMessageActionId =
+           null;
+        
+        renderGroupChat();
+        
+        break;
+
+
     case "group-posts":
 
       state.postFilter =
