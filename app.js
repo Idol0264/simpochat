@@ -2512,19 +2512,11 @@ function createGroup() {
     members: [
 
       {
-
-        id:
-          user.id,
-
-        name:
-          user.name,
-
-        avatar:
-          user.avatar,
-
-        hue:
-          user.hue
-
+         id: user.id,
+         name: user.name,
+         avatar: user.avatar,
+         avatarImage: user.avatarImage || "",
+         hue: user.hue
       }
 
     ]
