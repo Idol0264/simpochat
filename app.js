@@ -3277,19 +3277,19 @@ function attachMessageLongPress() {
 
 
           if (action === "reply") {
-
-  pendingReplyMessageId =
-    messageId;
-
-  activeMessageActionId =
-    null;
-
-  messageActionTimer =
-    null;
-
-  renderGroupChat();
-
-}
+             
+             pendingReplyMessageId =
+                messageId;
+             
+             activeMessageActionId =
+                null;
+             
+             messageActionTimer =
+                null;
+             
+             renderGroupChat();
+          
+          }
 
 
           if (action === "delete") {
@@ -3360,6 +3360,12 @@ function sendMessage() {
 });
 
   input.value = "";
+   
+   pendingReplyMessageId =
+      null;
+   
+   activeMessageActionId =
+      null;
 
   saveState();
 
