@@ -9736,44 +9736,520 @@ function openEmojiPicker() {
 
 function openCamera() {
 
-  const input =
-    document.createElement(
-      "input"
+  modalRoot.innerHTML = `
+    <div
+      class="camera-screen"
+      id="simpoCameraScreen"
+    >
+
+      <video
+        id="simpoCameraVideo"
+        class="camera-video"
+        autoplay
+        playsinline
+        muted
+      ></video>
+
+      <div class="camera-overlay">
+
+        <div class="camera-topbar">
+
+          <button
+            type="button"
+            class="camera-close-btn"
+            id="cameraCloseBtn"
+            aria-label="Close camera"
+          >
+            ×
+          </button>
+
+          <div class="camera-title">
+            Camera
+          </div>
+
+          <div class="camera-top-space"></div>
+
+        </div>
+
+
+        <div class="camera-bottom">
+
+          <div
+            class="camera-gallery-tray"
+            id="cameraGalleryTray"
+          >
+
+            <div class="camera-gallery-handle"></div>
+
+            <div class="camera-gallery-title">
+              <span>Gallery</span>
+              <span id="cameraGalleryCount">
+                0 selected
+              </span>
+            </div>
+
+            <div
+              class="camera-gallery-items"
+              id="cameraGalleryItems"
+            >
+              <button
+                type="button"
+                class="camera-gallery-add"
+                id="cameraGalleryAdd"
+                aria-label="Open phone gallery"
+              >
+                +
+              </button>
+            </div>
+
+          </div>
+
+
+          <div class="camera-controls">
+
+            <button
+              type="button"
+              class="camera-shutter"
+              id="cameraShutterBtn"
+              aria-label="Take photo"
+            >
+              <span></span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <input
+        type="file"
+        id="cameraGalleryInput"
+        accept="image/*"
+        multiple
+        hidden
+      >
+
+    </div>
+  `;
+
+
+  const video =
+    document.querySelector(
+      "#simpoCameraVideo"
+    );
+
+  const closeButton =
+    document.querySelector(
+      "#cameraCloseBtn"
+    );
+
+  const shutterButton =
+    document.querySelector(
+      "#cameraShutterBtn"
+    );
+
+  const galleryAdd =
+    document.querySelector(
+      "#cameraGalleryAdd"
+    );
+
+  const galleryInput =
+    document.querySelector(
+      "#cameraGalleryInput"
+    );
+
+  const galleryTray =
+    document.querySelector(
+      "#cameraGalleryTray"
     );
 
 
-  input.type =
-    "file";
+  /* -------------------------------------------------------
+     CLOSE CAMERA
+     ------------------------------------------------------- */
 
-  input.accept =
-    "image/*,video/*";
+  function closeCamera() {
 
-  input.capture =
-    "environment";
+    if (activeCameraStream) {
+
+      activeCameraStream
+        .getTracks()
+        .forEach(
+          track => track.stop()
+        );
+
+      activeCameraStream = null;
+
+    }
+
+    cameraMediaItems = [];
+
+    modalRoot.innerHTML = "";
+
+  }
 
 
-  input.addEventListener(
+  /* -------------------------------------------------------
+     OPEN PHONE GALLERY
+     ------------------------------------------------------- */
+
+  function openPhoneGallery() {
+
+    galleryInput.click();
+
+  }
+
+
+  /* -------------------------------------------------------
+     ADD GALLERY FILES
+     ------------------------------------------------------- */
+
+  function addGalleryFiles(files) {
+
+    const selectedFiles =
+      Array.from(files || [])
+        .filter(
+          file =>
+            file.type.startsWith(
+              "image/"
+            )
+        );
+
+
+    selectedFiles.forEach(file => {
+
+      cameraMediaItems.push({
+
+        id: uid("camera-media"),
+
+        type: "image",
+
+        name: file.name,
+
+        url:
+          URL.createObjectURL(
+            file
+          ),
+
+        source: "gallery",
+
+        file
+
+      });
+
+    });
+
+
+    renderCameraGallery();
+
+  }
+
+
+  /* -------------------------------------------------------
+     TAKE PHOTO
+     ------------------------------------------------------- */
+
+  function capturePhoto() {
+
+    if (
+      !video ||
+      video.readyState < 2
+    ) {
+      return;
+    }
+
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    canvas.width =
+      video.videoWidth;
+
+    canvas.height =
+      video.videoHeight;
+
+
+    const context =
+      canvas.getContext(
+        "2d"
+      );
+
+
+    if (!context) {
+      return;
+    }
+
+
+    context.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    canvas.toBlob(
+      blob => {
+
+        if (!blob) {
+          return;
+        }
+
+
+        const file =
+          new File(
+            [blob],
+            `simpochat-${Date.now()}.jpg`,
+            {
+              type:
+                "image/jpeg"
+            }
+          );
+
+
+        cameraMediaItems.push({
+
+          id:
+            uid("camera-media"),
+
+          type:
+            "image",
+
+          name:
+            file.name,
+
+          url:
+            URL.createObjectURL(
+              blob
+            ),
+
+          source:
+            "camera",
+
+          file
+
+        });
+
+
+        renderCameraGallery();
+
+      },
+      "image/jpeg",
+      0.92
+    );
+
+  }
+
+
+  /* -------------------------------------------------------
+     RENDER CAMERA GALLERY
+     ------------------------------------------------------- */
+
+  function renderCameraGallery() {
+
+    const items =
+      document.querySelector(
+        "#cameraGalleryItems"
+      );
+
+    const count =
+      document.querySelector(
+        "#cameraGalleryCount"
+      );
+
+
+    if (!items || !count) {
+      return;
+    }
+
+
+    count.textContent =
+      `${cameraMediaItems.length} selected`;
+
+
+    items.innerHTML = `
+
+      <button
+        type="button"
+        class="camera-gallery-add"
+        id="cameraGalleryAdd"
+        aria-label="Open phone gallery"
+      >
+        +
+      </button>
+
+      ${cameraMediaItems
+        .map(
+          item => `
+            <div
+              class="camera-gallery-thumb"
+              title="${esc(item.name)}"
+            >
+              <img
+                src="${esc(item.url)}"
+                alt=""
+              >
+
+              <span class="camera-gallery-source">
+                ${
+                  item.source ===
+                  "camera"
+                    ? "●"
+                    : ""
+                }
+              </span>
+            </div>
+          `
+        )
+        .join("")}
+
+    `;
+
+
+    const newGalleryAdd =
+      document.querySelector(
+        "#cameraGalleryAdd"
+      );
+
+
+    newGalleryAdd?.addEventListener(
+      "click",
+      openPhoneGallery
+    );
+
+  }
+
+
+  /* -------------------------------------------------------
+     BUTTON EVENTS
+     ------------------------------------------------------- */
+
+  closeButton?.addEventListener(
+    "click",
+    closeCamera
+  );
+
+
+  shutterButton?.addEventListener(
+    "click",
+    capturePhoto
+  );
+
+
+  galleryAdd?.addEventListener(
+    "click",
+    openPhoneGallery
+  );
+
+
+  galleryInput?.addEventListener(
     "change",
     () => {
 
-      const file =
-        input.files?.[0];
-
-
-      if (!file) {
-        return;
-      }
-
-
-      alert(
-        `${file.name} selected.`
+      addGalleryFiles(
+        galleryInput.files
       );
+
+      galleryInput.value = "";
 
     }
   );
 
 
-  input.click();
+  /* -------------------------------------------------------
+     SWIPE-UP / TAP GALLERY TRAY
+     ------------------------------------------------------- */
+
+  let touchStartY = 0;
+
+
+  galleryTray?.addEventListener(
+    "touchstart",
+    event => {
+
+      touchStartY =
+        event.touches[0]?.clientY || 0;
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  galleryTray?.addEventListener(
+    "touchend",
+    event => {
+
+      const touchEndY =
+        event.changedTouches[0]?.clientY || 0;
+
+      const distance =
+        touchStartY -
+        touchEndY;
+
+
+      if (distance > 35) {
+        openPhoneGallery();
+      }
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  /* -------------------------------------------------------
+     OPEN PHONE CAMERA
+     ------------------------------------------------------- */
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    openPhoneGallery();
+
+    return;
+
+  }
+
+
+  navigator.mediaDevices
+    .getUserMedia({
+      video: {
+        facingMode: {
+          ideal: "environment"
+        }
+      },
+      audio: false
+    })
+    .then(stream => {
+
+      activeCameraStream =
+        stream;
+
+      video.srcObject =
+        stream;
+
+    })
+    .catch(error => {
+
+      console.warn(
+        "SimpoChat camera access:",
+        error
+      );
+
+      openPhoneGallery();
+
+    });
+
 }
 
 
