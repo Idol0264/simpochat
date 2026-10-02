@@ -2962,11 +2962,20 @@ function renderMessage(
     >
 
       <span
-        class="member-avatar message-avatar"
-        style="--h:${sender.hue || 210}"
-        aria-hidden="true"
+      class="member-avatar message-avatar ${sender.avatarImage ? "has-photo" : ""}"
+      style="--h:${sender.hue || 210}"
+      aria-hidden="true"
       >
-        ${esc(sender.avatar || "?")}
+      ${
+         sender.avatarImage
+         ? `
+         <img
+         src="${esc(sender.avatarImage)}"
+         alt="${esc(sender.name || "Profile photo")}"
+         >
+         `
+         : esc(sender.avatar || "?")
+      }
       </span>
 
 
