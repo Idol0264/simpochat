@@ -10074,7 +10074,7 @@ function openCamera() {
      RENDER CAMERA GALLERY
      ------------------------------------------------------- */
 
-    function renderCameraGallery() {
+   function renderCameraGallery() {
 
   const items =
     document.querySelector(
@@ -10092,8 +10092,16 @@ function openCamera() {
   }
 
 
+  const selectedCount =
+    cameraMediaItems.filter(
+      item => item.selected
+    ).length;
+
+
   count.textContent =
-    `${cameraMediaItems.length} selected`;
+    selectedCount
+      ? `${selectedCount} selected`
+      : `${cameraMediaItems.length} added`;
 
 
   items.innerHTML = `
@@ -10187,12 +10195,16 @@ function openCamera() {
 
 
   /* =======================================================
-     LONG PRESS + DRAG REORDER
+     LONG PRESS + TOUCH DRAG REORDER
      ======================================================= */
 
   let pressTimer = null;
 
   let dragMediaId = null;
+
+  let draggedThumb = null;
+
+  let dragTargetThumb = null;
 
   let isDragging = false;
 
@@ -10233,15 +10245,23 @@ function openCamera() {
   }
 
 
-  function reorderMedia(
+  /*
+   * Change the order without
+   * rebuilding the gallery.
+   */
+  function reorderMediaInPlace(
     draggedId,
-    targetId
+    targetId,
+    draggedElement,
+    targetElement
   ) {
 
     if (
       !draggedId ||
       !targetId ||
-      draggedId === targetId
+      draggedId === targetId ||
+      !draggedElement ||
+      !targetElement
     ) {
       return;
     }
@@ -10286,11 +10306,23 @@ function openCamera() {
     );
 
 
-    renderCameraGallery();
+    /*
+     * Move the actual DOM element
+     * instead of rebuilding everything.
+     */
+    if (fromIndex < toIndex) {
 
-    isDragging = true;
+      targetElement.after(
+        draggedElement
+      );
 
-    suppressClick = true;
+    } else {
+
+      targetElement.before(
+        draggedElement
+      );
+
+    }
 
   }
 
@@ -10311,9 +10343,6 @@ function openCamera() {
 
         let startY = 0;
 
-        let movedBeforeLongPress =
-          false;
-
 
         const startPress =
           event => {
@@ -10322,14 +10351,12 @@ function openCamera() {
               event.touches?.[0] ||
               event;
 
+
             startX =
               point.clientX;
 
             startY =
               point.clientY;
-
-            movedBeforeLongPress =
-              false;
 
 
             clearPressTimer();
@@ -10355,6 +10382,12 @@ function openCamera() {
 
                   dragMediaId =
                     mediaId;
+
+                  draggedThumb =
+                    thumb;
+
+                  dragTargetThumb =
+                    null;
 
                   isDragging =
                     true;
@@ -10386,11 +10419,13 @@ function openCamera() {
               event.touches?.[0] ||
               event;
 
+
             const dx =
               Math.abs(
                 point.clientX -
                 startX
               );
+
 
             const dy =
               Math.abs(
@@ -10399,6 +10434,10 @@ function openCamera() {
               );
 
 
+            /*
+             * Before long-press:
+             * allow normal scrolling.
+             */
             if (
               !isDragging &&
               (
@@ -10406,9 +10445,6 @@ function openCamera() {
                 dy > 10
               )
             ) {
-
-              movedBeforeLongPress =
-                true;
 
               clearPressTimer();
 
@@ -10422,6 +10458,11 @@ function openCamera() {
             }
 
 
+            /*
+             * Once dragging has started,
+             * stop the browser from scrolling
+             * the page underneath.
+             */
             event.preventDefault();
 
 
@@ -10443,17 +10484,59 @@ function openCamera() {
 
 
             if (
-              targetId &&
-              targetId !==
+              !targetId ||
+              targetId ===
                 dragMediaId
             ) {
+              return;
+            }
 
-              reorderMedia(
-                dragMediaId,
-                targetId
-              );
+
+            /*
+             * Highlight the thumbnail
+             * we are moving toward.
+             */
+            if (
+              dragTargetThumb !==
+              target
+            ) {
+
+              if (
+                dragTargetThumb
+              ) {
+
+                dragTargetThumb
+                  .classList
+                  .remove(
+                    "drag-target"
+                  );
+
+              }
+
+
+              dragTargetThumb =
+                target;
+
+
+              dragTargetThumb
+                .classList
+                .add(
+                  "drag-target"
+                );
 
             }
+
+
+            /*
+             * Change the actual order
+             * without rebuilding the gallery.
+             */
+            reorderMediaInPlace(
+              dragMediaId,
+              targetId,
+              draggedThumb,
+              target
+            );
 
           };
 
@@ -10464,16 +10547,34 @@ function openCamera() {
             clearPressTimer();
 
 
-            document
-              .querySelectorAll(
-                ".camera-gallery-thumb.dragging"
-              )
-              .forEach(
-                element =>
-                  element.classList.remove(
-                    "dragging"
-                  )
-              );
+            const wasDragging =
+              isDragging;
+
+
+            if (
+              draggedThumb
+            ) {
+
+              draggedThumb
+                .classList
+                .remove(
+                  "dragging"
+                );
+
+            }
+
+
+            if (
+              dragTargetThumb
+            ) {
+
+              dragTargetThumb
+                .classList
+                .remove(
+                  "drag-target"
+                );
+
+            }
 
 
             items.classList.remove(
@@ -10481,7 +10582,7 @@ function openCamera() {
             );
 
 
-            if (isDragging) {
+            if (wasDragging) {
 
               isDragging =
                 false;
@@ -10489,15 +10590,31 @@ function openCamera() {
               dragMediaId =
                 null;
 
+              draggedThumb =
+                null;
+
+              dragTargetThumb =
+                null;
+
               suppressClick =
                 true;
 
+
+              /*
+               * Rebuild only once,
+               * after the drag is finished.
+               */
+              renderCameraGallery();
+
+
               setTimeout(
                 () => {
+
                   suppressClick =
                     false;
+
                 },
-                80
+                100
               );
 
               return;
@@ -10506,6 +10623,12 @@ function openCamera() {
 
 
             dragMediaId =
+              null;
+
+            draggedThumb =
+              null;
+
+            dragTargetThumb =
               null;
 
           };
@@ -10564,7 +10687,9 @@ function openCamera() {
           () => {
 
             if (!isDragging) {
+
               clearPressTimer();
+
             }
 
           }
@@ -10599,7 +10724,6 @@ function openCamera() {
              * has started, normal taps
              * select/deselect pictures.
              */
-
             if (
               cameraMediaItems
                 .some(
@@ -10610,6 +10734,7 @@ function openCamera() {
 
               item.selected =
                 !item.selected;
+
 
               renderCameraGallery();
 
