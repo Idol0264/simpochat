@@ -7690,6 +7690,8 @@ function renderSettings() {
 
 function openEditProfile() {
 
+   let pendingProfilePhoto = null;
+
   const user =
     state.currentUser;
 
@@ -7897,17 +7899,18 @@ function openEditProfile() {
 
 
         reader.onload = event => {
-
-          const image =
-            event.target?.result;
-
-
-          if (!image || !photoPreview) {
-            return;
-          }
-
-
-          photoPreview.innerHTML = `
+           
+           const image =
+              event.target?.result;
+           
+           if (!image || !photoPreview) {
+              return;
+           }
+           
+           pendingProfilePhoto =
+              String(image);
+           
+           photoPreview.innerHTML = `
 
             <img
               src="${esc(image)}"
