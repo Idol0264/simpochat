@@ -2892,6 +2892,29 @@ function renderGroupChat() {
 
   }
 
+const messageInput =
+  $("#messageInput");
+
+if (messageInput) {
+
+  messageInput.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+
+        event.stopPropagation();
+
+      }
+
+    }
+  );
+
+}
+
 
   /* -------------------------------------------------------
      SCROLL TO NEWEST MESSAGE
