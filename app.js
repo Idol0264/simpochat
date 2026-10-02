@@ -7398,9 +7398,14 @@ function renderSearchGroup(
       ${
         alreadyMember
           ? `
-            <span class="status-label">
-              Joined
-            </span>
+            <button
+              class="small-action-btn"
+              data-open-group="${esc(
+                group.id
+              )}"
+            >
+              Open
+            </button>
           `
           : requested
             ? `
