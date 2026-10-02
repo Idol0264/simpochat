@@ -6626,3 +6626,43 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   SIMPOCHAT — MULTILINE MESSAGE INPUT
+   ========================================================= */
+
+.message-composer textarea#messageInput {
+  min-width: 0;
+
+  flex: 1;
+
+  min-height: 38px;
+  max-height: 120px;
+
+  padding:
+    9px
+    7px;
+
+  resize: none;
+
+  overflow-y: auto;
+
+  color: var(--text);
+
+  background: transparent;
+
+  border: 0;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message-composer textarea#messageInput::placeholder {
+  color: var(--muted);
+}
