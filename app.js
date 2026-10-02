@@ -10074,7 +10074,7 @@ function openCamera() {
      RENDER CAMERA GALLERY
      ------------------------------------------------------- */
 
-  function renderCameraGallery() {
+    function renderCameraGallery() {
 
     const items =
       document.querySelector(
@@ -10098,6 +10098,31 @@ function openCamera() {
 
     items.innerHTML = `
 
+      <div class="camera-gallery-actions">
+
+        <button
+          type="button"
+          class="camera-gallery-action remove"
+          id="cameraGalleryRemove"
+          aria-label="Remove selected pictures"
+          title="Remove selected"
+        >
+          🚫
+        </button>
+
+        <button
+          type="button"
+          class="camera-gallery-action preview"
+          id="cameraGalleryPreview"
+          aria-label="Preview selected pictures"
+          title="Preview selected"
+        >
+          🕵🏾‍♂️
+        </button>
+
+      </div>
+
+
       <button
         type="button"
         class="camera-gallery-add"
@@ -10107,19 +10132,31 @@ function openCamera() {
         +
       </button>
 
+
       ${cameraMediaItems
         .map(
           item => `
+
             <div
-              class="camera-gallery-thumb"
+              class="camera-gallery-thumb ${
+                item.selected
+                  ? "selected"
+                  : ""
+              }"
+              data-camera-media-id="${esc(
+                item.id
+              )}"
               title="${esc(item.name)}"
             >
+
               <img
                 src="${esc(item.url)}"
                 alt=""
               >
 
-              <span class="camera-gallery-source">
+              <span
+                class="camera-gallery-source"
+              >
                 ${
                   item.source ===
                   "camera"
@@ -10127,7 +10164,9 @@ function openCamera() {
                     : ""
                 }
               </span>
+
             </div>
+
           `
         )
         .join("")}
@@ -10144,6 +10183,266 @@ function openCamera() {
     newGalleryAdd?.addEventListener(
       "click",
       openPhoneGallery
+    );
+
+
+    /*
+     * LONG PRESS SELECTION
+     */
+
+    let pressTimer = null;
+
+
+    items
+      .querySelectorAll(
+        ".camera-gallery-thumb"
+      )
+      .forEach(
+        thumb => {
+
+          const mediaId =
+            thumb.dataset
+              .cameraMediaId;
+
+
+          const startPress =
+            event => {
+
+              event.preventDefault();
+
+
+              pressTimer =
+                setTimeout(
+                  () => {
+
+                    const item =
+                      cameraMediaItems
+                        .find(
+                          media =>
+                            media.id ===
+                            mediaId
+                        );
+
+
+                    if (!item) {
+                      return;
+                    }
+
+
+                    item.selected =
+                      !item.selected;
+
+
+                    renderCameraGallery();
+
+                  },
+                  500
+                );
+
+            };
+
+
+          const cancelPress =
+            () => {
+
+              if (pressTimer) {
+
+                clearTimeout(
+                  pressTimer
+                );
+
+                pressTimer =
+                  null;
+
+              }
+
+            };
+
+
+          thumb.addEventListener(
+            "touchstart",
+            startPress,
+            {
+              passive: false
+            }
+          );
+
+
+          thumb.addEventListener(
+            "touchend",
+            cancelPress
+          );
+
+
+          thumb.addEventListener(
+            "touchcancel",
+            cancelPress
+          );
+
+
+          thumb.addEventListener(
+            "mousedown",
+            startPress
+          );
+
+
+          thumb.addEventListener(
+            "mouseup",
+            cancelPress
+          );
+
+
+          thumb.addEventListener(
+            "mouseleave",
+            cancelPress
+          );
+
+
+          thumb.addEventListener(
+            "click",
+            () => {
+
+              const item =
+                cameraMediaItems
+                  .find(
+                    media =>
+                      media.id ===
+                      mediaId
+                  );
+
+
+              if (!item) {
+                return;
+              }
+
+
+              /*
+               * Once selection mode
+               * has started, normal taps
+               * select/deselect pictures.
+               */
+
+              if (
+                cameraMediaItems
+                  .some(
+                    media =>
+                      media.selected
+                  )
+              ) {
+
+                item.selected =
+                  !item.selected;
+
+                renderCameraGallery();
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+    /*
+     * REMOVE SELECTED
+     */
+
+    const removeButton =
+      document.querySelector(
+        "#cameraGalleryRemove"
+      );
+
+
+    removeButton?.addEventListener(
+      "click",
+      () => {
+
+        cameraMediaItems =
+          cameraMediaItems.filter(
+            item =>
+              !item.selected
+          );
+
+
+        renderCameraGallery();
+
+      }
+    );
+
+
+    /*
+     * PREVIEW SELECTED
+     */
+
+    const previewButton =
+      document.querySelector(
+        "#cameraGalleryPreview"
+      );
+
+
+    previewButton?.addEventListener(
+      "click",
+      () => {
+
+        const selected =
+          cameraMediaItems.filter(
+            item =>
+              item.selected
+          );
+
+
+        if (!selected.length) {
+          return;
+        }
+
+
+        const previewItem =
+          selected[0];
+
+
+        modalRoot.innerHTML = `
+
+          <div
+            class="camera-preview-screen"
+          >
+
+            <button
+              type="button"
+              class="camera-preview-close"
+              id="cameraPreviewClose"
+              aria-label="Close preview"
+            >
+              ×
+            </button>
+
+            <img
+              class="camera-preview-image"
+              src="${esc(
+                previewItem.url
+              )}"
+              alt=""
+            >
+
+          </div>
+
+        `;
+
+
+        document
+          .querySelector(
+            "#cameraPreviewClose"
+          )
+          ?.addEventListener(
+            "click",
+            () => {
+
+              openCamera();
+
+            }
+          );
+
+      }
     );
 
   }
