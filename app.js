@@ -3278,11 +3278,18 @@ function attachMessageLongPress() {
 
           if (action === "reply") {
 
-            alert(
-              "Reply action ready for Step 4B."
-            );
+  pendingReplyMessageId =
+    messageId;
 
-          }
+  activeMessageActionId =
+    null;
+
+  messageActionTimer =
+    null;
+
+  renderGroupChat();
+
+}
 
 
           if (action === "delete") {
