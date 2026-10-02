@@ -3045,31 +3045,76 @@ function renderMessage(
           )}
 
         </div>
-
-
+        
+        
+        
         <div
-          class="message-bubble"
-          data-message-id="${esc(message.id)}"
+        class="message-bubble"
+        data-message-id="${esc(message.id)}"
         >
-
-          ${
-            message.type === "voice"
-              ? `
-                <div class="voice-message">
-
-                  <span>
-                    🎙
-                  </span>
-
-                  <span>
-                    Voice message
-                  </span>
-
-                </div>
-              `
-              : esc(message.text)
-          }
-
+        
+        ${
+           message.replyTo
+           ? (() => {
+              
+              const repliedMessage =
+                 safeArray(
+                    state.messages[group.id]
+                 ).find(
+                    item =>
+                       item.id ===
+                       message.replyTo
+                 );
+              
+              if (!repliedMessage) {
+                 return "";
+              }
+              
+              return `
+              <div class="message-reply-preview">
+              
+              <strong>
+              Replying to
+              </strong>
+              
+              <span>
+              ${
+                 repliedMessage.type === "voice"
+                 ? "🎙 Voice message"
+                 : esc(
+                    repliedMessage.text
+                    || ""
+                 )
+              }
+              </span>
+              
+              </div>
+              `;
+           
+           })()
+           
+           : ""
+        }
+        
+        
+        ${
+           message.type === "voice"
+           ? `
+           <div class="voice-message">
+           
+           <span>
+           🎙
+           </span>
+           
+           <span>
+           Voice message
+           </span>
+           
+           </div>
+           `
+           : esc(message.text)
+        }
+        
         </div>
 
 
