@@ -3348,11 +3348,57 @@ function attachMessageLongPress() {
 
 
           if (action === "delete") {
-
-            alert(
-              "Delete action ready for Step 4C."
-            );
-
+             
+             const group =
+                getGroup(
+                   state.selectedGroup
+                );
+             
+             if (!group) {
+                return;
+             }
+             
+             const messages =
+                safeArray(
+                   state.messages[group.id]
+                );
+             
+             const messageIndex =
+                messages.findIndex(
+                   message =>
+                      message.id ===
+                      messageId
+                );
+             
+             if (messageIndex === -1) {
+                return;
+             }
+             
+             messages.splice(
+                messageIndex,
+                1
+             );
+             
+             state.messages[group.id] =
+                messages;
+             
+             if (
+                pendingReplyMessageId ===
+                messageId
+             ) {
+                pendingReplyMessageId =
+                   null;
+             }
+             
+             activeMessageActionId =
+                null;
+             
+             messageActionTimer =
+                null;
+             
+             saveState();
+             
+             renderGroupChat();
           }
 
         }
