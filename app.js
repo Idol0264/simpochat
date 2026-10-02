@@ -2810,6 +2810,61 @@ function renderGroupChat() {
 
       <!-- MESSAGE INPUT -->
 
+      ${
+  pendingReplyMessageId
+    ? (() => {
+
+        const replyMessage =
+          safeArray(
+            state.messages[group.id]
+          ).find(
+            message =>
+              message.id ===
+              pendingReplyMessageId
+          );
+
+        if (!replyMessage) {
+          return "";
+        }
+
+        return `
+          <div class="reply-composer-preview">
+
+            <div class="reply-composer-copy">
+
+              <strong>
+                Replying to
+              </strong>
+
+              <span>
+                ${
+                  replyMessage.type === "voice"
+                    ? "🎙 Voice message"
+                    : esc(
+                        replyMessage.text
+                          || ""
+                      )
+                }
+              </span>
+
+            </div>
+
+            <button
+              type="button"
+              class="reply-composer-close"
+              data-action="cancel-reply"
+              aria-label="Cancel reply"
+            >
+              ×
+            </button>
+
+          </div>
+        `;
+
+      })()
+    : ""
+}
+
       <form
         class="message-composer"
         id="messageForm"
