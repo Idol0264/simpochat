@@ -3151,22 +3151,55 @@ function renderMessage(
         
         
         ${
-           message.type === "voice"
-           ? `
-           <div class="voice-message">
-           
-           <span>
-           🎙
-           </span>
-           
-           <span>
-           Voice message
-           </span>
-           
+   message.type === "voice"
+   ? `
+   <div class="voice-message">
+   
+   <span>
+   🎙
+   </span>
+   
+   <span>
+   Voice message
+   </span>
+   
+   </div>
+   `
+
+   : message.type === "media"
+   ? `
+   <div class="media-message">
+
+     ${
+       safeArray(message.media)
+         .map(
+           media => `
+             <img
+               class="message-media-image"
+               src="${esc(media.url)}"
+               alt="Photo"
+               draggable="false"
+             >
+           `
+         )
+         .join("")
+     }
+
+     ${
+       message.text
+         ? `
+           <div class="media-message-text">
+             ${esc(message.text)}
            </div>
            `
-           : esc(message.text)
-        }
+         : ""
+     }
+
+   </div>
+   `
+
+   : esc(message.text)
+}
         
         </div>
 
