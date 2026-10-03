@@ -3223,7 +3223,7 @@ function attachMessageLongPress() {
 
   messagesBox
     .querySelectorAll(
-      ".message-row.mine"
+      ".message-row"
     )
     .forEach(row => {
 
