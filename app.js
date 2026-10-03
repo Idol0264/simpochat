@@ -3181,22 +3181,22 @@ function renderMessage(
 
 
         ${
-          actionsVisible
-            ? `
-              <div class="message-action message-action-delete">
-                <button
-                  type="button"
-                  class="message-action-btn"
-                  data-message-action="delete"
-                  data-message-id="${esc(message.id)}"
-                  aria-label="Delete message"
-                  title="Delete"
-                >
-                  ↧
-                </button>
-              </div>
-            `
-            : ""
+           actionsVisible && own
+           ? `
+           <div class="message-action message-action-delete">
+           <button
+           type="button"
+           class="message-action-btn"
+           data-message-action="delete"
+           data-message-id="${esc(message.id)}"
+           aria-label="Delete message"
+           title="Delete"
+           >
+           ↧
+           </button>
+           </div>
+           `
+           : ""
         }
 
       </div>
