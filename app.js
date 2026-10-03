@@ -10303,6 +10303,26 @@ function openCamera() {
     document.querySelector(
       "#cameraGalleryAdd"
     );
+   
+const galleryAddText =
+  document.querySelector(
+    "#cameraGalleryAddText"
+  );
+
+const gallerySend =
+  document.querySelector(
+    "#cameraGallerySend"
+  );
+
+const galleryTextWrap =
+  document.querySelector(
+    "#cameraGalleryTextWrap"
+  );
+
+const galleryText =
+  document.querySelector(
+    "#cameraGalleryText"
+  );
 
   const galleryInput =
     document.querySelector(
