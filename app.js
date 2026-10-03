@@ -10763,12 +10763,22 @@ function openCamera() {
                   dragTargetThumb =
                     null;
 
+                                    /*
+                   * Long-press selects the picture
+                   * and immediately enters rearrange mode.
+                   */
+                  item.selected = true;
+
                   isDragging =
                     true;
 
                   suppressClick =
                     true;
 
+
+                  thumb.classList.add(
+                    "selected"
+                  );
 
                   thumb.classList.add(
                     "dragging"
