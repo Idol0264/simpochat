@@ -6948,3 +6948,427 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   SIMPOCHAT — MESSAGE REPLY / DELETE ACTIONS
+   ========================================================= */
+
+/* Message row needs a stable positioning area */
+.message-row {
+  position: relative;
+}
+
+.message-content {
+  position: relative;
+}
+
+
+/* ---------------------------------------------------------
+   REPLY / DELETE ACTION BUTTONS
+   --------------------------------------------------------- */
+
+.message-action {
+  position: relative;
+
+  display: flex;
+
+  width: 100%;
+
+  pointer-events: none;
+
+  animation:
+    messageActionIn .18s ease;
+}
+
+
+.message-action-reply {
+  justify-content: flex-start;
+
+  margin-bottom: 5px;
+}
+
+
+.message-action-delete {
+  justify-content: flex-start;
+
+  margin-top: 5px;
+}
+
+
+.message-action-btn {
+  width: 30px;
+  height: 30px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: var(--text);
+
+  background:
+    var(--surface-strong);
+
+  border:
+    1px solid
+    var(--line-strong);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 7px 18px
+    rgba(0,0,0,.14);
+
+  font-size: 16px;
+  font-weight: 850;
+
+  line-height: 1;
+
+  pointer-events: auto;
+
+  transition:
+    transform .15s ease,
+    background .15s ease,
+    color .15s ease;
+}
+
+
+.message-action-btn:active {
+  transform: scale(.86);
+}
+
+
+/* Reply icon */
+.message-action-reply
+.message-action-btn {
+  color: var(--accent);
+
+  border-color:
+    rgba(109,74,255,.20);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 9%,
+      var(--surface-strong)
+    );
+}
+
+
+/* Delete icon */
+.message-action-delete
+.message-action-btn {
+  color: var(--danger);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--danger) 22%,
+      var(--line)
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--danger) 8%,
+      var(--surface-strong)
+    );
+}
+
+
+/* ---------------------------------------------------------
+   REPLY QUOTE INSIDE SENT MESSAGE
+   --------------------------------------------------------- */
+
+.message-reply-preview {
+  width: 100%;
+
+  margin-bottom: 7px;
+
+  padding:
+    7px
+    9px;
+
+  color: inherit;
+
+  background:
+    rgba(255,255,255,.12);
+
+  border-left:
+    3px solid
+    rgba(255,255,255,.75);
+
+  border-radius:
+    9px
+    11px
+    11px
+    9px;
+
+  overflow: hidden;
+}
+
+
+.message-reply-preview strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  opacity: .92;
+}
+
+
+.message-reply-preview span {
+  display: block;
+
+  font-size: 10px;
+  line-height: 1.35;
+
+  opacity: .82;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Reply preview for non-purple messages */
+.message-row:not(.mine)
+.message-reply-preview {
+  color: var(--text);
+
+  background:
+    var(--surface);
+
+  border-left-color:
+    var(--accent);
+}
+
+
+/* ---------------------------------------------------------
+   REPLY PREVIEW ABOVE COMPOSER
+   --------------------------------------------------------- */
+
+.reply-composer-preview {
+  position: fixed;
+
+  left: 50%;
+
+  bottom:
+    calc(
+      138px +
+      env(safe-area-inset-bottom)
+    );
+
+  transform:
+    translateX(-50%);
+
+  width:
+    min(
+      calc(100% - 28px),
+      640px
+    );
+
+  z-index: 89;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  min-height: 52px;
+
+  padding:
+    7px
+    9px;
+
+  color: var(--text);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface-strong) 95%,
+      transparent
+    );
+
+  border:
+    1px solid
+    var(--line-strong);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 12px 32px
+    rgba(0,0,0,.14);
+
+  backdrop-filter:
+    blur(20px);
+
+  -webkit-backdrop-filter:
+    blur(20px);
+
+  animation:
+    replyComposerIn .18s ease;
+}
+
+
+.reply-composer-preview > div {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+
+.reply-composer-preview strong {
+  color: var(--accent);
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+
+.reply-composer-preview span {
+  min-width: 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  line-height: 1.35;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.reply-composer-preview button {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: var(--muted);
+
+  background:
+    var(--surface-soft);
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 50%;
+
+  font-size: 15px;
+}
+
+
+.reply-composer-preview button:active {
+  transform: scale(.88);
+}
+
+
+/* ---------------------------------------------------------
+   SMALL PHONES
+   --------------------------------------------------------- */
+
+@media (max-width: 390px) {
+
+  .message-action-btn {
+    width: 28px;
+    height: 28px;
+
+    font-size: 15px;
+  }
+
+
+  .message-action-reply {
+    margin-bottom: 4px;
+  }
+
+
+  .message-action-delete {
+    margin-top: 4px;
+  }
+
+
+  .message-reply-preview {
+    padding:
+      6px
+      8px;
+
+    margin-bottom: 6px;
+  }
+
+
+  .reply-composer-preview {
+    width:
+      calc(100% - 20px);
+
+    bottom:
+      calc(
+        132px +
+        env(safe-area-inset-bottom)
+      );
+
+    border-radius: 15px;
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   ANIMATIONS
+   --------------------------------------------------------- */
+
+@keyframes messageActionIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(5px)
+      scale(.92);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+@keyframes replyComposerIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      translateY(0);
+  }
+
+}
