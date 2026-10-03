@@ -3035,10 +3035,8 @@ function renderMessage(
 
 
   const actionsVisible =
-    own &&
     activeMessageActionId ===
       message.id;
-
 
   return `
 
