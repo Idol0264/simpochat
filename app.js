@@ -10180,11 +10180,46 @@ function openCamera() {
             <div class="camera-gallery-handle"></div>
 
             <div class="camera-gallery-title">
-              <span>Gallery</span>
-              <span id="cameraGalleryCount">
-                0 selected
-              </span>
-            </div>
+
+  <div class="camera-gallery-title-left">
+
+    <span>
+      Gallery
+    </span>
+
+    <span id="cameraGalleryCount">
+      0 selected
+    </span>
+
+  </div>
+
+
+  <div class="camera-gallery-title-actions">
+
+    <button
+      type="button"
+      class="camera-gallery-text-btn"
+      id="cameraGalleryAddText"
+      aria-label="Add text"
+      title="Add text"
+    >
+      Add text
+    </button>
+
+
+    <button
+      type="button"
+      class="camera-gallery-send-btn"
+      id="cameraGallerySend"
+      aria-label="Send pictures"
+      title="Send"
+    >
+      Send
+    </button>
+
+  </div>
+
+</div>
 
             <div
               class="camera-gallery-items"
