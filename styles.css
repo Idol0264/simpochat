@@ -6512,6 +6512,14 @@ span:last-child {
   object-position: center;
 }
 
+.camera-gallery-thumb img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+
+  pointer-events: none;
+}
+
 
 .camera-gallery-source {
   position: absolute;
