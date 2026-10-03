@@ -11341,6 +11341,28 @@ const galleryText =
   );
 
 
+  galleryAddText?.addEventListener(
+     "click",
+     () => {
+
+    if (!galleryTextWrap) {
+      return;
+    }
+
+    galleryTextWrap.hidden =
+      !galleryTextWrap.hidden;
+
+    if (
+      !galleryTextWrap.hidden &&
+      galleryText
+    ) {
+      galleryText.focus();
+    }
+
+  }
+);
+
+
   galleryInput?.addEventListener(
     "change",
     () => {
