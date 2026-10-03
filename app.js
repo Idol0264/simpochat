@@ -11022,7 +11022,7 @@ function openCamera() {
           "touchstart",
           startPress,
           {
-            passive: true
+            passive: false
           }
         );
 
@@ -11040,6 +11040,12 @@ function openCamera() {
           "touchend",
           endPress
         );
+         
+         
+         thumb.addEventListener(
+            "touchcancel",
+            endPress
+         );
          
          /*
          * Stop Android/Chrome's native
