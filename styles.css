@@ -6401,6 +6401,70 @@ span:last-child {
   font-size: 9px;
 }
 
+.camera-gallery-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.camera-gallery-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.camera-gallery-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.camera-gallery-text-btn,
+.camera-gallery-send-btn {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255,255,255,.08);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.camera-gallery-send-btn {
+  background: rgba(255,255,255,.14);
+}
+
+.camera-gallery-text-wrap {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.camera-gallery-text {
+  width: 100%;
+  min-height: 42px;
+  max-height: 90px;
+  resize: none;
+  box-sizing: border-box;
+
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 12px;
+
+  padding: 9px 11px;
+
+  background: rgba(0,0,0,.28);
+  color: inherit;
+
+  outline: none;
+  font: inherit;
+}
+
+.camera-gallery-text::placeholder {
+  opacity: .6;
+}
 
 /* ---------------------------------------------------------
    GALLERY ITEMS
