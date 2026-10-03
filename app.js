@@ -11040,12 +11040,18 @@ function openCamera() {
           "touchend",
           endPress
         );
-
-
-        thumb.addEventListener(
-          "touchcancel",
-          endPress
-        );
+         
+         /*
+         * Stop Android/Chrome's native
+         * long-press image menu.
+         */
+         thumb.addEventListener(
+            "contextmenu",
+            event => {
+               event.preventDefault();
+               event.stopPropagation();
+            }
+         );
 
 
         thumb.addEventListener(
