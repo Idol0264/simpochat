@@ -5250,6 +5250,36 @@ span:last-child {
   font-size: 9px;
 }
 
+.media-message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-media-image {
+  display: block;
+
+  width: 100%;
+  max-width: 240px;
+  max-height: 320px;
+
+  object-fit: cover;
+
+  border-radius: 12px;
+
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.media-message-text {
+  margin-top: 2px;
+
+  line-height: 1.4;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 
 /* ---------------------------------------------------------
    SMALL PHONES
