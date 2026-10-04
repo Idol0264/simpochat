@@ -7721,6 +7721,54 @@ span:last-child {
 }
 
 
+.simpo-access-message {
+  margin:
+    -10px
+    0
+    18px;
+
+  padding:
+    11px
+    13px;
+
+  color:
+    var(--danger);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--danger) 9%,
+      var(--surface)
+    );
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--danger) 22%,
+      var(--line)
+    );
+
+  border-radius:
+    14px;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+
+  text-align: center;
+
+  box-shadow:
+    0 8px 24px
+    rgba(0,0,0,.06);
+}
+
+
+.simpo-access-message[hidden] {
+  display: none;
+}
+
+
 .simpo-access-card .field {
   margin-bottom: 18px;
 }
