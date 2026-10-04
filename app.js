@@ -8606,14 +8606,14 @@ function openEditProfile() {
            pendingProfilePhoto =
               String(image);
            
-           photoPreview.innerHTML = `
-
-            <img
-              src="${esc(image)}"
-              alt="Profile photo preview"
-            >
-
-          `;
+           photoPreview.innerHTML =
+              renderUserAvatar(
+                 {
+                    ...user,
+                    avatarImage: String(image)
+                 },
+                 "profile-photo-preview"
+              );
 
         };
 
