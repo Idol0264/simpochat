@@ -7621,3 +7621,140 @@ span:last-child {
   }
 
 }
+
+/* =========================================================
+   SIMPOCHAT ACCESS / NAME + EMAIL SCREEN
+   ========================================================= */
+
+.simpo-access-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(145, 80, 255, 0.18),
+      transparent 42%
+    ),
+    var(--app-bg, #f4f6fa);
+
+  overflow-y: auto;
+}
+
+
+.simpo-access-card {
+  width: min(100%, 420px);
+
+  padding: 30px 24px;
+
+  border-radius: 28px;
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  border: 1px solid
+    rgba(120, 120, 140, 0.16);
+
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.12);
+
+  backdrop-filter: blur(18px);
+}
+
+
+.simpo-access-logo {
+  width: 68px;
+  height: 68px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 20px;
+
+  background: #7c3aed;
+
+  color: white;
+
+  font-size: 38px;
+  font-weight: 800;
+
+  box-shadow:
+    0 12px 30px
+    rgba(124, 58, 237, 0.28);
+}
+
+
+.simpo-access-card h1 {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+
+.simpo-access-subtitle {
+  margin: 10px 0 28px;
+
+  text-align: center;
+
+  opacity: 0.68;
+
+  line-height: 1.5;
+}
+
+
+.simpo-access-card .field {
+  margin-bottom: 18px;
+}
+
+
+.simpo-access-card input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.simpo-access-continue {
+  width: 100%;
+  margin-top: 6px;
+  min-height: 50px;
+}
+
+
+/* DARK MODE */
+
+html[data-theme="dark"] .simpo-access-screen {
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(145, 80, 255, 0.22),
+      transparent 42%
+    ),
+    #09090d;
+}
+
+
+html[data-theme="dark"] .simpo-access-card {
+  background:
+    rgba(25, 25, 32, 0.92);
+
+  border-color:
+    rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.42);
+}
