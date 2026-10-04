@@ -3193,22 +3193,10 @@ function renderMessage(
       data-message-id="${esc(message.id)}"
     >
 
-      <span
-        class="member-avatar message-avatar ${sender.avatarImage ? "has-photo" : ""}"
-        style="--h:${sender.hue || 210}"
-        aria-hidden="true"
-      >
-        ${
-          sender.avatarImage
-            ? `
-              <img
-                src="${esc(sender.avatarImage)}"
-                alt="${esc(sender.name || "Profile photo")}"
-              >
-            `
-            : esc(sender.avatar || "?")
-        }
-      </span>
+      ${renderUserAvatar(
+        sender,
+        "member-avatar message-avatar"
+      )}
 
 
       <div class="message-content">
