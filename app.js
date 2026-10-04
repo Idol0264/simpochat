@@ -11575,17 +11575,45 @@ const galleryText =
 
 
       document
-        .querySelector(
-          "#cameraPreviewClose"
-        )
-        ?.addEventListener(
-          "click",
-          () => {
+  .querySelector(
+    "#cameraPreviewClose"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
 
-            openCamera();
+      /*
+       * Stop the old camera stream before
+       * rebuilding the Camera screen.
+       *
+       * Do NOT clear cameraMediaItems.
+       * Those pictures must remain in Gallery.
+       */
+      if (activeCameraStream) {
 
-          }
-        );
+        activeCameraStream
+          .getTracks()
+          .forEach(
+            track => track.stop()
+          );
+
+        activeCameraStream =
+          null;
+      }
+
+
+      openCamera();
+
+
+      /*
+       * openCamera() rebuilds the Camera DOM.
+       * Render the existing pictures back
+       * into the Gallery.
+       */
+      renderCameraGallery();
+
+    }
+  );
 
     }
   );
