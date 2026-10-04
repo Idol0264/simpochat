@@ -12556,8 +12556,11 @@ function renderAccessSetup() {
       <div class="simpo-access-card">
 
         <div class="simpo-access-logo">
-          S
-        </div>
+  <img
+    src="icons/simpochat-icon-192.png"
+    alt="SimpoChat"
+  >
+</div>
 
         <h1>
           Welcome to SimpoChat
