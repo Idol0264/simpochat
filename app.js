@@ -12693,6 +12693,22 @@ function startSimpoChat() {
 
   bindHeaderSearch();
 
+
+  const profileSetupComplete =
+    localStorage.getItem(
+      PROFILE_SETUP_KEY
+    ) === "1";
+
+
+  if (!profileSetupComplete) {
+
+    renderAccessSetup();
+
+    return;
+
+  }
+
+
   render();
 
 }
