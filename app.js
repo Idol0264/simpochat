@@ -3003,6 +3003,95 @@ if (messageInput) {
 
 
 /* ---------------------------------------------------------
+   FULL-SCREEN MESSAGE IMAGE VIEWER
+   --------------------------------------------------------- */
+
+function attachMediaImageViewer() {
+
+  const messagesBox =
+    document.querySelector(
+      "#messages"
+    );
+
+  if (!messagesBox) {
+    return;
+  }
+
+
+  messagesBox
+    .querySelectorAll(
+      ".message-media-image"
+    )
+    .forEach(image => {
+
+      image.addEventListener(
+        "click",
+        event => {
+
+          event.stopPropagation();
+
+
+          const imageUrl =
+            image.getAttribute(
+              "src"
+            );
+
+
+          if (!imageUrl) {
+            return;
+          }
+
+
+          modalRoot.innerHTML = `
+
+            <div
+              class="camera-preview-screen"
+            >
+
+              <button
+                type="button"
+                class="camera-preview-close"
+                id="messageImageViewerClose"
+                aria-label="Close image"
+              >
+                ×
+              </button>
+
+
+              <img
+                class="camera-preview-image"
+                src="${esc(imageUrl)}"
+                alt="Full screen image"
+                draggable="false"
+              >
+
+            </div>
+
+          `;
+
+
+          document
+            .querySelector(
+              "#messageImageViewerClose"
+            )
+            ?.addEventListener(
+              "click",
+              () => {
+
+                modalRoot.innerHTML = "";
+
+              }
+            );
+
+        }
+      );
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
    MESSAGE
    --------------------------------------------------------- */
 
