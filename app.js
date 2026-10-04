@@ -12793,7 +12793,25 @@ async function startSimpoChat() {
     ) === "1";
 
 
-  if (!profileSetupComplete) {
+  const storedName =
+    state.currentUser?.name
+      ?.trim();
+
+  const storedEmail =
+    state.currentUser?.email
+      ?.trim()
+      .toLowerCase();
+
+
+  if (
+    !profileSetupComplete ||
+    !storedName ||
+    !storedEmail
+  ) {
+
+    localStorage.removeItem(
+      PROFILE_SETUP_KEY
+    );
 
     renderAccessSetup();
 
