@@ -10358,23 +10358,40 @@ function openCamera() {
             
             <div class="camera-gallery-title-actions">
             
+            ${
+               selectedCount > 0
+               ? `
+               <button
+               type="button"
+               class="camera-gallery-selection-btn"
+               id="cameraGalleryRemove"
+               >
+               Remove
+               </button>
+               
+               <button
+               type="button"
+               class="camera-gallery-selection-btn"
+               id="cameraGalleryPreview"
+               >
+               Preview
+               </button>
+               `
+               : ""
+            }
+            
             <button
             type="button"
             class="camera-gallery-text-btn"
             id="cameraGalleryAddText"
-            aria-label="Add text"
-            title="Add text"
             >
             Add text
             </button>
-            
             
             <button
             type="button"
             class="camera-gallery-send-btn"
             id="cameraGallerySend"
-            aria-label="Send pictures"
-            title="Send"
             >
             Send
             </button>
