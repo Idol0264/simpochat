@@ -12738,9 +12738,17 @@ function renderAccessSetup() {
         error
       );
 
-      alert(
-        "Unable to check access right now. Please try again."
-      );
+            const messageBox =
+        document.querySelector(
+          "#simpoAccessMessage"
+        );
+
+      if (messageBox) {
+        messageBox.textContent =
+          "Unable to check access right now. Please try again.";
+
+        messageBox.hidden = false;
+      }
 
     } finally {
 
