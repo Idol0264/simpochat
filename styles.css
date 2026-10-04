@@ -6773,6 +6773,20 @@ span:last-child {
     height: 48px;
   }
 
+    .camera-gallery-title-actions {
+    gap: 4px;
+  }
+
+  .camera-gallery-selection-btn,
+  .camera-gallery-text-btn,
+  .camera-gallery-send-btn {
+    padding:
+      6px
+      7px;
+
+    font-size: 10px;
+  }
+
 }
 
 /* =========================================================
