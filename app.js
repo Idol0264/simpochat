@@ -12888,10 +12888,18 @@ async function startSimpoChat() {
 
     renderAccessSetup();
 
-    alert(
-      data.message ||
-      "Access denied."
-    );
+    const messageBox =
+      document.querySelector(
+        "#simpoAccessMessage"
+      );
+
+    if (messageBox) {
+      messageBox.textContent =
+        data.message ||
+        "Access denied.";
+
+      messageBox.hidden = false;
+    }
 
     return;
 
@@ -12912,9 +12920,17 @@ async function startSimpoChat() {
 
     renderAccessSetup();
 
-    alert(
-      "Unable to check access right now. Please try again."
-    );
+    const messageBox =
+      document.querySelector(
+        "#simpoAccessMessage"
+      );
+
+    if (messageBox) {
+      messageBox.textContent =
+        "Unable to check access right now. Please try again.";
+
+      messageBox.hidden = false;
+    }
 
   }
 
