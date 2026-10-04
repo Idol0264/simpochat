@@ -8440,13 +8440,16 @@ function openEditProfile() {
 
 
         <!-- PROFILE PHOTO -->
-
+        
+        
         <div class="profile-photo-editor">
 
-        ${renderUserAvatar(
-           user,
-           "profile-photo-preview"
-        )}
+          <div id="profilePhotoPreview">
+            ${renderUserAvatar(
+              user,
+              "profile-photo-preview"
+            )}
+          </div>
 
 
           <input
