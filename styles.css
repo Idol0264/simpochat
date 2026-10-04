@@ -6517,6 +6517,13 @@ span:last-child {
     2px;
 
   scrollbar-width: none;
+
+  /*
+   * Allow the user to swipe
+   * the gallery left and right.
+   */
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
 }
 
 
