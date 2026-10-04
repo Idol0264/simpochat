@@ -6599,7 +6599,7 @@ span:last-child {
   -webkit-user-select: none;
   user-select: none;
 
-  touch-action: pan-y;
+  touch-action: pan-x;
 }
 
 
