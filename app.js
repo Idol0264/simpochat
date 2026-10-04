@@ -12637,49 +12637,114 @@ function renderAccessSetup() {
 
 
   form.addEventListener(
-    "submit",
-    event => {
+  "submit",
+  async event => {
 
-      event.preventDefault();
+    event.preventDefault();
 
-      const name =
-        document
-          .querySelector("#simpoAccessName")
-          ?.value
-          .trim();
+    const name =
+      document
+        .querySelector("#simpoAccessName")
+        ?.value
+        .trim();
 
-      const email =
-        document
-          .querySelector("#simpoAccessEmail")
-          ?.value
-          .trim()
-          .toLowerCase();
+    const email =
+      document
+        .querySelector("#simpoAccessEmail")
+        ?.value
+        .trim()
+        .toLowerCase();
 
+    const button =
+      form.querySelector(
+        ".simpo-access-continue"
+      );
 
-      if (!name || !email) {
+    if (!name || !email) {
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Checking...";
+    }
+
+    try {
+
+      const response =
+        await fetch(
+          SIMPOCHAT_ACCESS_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              name,
+              email
+            })
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        response.ok &&
+        data.allowed === true
+      ) {
+
+        state.currentUser.name =
+          name;
+
+        state.currentUser.email =
+          email;
+
+        saveState();
+
+        localStorage.setItem(
+          PROFILE_SETUP_KEY,
+          "1"
+        );
+
+        modalRoot.innerHTML = "";
+
+        render();
+
         return;
       }
 
+      const message =
+        data.message ||
+        "Access denied.";
 
-      state.currentUser.name =
-        name;
+      alert(message);
 
-      state.currentUser.email =
-        email;
+    } catch (error) {
 
-      saveState();
-
-      localStorage.setItem(
-        PROFILE_SETUP_KEY,
-        "1"
+      console.error(
+        "SimpoChat access check failed:",
+        error
       );
 
-      modalRoot.innerHTML = "";
+      alert(
+        "Unable to check access right now. Please try again."
+      );
 
-      render();
+    } finally {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Continue";
+      }
 
     }
-  );
+
+  }
+);
 
 }
 
