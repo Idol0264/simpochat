@@ -12745,12 +12745,7 @@ function renderAccessSetup() {
         error
       );
 
-            const messageBox =
-        document.querySelector(
-          "#simpoAccessMessage"
-        );
-
-            const messageBox =
+       const messageBox =
         document.querySelector(
           "#simpoAccessMessage"
         );
