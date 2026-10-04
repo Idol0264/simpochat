@@ -12914,16 +12914,41 @@ const response =
       await response.json();
 
 
-    if (
-      response.ok &&
-      data.allowed === true
-    ) {
+  if (
+  response.ok &&
+  data.allowed === true
+) {
 
-      render();
+  state.currentUser.id =
+    data.user?.id || state.currentUser.id;
 
-      return;
+  state.currentUser.name =
+    data.user?.name || name;
 
-    }
+  state.currentUser.email =
+    data.user?.email || email;
+
+  if (data.session_token) {
+    localStorage.setItem(
+      SESSION_TOKEN_KEY,
+      data.session_token
+    );
+  }
+
+  if (data.session_expires_at) {
+    localStorage.setItem(
+      "simpochat-session-expires-at-v1",
+      data.session_expires_at
+    );
+  }
+
+  saveState();
+
+  render();
+
+  return;
+
+}
 
 
     localStorage.removeItem(
