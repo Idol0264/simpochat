@@ -5269,6 +5269,18 @@ span:last-child {
 
   -webkit-user-drag: none;
   user-select: none;
+  -webkit-user-select: none;
+
+  cursor: pointer;
+
+  transition:
+    transform .15s ease,
+    opacity .15s ease;
+}
+
+.message-media-image:active {
+  transform: scale(.97);
+  opacity: .85;
 }
 
 .media-message-text {
