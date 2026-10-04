@@ -3095,6 +3095,57 @@ function attachMediaImageViewer() {
 
 
 /* ---------------------------------------------------------
+   USER AVATAR
+   --------------------------------------------------------- */
+
+function renderUserAvatar(
+  user,
+  className = "member-avatar"
+) {
+
+  if (!user) {
+    return `
+      <span
+        class="${className}"
+        style="--h:210"
+      >
+        ?
+      </span>
+    `;
+  }
+
+  const photo =
+    user.avatarImage || "";
+
+  const fallback =
+    user.avatar ||
+    user.name
+      ?.charAt(0)
+      ?.toUpperCase() ||
+    "?";
+
+  return `
+    <span
+      class="${className} ${photo ? "has-photo" : ""}"
+      style="--h:${user.hue || 210}"
+      aria-hidden="true"
+    >
+      ${
+        photo
+          ? `
+            <img
+              src="${esc(photo)}"
+              alt="${esc(user.name || "Profile photo")}"
+            >
+          `
+          : esc(fallback)
+      }
+    </span>
+  `;
+}
+
+
+/* ---------------------------------------------------------
    MESSAGE
    --------------------------------------------------------- */
 
