@@ -8443,32 +8443,10 @@ function openEditProfile() {
 
         <div class="profile-photo-editor">
 
-          <div
-            class="profile-photo-preview"
-            id="profilePhotoPreview"
-            style="--h:${user.hue}"
-          >
-
-            ${
-              user.avatarImage
-                ? `
-                  <img
-                    src="${esc(user.avatarImage)}"
-                    alt="Profile photo"
-                  >
-                `
-                : `
-                  ${esc(
-                    user.avatar ||
-                    user.name
-                      ?.charAt(0)
-                      ?.toUpperCase() ||
-                    "?"
-                  )}
-                `
-            }
-
-          </div>
+        ${renderUserAvatar(
+           user,
+           "profile-photo-preview"
+        )}
 
 
           <input
