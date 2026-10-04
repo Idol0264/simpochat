@@ -12721,17 +12721,30 @@ function renderAccessSetup() {
         await response.json();
 
       if (
-        response.ok &&
-        data.allowed === true
-      ) {
+  response.ok &&
+  data.allowed === true
+) {
 
-        state.currentUser.name =
-          name;
+  state.currentUser.id =
+    data.user?.id || state.currentUser.id;
 
-        state.currentUser.email =
-          email;
+  state.currentUser.name =
+    data.user?.name || name;
 
-        saveState();
+  state.currentUser.email =
+    data.user?.email || email;
+
+  localStorage.setItem(
+    SESSION_TOKEN_KEY,
+    data.session_token || ""
+  );
+
+  localStorage.setItem(
+    "simpochat-session-expires-at-v1",
+    data.session_expires_at || ""
+  );
+
+  saveState();
 
         localStorage.setItem(
           PROFILE_SETUP_KEY,
