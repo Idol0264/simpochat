@@ -2997,7 +2997,8 @@ if (messageInput) {
   }
 
      attachMessageLongPress();
-
+   
+     attachMediaImageViewer();
 }
 
 
