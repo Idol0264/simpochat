@@ -12951,13 +12951,21 @@ const response =
 }
 
 
-    localStorage.removeItem(
-      PROFILE_SETUP_KEY
-    );
+localStorage.removeItem(
+  PROFILE_SETUP_KEY
+);
 
-    modalRoot.innerHTML = "";
+localStorage.removeItem(
+  SESSION_TOKEN_KEY
+);
 
-    renderAccessSetup();
+localStorage.removeItem(
+  "simpochat-session-expires-at-v1"
+);
+
+modalRoot.innerHTML = "";
+
+renderAccessSetup();
 
     const messageBox =
       document.querySelector(
