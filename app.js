@@ -13,6 +13,7 @@ const STORAGE_KEY = "simpochat-state-v3";
 const LEGACY_STORAGE_KEY = "simpochat-state-v2";
 const THEME_KEY = "simpochat-theme";
 const PROFILE_SETUP_KEY = "simpochat-profile-setup-v1";
+const SESSION_TOKEN_KEY = "simpochat-session-token-v1";
 const SIMPOCHAT_ACCESS_URL =
   "https://uaxxzgkvjzemsevuzlcw.supabase.co/functions/v1/check-simpochat-access";
 
