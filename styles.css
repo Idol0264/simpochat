@@ -6452,6 +6452,35 @@ span:last-child {
   margin-left: auto;
 }
 
+.camera-gallery-selection-btn {
+  border:
+    1px solid
+    rgba(255,255,255,.16);
+
+  border-radius: 10px;
+
+  padding:
+    6px
+    9px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  background:
+    rgba(255,255,255,.08);
+
+  color: inherit;
+
+  white-space: nowrap;
+}
+
+.camera-gallery-selection-btn:active {
+  transform: scale(.94);
+
+  background:
+    rgba(255,255,255,.16);
+}
+
 .camera-gallery-text-btn,
 .camera-gallery-send-btn {
   border: 1px solid rgba(255,255,255,.16);
