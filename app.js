@@ -12544,6 +12544,142 @@ if (
 
 
 /* ---------------------------------------------------------
+   SIMPOCHAT ACCESS — NAME + EMAIL SETUP
+   --------------------------------------------------------- */
+
+function renderAccessSetup() {
+
+  modalRoot.innerHTML = `
+
+    <div class="simpo-access-screen">
+
+      <div class="simpo-access-card">
+
+        <div class="simpo-access-logo">
+          S
+        </div>
+
+        <h1>
+          Welcome to SimpoChat
+        </h1>
+
+        <p class="simpo-access-subtitle">
+          Enter your name and email to continue.
+        </p>
+
+
+        <form id="simpoAccessForm">
+
+          <div class="field">
+
+            <label for="simpoAccessName">
+              Name
+            </label>
+
+            <input
+              id="simpoAccessName"
+              type="text"
+              autocomplete="name"
+              placeholder="Your name"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="simpoAccessEmail">
+              Email
+            </label>
+
+            <input
+              id="simpoAccessEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            >
+
+          </div>
+
+
+          <button
+            class="primary-btn simpo-access-continue"
+            type="submit"
+          >
+            Continue
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  const form =
+    document.querySelector(
+      "#simpoAccessForm"
+    );
+
+
+  if (!form) {
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+      const name =
+        document
+          .querySelector("#simpoAccessName")
+          ?.value
+          .trim();
+
+      const email =
+        document
+          .querySelector("#simpoAccessEmail")
+          ?.value
+          .trim()
+          .toLowerCase();
+
+
+      if (!name || !email) {
+        return;
+      }
+
+
+      state.currentUser.name =
+        name;
+
+      state.currentUser.email =
+        email;
+
+      saveState();
+
+      localStorage.setItem(
+        PROFILE_SETUP_KEY,
+        "1"
+      );
+
+      modalRoot.innerHTML = "";
+
+      render();
+
+    }
+  );
+
+}
+
+
+/* ---------------------------------------------------------
    STARTUP
    --------------------------------------------------------- */
 
