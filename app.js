@@ -12573,6 +12573,13 @@ function renderAccessSetup() {
         </p>
 
 
+        <div
+          id="simpoAccessMessage"
+          class="simpo-access-message"
+          hidden
+        ></div>
+
+
         <form id="simpoAccessForm">
 
           <div class="field">
