@@ -3713,14 +3713,23 @@ function sendCameraMediaMessage() {
 
 
   /*
-   * Return from Camera to the Group Chat.
-   */
-  if (
-    typeof stopCamera ===
-    "function"
-  ) {
-    stopCamera();
-  }
+ * Return from Camera to the Group Chat.
+ */
+
+if (activeCameraStream) {
+
+  activeCameraStream
+    .getTracks()
+    .forEach(
+      track => track.stop()
+    );
+
+  activeCameraStream =
+    null;
+}
+
+
+modalRoot.innerHTML = "";
 
 }
 
