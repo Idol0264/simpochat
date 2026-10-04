@@ -10719,6 +10719,29 @@ const galleryText =
     ).length;
 
 
+  const removeButton =
+    document.querySelector(
+      "#cameraGalleryRemove"
+    );
+
+  const previewButton =
+    document.querySelector(
+      "#cameraGalleryPreview"
+    );
+
+
+  if (removeButton) {
+    removeButton.hidden =
+      selectedCount === 0;
+  }
+
+
+  if (previewButton) {
+    previewButton.hidden =
+      selectedCount === 0;
+  }
+
+
   count.textContent =
     selectedCount
       ? `${selectedCount} selected`
