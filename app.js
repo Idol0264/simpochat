@@ -12743,13 +12743,18 @@ function renderAccessSetup() {
           "#simpoAccessMessage"
         );
 
+            const messageBox =
+        document.querySelector(
+          "#simpoAccessMessage"
+        );
+
       if (messageBox) {
         messageBox.textContent =
           "Unable to check access right now. Please try again.";
 
         messageBox.hidden = false;
       }
-
+       
     } finally {
 
       if (button) {
