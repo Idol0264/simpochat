@@ -12879,23 +12879,35 @@ async function startSimpoChat() {
 
   try {
 
-    const response =
-      await fetch(
-        SIMPOCHAT_ACCESS_URL,
-        {
-          method: "POST",
+const sessionToken =
+  localStorage.getItem(
+    SESSION_TOKEN_KEY
+  );
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+const response =
+  await fetch(
+    SIMPOCHAT_ACCESS_URL,
+    {
+      method: "POST",
 
-          body: JSON.stringify({
-            name,
-            email
-          })
-        }
-      );
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        ...(sessionToken
+          ? {
+              "Authorization":
+                `Bearer ${sessionToken}`
+            }
+          : {})
+      },
+
+      body: JSON.stringify({
+        name,
+        email
+      })
+    }
+  );
 
 
     const data =
