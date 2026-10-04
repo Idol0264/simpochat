@@ -12,6 +12,7 @@
 const STORAGE_KEY = "simpochat-state-v3";
 const LEGACY_STORAGE_KEY = "simpochat-state-v2";
 const THEME_KEY = "simpochat-theme";
+const PROFILE_SETUP_KEY = "simpochat-profile-setup-v1";
 
 const MESSAGE_LIFETIME = 2 * 24 * 60 * 60 * 1000;
 const TWO_DAYS_MS = MESSAGE_LIFETIME;
