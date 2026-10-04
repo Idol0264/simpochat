@@ -12753,7 +12753,7 @@ function renderAccessSetup() {
    STARTUP
    --------------------------------------------------------- */
 
-function startSimpoChat() {
+async function startSimpoChat() {
 
   cleanupExpired();
 
@@ -12779,7 +12779,103 @@ function startSimpoChat() {
   }
 
 
-  render();
+  const name =
+    state.currentUser?.name
+      ?.trim();
+
+  const email =
+    state.currentUser?.email
+      ?.trim()
+      .toLowerCase();
+
+
+  if (!name || !email) {
+
+    localStorage.removeItem(
+      PROFILE_SETUP_KEY
+    );
+
+    renderAccessSetup();
+
+    return;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            name,
+            email
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      response.ok &&
+      data.allowed === true
+    ) {
+
+      render();
+
+      return;
+
+    }
+
+
+    localStorage.removeItem(
+      PROFILE_SETUP_KEY
+    );
+
+    modalRoot.innerHTML = "";
+
+    renderAccessSetup();
+
+    alert(
+      data.message ||
+      "Access denied."
+    );
+
+    return;
+
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat startup access check failed:",
+      error
+    );
+
+
+    localStorage.removeItem(
+      PROFILE_SETUP_KEY
+    );
+
+    modalRoot.innerHTML = "";
+
+    renderAccessSetup();
+
+    alert(
+      "Unable to check access right now. Please try again."
+    );
+
+  }
 
 }
 
