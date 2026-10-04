@@ -1,0 +1,19 @@
+{
+  "name": "SimpoChat",
+  "short_name": "SimpoChat",
+  "description": "Group-first conversations and temporary posts.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#7c3aed",
+  "background_color": "#f4f6fa",
+  "icons": [
+    {
+      "src": "./icons/simpochat-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
