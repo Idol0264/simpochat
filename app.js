@@ -11478,6 +11478,25 @@ const galleryText =
     }
   );
 
+        /* =======================================================
+     SEND CAMERA MEDIA
+     ======================================================= */
+
+  const sendButton =
+    document.querySelector(
+      "#cameraGallerySend"
+    );
+
+
+  sendButton?.addEventListener(
+    "click",
+    () => {
+
+      sendCameraMediaMessage();
+
+    }
+  );
+
 }
 
 
