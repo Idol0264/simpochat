@@ -10731,30 +10731,6 @@ const galleryText =
 
   items.innerHTML = `
 
-    <div class="camera-gallery-actions">
-
-      <button
-        type="button"
-        class="camera-gallery-action remove"
-        id="cameraGalleryRemove"
-        aria-label="Remove selected pictures"
-        title="Remove selected"
-      >
-        🚫
-      </button>
-
-      <button
-        type="button"
-        class="camera-gallery-action preview"
-        id="cameraGalleryPreview"
-        aria-label="Preview selected pictures"
-        title="Preview selected"
-      >
-        🕵🏾‍♂️
-      </button>
-
-    </div>
-
 
     <button
       type="button"
