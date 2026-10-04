@@ -10357,46 +10357,42 @@ function openCamera() {
             
             
             <div class="camera-gallery-title-actions">
-            
-            ${
-               selectedCount > 0
-               ? `
-               <button
-               type="button"
-               class="camera-gallery-selection-btn"
-               id="cameraGalleryRemove"
-               >
-               Remove
-               </button>
-               
-               <button
-               type="button"
-               class="camera-gallery-selection-btn"
-               id="cameraGalleryPreview"
-               >
-               Preview
-               </button>
-               `
-               : ""
-            }
-            
-            <button
-            type="button"
-            class="camera-gallery-text-btn"
-            id="cameraGalleryAddText"
-            >
-            Add text
-            </button>
-            
-            <button
-            type="button"
-            class="camera-gallery-send-btn"
-            id="cameraGallerySend"
-            >
-            Send
-            </button>
-            
-            </div>
+
+  <button
+    type="button"
+    class="camera-gallery-selection-btn"
+    id="cameraGalleryRemove"
+    hidden
+  >
+    Remove
+  </button>
+
+  <button
+    type="button"
+    class="camera-gallery-selection-btn"
+    id="cameraGalleryPreview"
+    hidden
+  >
+    Preview
+  </button>
+
+  <button
+    type="button"
+    class="camera-gallery-text-btn"
+    id="cameraGalleryAddText"
+  >
+    Add text
+  </button>
+
+  <button
+    type="button"
+    class="camera-gallery-send-btn"
+    id="cameraGallerySend"
+  >
+    Send
+  </button>
+
+</div>
             
             </div>
             
