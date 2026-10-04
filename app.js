@@ -3504,6 +3504,135 @@ function sendMessage() {
   renderGroupChat();
 }
 
+/* ---------------------------------------------------------
+   SEND CAMERA MEDIA MESSAGE
+   --------------------------------------------------------- */
+
+function sendCameraMediaMessage() {
+
+  const group =
+    getGroup(state.selectedGroup);
+
+  if (!group) {
+    return;
+  }
+
+
+  if (!cameraMediaItems.length) {
+    return;
+  }
+
+
+  const textInput =
+    document.querySelector(
+      "#cameraGalleryText"
+    );
+
+
+  const text =
+    textInput
+      ? textInput.value.trim()
+      : "";
+
+
+  /*
+   * Keep the current Gallery order.
+   *
+   * Selection is only for rearranging/removing.
+   * Sending sends every picture currently
+   * remaining in the Gallery.
+   */
+  const media =
+    cameraMediaItems.map(
+      item => ({
+        type:
+          item.type || "image",
+
+        url:
+          item.url,
+
+        name:
+          item.name || ""
+      })
+    );
+
+
+  if (!state.messages[group.id]) {
+
+    state.messages[group.id] =
+      [];
+
+  }
+
+
+  state.messages[group.id].push({
+
+    id:
+      uid("message"),
+
+    member:
+      state.currentUser.id,
+
+    type:
+      "media",
+
+    media,
+
+    text,
+
+    createdAt:
+      now(),
+
+    read:
+      true,
+
+    replyTo:
+      null
+
+  });
+
+
+  /*
+   * Clean up the Gallery object URLs
+   * only after the message has received
+   * their references.
+   */
+  cameraMediaItems =
+    [];
+
+
+  if (textInput) {
+    textInput.value = "";
+  }
+
+
+  const textWrap =
+    document.querySelector(
+      "#cameraGalleryTextWrap"
+    );
+
+
+  if (textWrap) {
+    textWrap.hidden = true;
+  }
+
+
+  saveState();
+
+  renderGroupChat();
+
+
+  /*
+   * Return from Camera to the Group Chat.
+   */
+  if (
+    typeof stopCamera ===
+    "function"
+  ) {
+    stopCamera();
+  }
+
+}
 
 /* ---------------------------------------------------------
    VOICE MESSAGE
