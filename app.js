@@ -12717,11 +12717,19 @@ function renderAccessSetup() {
         return;
       }
 
-      const message =
+            const message =
         data.message ||
         "Access denied.";
 
-      alert(message);
+      const messageBox =
+        document.querySelector(
+          "#simpoAccessMessage"
+        );
+
+      if (messageBox) {
+        messageBox.textContent = message;
+        messageBox.hidden = false;
+      }
 
     } catch (error) {
 
