@@ -732,6 +732,7 @@ function goBack() {
   ) {
 
     stopGroupMessageRefresh();
+     
     state.screen = "home";
   } else {
 
