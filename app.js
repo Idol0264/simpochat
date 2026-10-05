@@ -4278,62 +4278,96 @@ function renderGroupProfile() {
     <div class="profile-page">
 
 
-      <div class="profile-hero">
+<div class="profile-hero">
 
-        <button
-          class="icon-btn profile-back"
-          data-action="back"
-        >
-          ‹
-        </button>
-        
-        
-        <div
-        class="profile-avatar ${group.photo ? "has-photo" : ""}"
-        style="--h:${group.hue}"
-        >
-        ${
-           group.photo
-           ? `
-           <img
-           src="${group.photo}"
-           alt="${esc(group.name)}"
-           >
-           `
-           : esc(group.icon)
-        }
-        </div>
-
-        <p>
-          ${group.members.length}
-          members
-        </p>
+  <button
+    class="icon-btn profile-back"
+    data-action="back"
+  >
+    ‹
+  </button>
 
 
-        <div class="profile-actions">
+  <div class="profile-photo-wrap">
 
+    <div
+      class="profile-avatar ${group.photo ? "has-photo" : ""}"
+      style="--h:${group.hue}"
+    >
+      ${
+        group.photo
+          ? `
+            <img
+              src="${group.photo}"
+              alt="${esc(group.name)}"
+            >
+          `
+          : esc(group.icon)
+      }
+    </div>
+
+
+    ${
+      (
+        isGroupAdmin(group) &&
+        (
+          group.approval_mode === "admins" ||
+          group.creatorId ===
+            state.currentUser?.id
+        )
+      )
+        ? `
           <button
-            class="secondary-btn"
-            data-action="star-group"
+            class="profile-notification-btn"
+            data-action="group-notifications"
+            aria-label="Group notifications"
           >
+            🔔
             ${
-              isStarred(group.id)
-                ? "★ Starred"
-                : "☆ Star"
+              getGroupJoinNotifications(
+                group.id
+              ).length > 0
+                ? `<span class="profile-notification-dot"></span>`
+                : ""
             }
           </button>
+        `
+        : ""
+    }
+
+  </div>
 
 
-          <button
-            class="secondary-btn"
-            data-action="group-chat"
-          >
-            Open Chat
-          </button>
+  <p>
+    ${group.members.length}
+    members
+  </p>
 
-        </div>
 
-      </div>
+  <div class="profile-actions">
+
+    <button
+      class="secondary-btn"
+      data-action="star-group"
+    >
+      ${
+        isStarred(group.id)
+          ? "★ Starred"
+          : "☆ Star"
+      }
+    </button>
+
+
+    <button
+      class="secondary-btn"
+      data-action="group-chat"
+    >
+      Open Chat
+    </button>
+
+  </div>
+
+</div>
 
 
       <section class="profile-section">
