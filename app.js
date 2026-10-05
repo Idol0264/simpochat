@@ -8841,49 +8841,258 @@ function renderSearchGroup(
    JOIN REQUEST
    --------------------------------------------------------- */
 
-function requestToJoinGroup(
+async function requestToJoinGroup(
   groupId
 ) {
 
-  const group =
-    getGroup(groupId);
-
-
-  if (!group) {
+  if (!groupId) {
     return;
   }
 
 
-  if (
-    state.groups.some(
-      item =>
-        item.id === groupId
-    )
-  ) {
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken) {
+
+    alert(
+      "Your SimpoChat session has expired. Please continue again."
+    );
+
     return;
   }
 
 
-  state.joinRequests[
-    groupId
-  ] = {
+  try {
 
-    createdAt:
-      now(),
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
 
-    status:
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "join_group",
+
+            group_id:
+              groupId
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.allowed !== true
+    ) {
+
+      alert(
+        data.message ||
+        "Unable to join this group."
+      );
+
+      return;
+
+    }
+
+
+    const remoteGroup =
+      data.group;
+
+
+    /*
+     * Store the real Supabase group locally
+     * so Open/Profile/Chat can use it.
+     */
+
+    if (remoteGroup) {
+
+      const existingIndex =
+        state.groups.findIndex(
+          group =>
+            group.id ===
+            remoteGroup.id
+        );
+
+
+      const localGroup = {
+
+        id:
+          remoteGroup.id,
+
+        name:
+          remoteGroup.name,
+
+        icon:
+          remoteGroup.icon ||
+          remoteGroup.name
+            ?.charAt(0)
+            ?.toUpperCase() ||
+          "G",
+
+        photo:
+          remoteGroup.photo_url ||
+          remoteGroup.photo ||
+          "",
+
+        hue:
+          randomHue(),
+
+        category:
+          safeArray(
+            remoteGroup.category
+          ),
+
+        members:
+          safeArray(
+            remoteGroup.members
+          ),
+
+        join_mode:
+          remoteGroup.join_mode ||
+          remoteGroup.join_policy,
+
+        approval_mode:
+          remoteGroup.approval_mode ||
+          remoteGroup.join_approval,
+
+        creatorId:
+          remoteGroup.created_by ||
+          remoteGroup.creator_id,
+
+        admin:
+          remoteGroup.join_status ===
+          "member" &&
+          (
+            remoteGroup.created_by ===
+            state.currentUser?.id
+          )
+
+      };
+
+
+      if (
+        existingIndex >= 0
+      ) {
+
+        state.groups[
+          existingIndex
+        ] = {
+          ...state.groups[
+            existingIndex
+          ],
+          ...localGroup
+        };
+
+      } else if (
+        data.join_status ===
+        "member"
+      ) {
+
+        state.groups.push(
+          localGroup
+        );
+
+      }
+
+    }
+
+
+    /*
+     * Open groups:
+     * the user is now a real member.
+     */
+
+    if (
+      data.join_status ===
+      "member"
+    ) {
+
+      delete state.joinRequests[
+        groupId
+      ];
+
+      state.selectedGroup =
+        groupId;
+
+      state.screen =
+        "group-chat";
+
+      saveState();
+
+      render();
+
+      return;
+
+    }
+
+
+    /*
+     * Approval groups:
+     * keep the request as pending.
+     */
+
+    if (
+      data.join_status ===
       "pending"
+    ) {
 
-  };
+      state.joinRequests[
+        groupId
+      ] = {
+
+        createdAt:
+          now(),
+
+        status:
+          "pending"
+
+      };
+
+      saveState();
+
+      renderSearchResults();
+
+      alert(
+        `Join request sent to ${
+          remoteGroup?.name ||
+          "this group"
+        }.`
+      );
+
+      return;
+
+    }
 
 
-  saveState();
+  } catch (error) {
 
-  renderSearchResults();
+    console.error(
+      "Join group failed:",
+      error
+    );
 
-  alert(
-    `Join request sent to ${group.name}.`
-  );
+    alert(
+      "Unable to connect to SimpoChat right now."
+    );
+
+  }
+
 }
 
 
