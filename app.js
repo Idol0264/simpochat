@@ -4734,6 +4734,47 @@ function renderGroupProfile() {
     </div>
 
   `;
+
+
+  /*
+   * Keep the admin notification indicator
+   * synchronized with Supabase while the
+   * group profile is open.
+   */
+  const canReceiveJoinNotifications =
+    isGroupAdmin(group) &&
+    (
+      group.approval_mode === "admins" ||
+      group.creatorId ===
+        state.currentUser?.id
+    );
+
+
+  if (
+    canReceiveJoinNotifications
+  ) {
+
+    startGroupJoinNotificationRefresh(
+      group.id
+    );
+
+
+    loadGroupJoinNotifications(
+      group.id
+    ).then(() => {
+
+      updateGroupNotificationDot(
+        group.id
+      );
+
+    });
+
+  } else {
+
+    stopGroupJoinNotificationRefresh();
+
+  }
+
 }
 
 
