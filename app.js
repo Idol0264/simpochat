@@ -730,6 +730,8 @@ function goBack() {
     state.screen === "group-chat" ||
     state.screen === "group-profile"
   ) {
+
+    stopGroupMessageRefresh();
     state.screen = "home";
   } else {
 
