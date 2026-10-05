@@ -2617,6 +2617,89 @@ function createGroup() {
    GROUP CHAT + GROUP PROFILE + MESSAGES + CHAT ACTIONS
    ========================================================= */
 
+
+async function loadGroupMessages(groupId) {
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken || !groupId) {
+    return [];
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${sessionToken}`,
+
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            action: "list_messages",
+            group_id: groupId
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.allowed ||
+      !Array.isArray(data.messages)
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load messages."
+      );
+    }
+
+    state.messages[groupId] =
+      data.messages.map(
+        message => ({
+          id: message.id,
+          member: message.sender_id,
+          text: message.text,
+          createdAt: message.created_at,
+          read: true,
+          replyTo:
+            message.reply_to || null,
+          expiresAt:
+            message.expires_at
+        })
+      );
+
+    saveState();
+
+    return state.messages[groupId];
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat loadGroupMessages error:",
+      error
+    );
+
+    return safeArray(
+      state.messages[groupId]
+    );
+
+  }
+}
+
+
 /* ---------------------------------------------------------
    GROUP CHAT
    --------------------------------------------------------- */
