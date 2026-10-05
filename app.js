@@ -2339,24 +2339,17 @@ function renderNewGroup() {
    CREATE GROUP
    --------------------------------------------------------- */
 
-function createGroup() {
+async function createGroup() {
 
   const input =
     $("#newGroupName");
-
 
   if (!input) {
     return;
   }
 
-
   const name =
     input.value.trim();
-
-
-  /*
-   * Selected categories.
-   */
 
   const categories =
     [
@@ -2371,262 +2364,279 @@ function createGroup() {
       )
       .filter(Boolean);
 
-
-  /*
-   * Group access setting.
-   *
-   * open =
-   * anyone can join directly.
-   *
-   * approval =
-   * people must request to join.
-   */
-
   const joinPolicyInput =
     document.querySelector(
       'input[name="joinPolicy"]:checked'
     );
-
 
   const joinPolicy =
     joinPolicyInput
       ? joinPolicyInput.value
       : "open";
 
-
-  /*
-   * Approval authority.
-   *
-   * any-admin =
-   * any administrator can approve.
-   *
-   * creator-only =
-   * only the original creator can approve.
-   */
-
   const joinApprovalInput =
     document.querySelector(
       'input[name="joinApproval"]:checked'
     );
-
 
   const joinApproval =
     joinApprovalInput
       ? joinApprovalInput.value
       : "any-admin";
 
-
-  /*
-   * Validate group name.
-   */
-
   if (!name) {
-
     alert(
       "Enter a group name."
     );
-
     input.focus();
-
     return;
   }
 
-
-  /*
-   * At least one category.
-   */
-
-  if (
-    categories.length < 1
-  ) {
-
+  if (categories.length < 1) {
     alert(
       "Select at least 1 category."
     );
-
     return;
   }
 
-
-  /*
-   * Maximum three categories.
-   */
-
-  if (
-    categories.length > 3
-  ) {
-
+  if (categories.length > 3) {
     alert(
       "Select no more than 3 categories."
     );
-
     return;
   }
 
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
 
-  /*
-   * Create the new group.
-   */
-
-  const id =
-    uid("group");
-
-
-  const user =
-    state.currentUser;
-
-
-  /*
-   * The person creating the group
-   * is permanently identified as
-   * the original creator.
-   */
-
-  const group = {
-
-    id,
-
-    name,
-
-    icon:
-      name
-        .charAt(0)
-        .toUpperCase(),
-
-    hue:
-      randomHue(),
-
-    category:
-      categories,
-     
-    photo:
-      pendingNewGroupPhoto || "",
-
-
-    /*
-     * Creator
-     */
-
-    creatorId:
-      user.id,
-
-
-    /*
-     * The creator is also the
-     * first administrator.
-     */
-
-    admin:
-      true,
-
-
-    /*
-     * Group join rules.
-     */
-
-    joinPolicy,
-
-    joinApproval,
-
-
-    unseen:
-      0,
-
-
-    /*
-     * Creator starts as the
-     * first member.
-     */
-
-    members: [
-
-      {
-         id: user.id,
-         name: user.name,
-         avatar: user.avatar,
-         avatarImage: user.avatarImage || "",
-         hue: user.hue
-      }
-
-    ]
-
-  };
-
-
-  /*
-   * Add group immediately.
-   */
-
-  state.groups.unshift(
-    group
-  );
-
-
-  /*
-   * Create empty message
-   * storage for the group.
-   */
-
-  state.messages[id] =
-    [];
-
-
-  /*
-   * New creator becomes
-   * the selected group.
-   */
-
-  state.selectedGroup =
-    id;
-
-
-  state.previousScreen =
-    "home";
-
-
-  /*
-   * Remove any menu/modal overlay.
-   *
-   * This prevents the screen from
-   * becoming blocked after creation.
-   */
-
-  if (typeof modalRoot !== "undefined") {
-
-    modalRoot.innerHTML = "";
-
+  if (!sessionToken) {
+    alert(
+      "Your SimpoChat session is not available. Please try again."
+    );
+    return;
   }
 
+  const createButton =
+    document.querySelector(
+      "[data-action='create-group']"
+    );
 
-  /*
-   * Open the new group's
-   * profile after creation.
-   */
+  if (createButton) {
+    createButton.disabled = true;
+    createButton.textContent =
+      "Creating...";
+  }
 
-  state.screen =
-    "group-profile";
+  try {
 
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
 
-  state.selectionMode =
-    false;
+          headers: {
+            "Content-Type":
+              "application/json",
 
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
 
-  state.selectedItems =
-    [];
+          body: JSON.stringify({
+            action:
+              "create_group",
 
+            name,
 
-  /*
-   * Save the new group.
-   *
-   * This keeps the group and its
-   * join settings after refresh.
-   */
+            categories,
 
-  saveState();
+            join_policy:
+              joinPolicy,
 
+            approval_mode:
+              joinApproval ===
+              "creator-only"
+                ? "creator"
+                : "admins"
+          })
+        }
+      );
 
-  render();
+    const data =
+      await response.json();
 
+    if (
+      !response.ok ||
+      !data.group
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to create group."
+      );
+    }
+
+    const remote =
+      data.group;
+
+    const group = {
+
+      id:
+        remote.id,
+
+      name:
+        remote.name ||
+        name,
+
+      icon:
+        remote.icon ||
+        name
+          .charAt(0)
+          .toUpperCase(),
+
+      hue:
+        randomHue(),
+
+      category:
+        safeArray(
+          remote.category
+        ).length
+          ? safeArray(
+              remote.category
+            )
+          : categories,
+
+      photo:
+        pendingNewGroupPhoto ||
+        remote.photo_url ||
+        "",
+
+      creatorId:
+        remote.creator_id ||
+        remote.created_by ||
+        state.currentUser.id,
+
+      admin:
+        true,
+
+      joinPolicy:
+        remote.join_policy ||
+        remote.join_mode ||
+        joinPolicy,
+
+      joinApproval:
+        remote.join_approval ||
+        remote.approval_mode ||
+        (
+          joinApproval ===
+          "creator-only"
+            ? "creator"
+            : "admins"
+        ),
+
+      unseen:
+        0,
+
+      members: [
+
+        {
+          id:
+            state.currentUser.id,
+
+          name:
+            state.currentUser.name,
+
+          avatar:
+            state.currentUser.avatar,
+
+          avatarImage:
+            state.currentUser.avatarImage ||
+            "",
+
+          hue:
+            state.currentUser.hue
+        }
+
+      ]
+
+    };
+
+    /*
+     * Replace any local copy of
+     * this same server group.
+     */
+
+    state.groups =
+      safeArray(
+        state.groups
+      ).filter(
+        existing =>
+          existing.id !==
+          group.id
+      );
+
+    state.groups.unshift(
+      group
+    );
+
+    state.messages[group.id] =
+      [];
+
+    state.selectedGroup =
+      group.id;
+
+    state.previousScreen =
+      "home";
+
+    state.screen =
+      "group-profile";
+
+    state.selectionMode =
+      false;
+
+    state.selectedItems =
+      [];
+
+    pendingNewGroupPhoto =
+      "";
+
+    if (
+      typeof modalRoot !==
+      "undefined"
+    ) {
+      modalRoot.innerHTML =
+        "";
+    }
+
+    saveState();
+
+    render();
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat group creation failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to create group right now."
+    );
+
+  } finally {
+
+    if (createButton) {
+      createButton.disabled =
+        false;
+
+      createButton.textContent =
+        "Create Group";
+    }
+
+  }
 }
 
 /* =========================================================
