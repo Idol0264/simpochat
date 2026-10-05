@@ -10147,6 +10147,128 @@ function handleAction(
   break;
 
 
+    case "group-notifications":
+
+      if (
+        state.selectedGroup
+      ) {
+
+        openGroupNotifications(
+          state.selectedGroup
+        );
+
+      }
+
+      break;
+
+
+    case "review-join-request":
+
+      if (
+        state.selectedGroup &&
+        actionTarget
+      ) {
+
+        const requestId =
+          actionTarget.dataset
+            .requestId;
+
+        const decision =
+          actionTarget.dataset
+            .requestDecision;
+
+        const result =
+          await reviewGroupJoinRequest(
+            state.selectedGroup,
+            requestId,
+            decision
+          );
+
+        if (!result.success) {
+
+          alert(
+            result.message
+          );
+
+          break;
+
+        }
+
+        const group =
+          getGroup(
+            state.selectedGroup
+          );
+
+        const requests =
+          getGroupJoinNotifications(
+            state.selectedGroup
+          );
+
+        const request =
+          requests.find(
+            item =>
+              String(item.id) ===
+              String(requestId)
+          );
+
+        if (
+          decision === "approved" &&
+          request &&
+          group
+        ) {
+
+          const alreadyMember =
+            safeArray(
+              group.members
+            ).some(
+              member =>
+                String(member.id) ===
+                String(request.user_id)
+            );
+
+          if (!alreadyMember) {
+
+            group.members.push({
+
+              id:
+                request.user_id,
+
+              name:
+                request.name ||
+                "SimpoChat user",
+
+              avatar:
+                request.avatar ||
+                request.name
+                  ?.charAt(0)
+                  ?.toUpperCase() ||
+                "?",
+
+              hue:
+                randomHue(),
+
+              role:
+                "member"
+
+            });
+
+          }
+
+        }
+
+        saveState();
+
+        await openGroupNotifications(
+          state.selectedGroup
+        );
+
+        renderGroupProfile();
+
+      }
+
+      break;
+
+
     case "group-chat":
 
       if (
