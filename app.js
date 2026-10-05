@@ -4947,14 +4947,23 @@ function renderGroupProfile() {
    * synchronized with Supabase while the
    * group profile is open.
    */
-  const canReceiveJoinNotifications =
-    isGroupAdmin(group) &&
-    (
-      group.approval_mode === "admins" ||
-      group.creatorId ===
-        state.currentUser?.id
-    );
+const approvalMode =
+  group.approval_mode ||
+  group.joinApproval ||
+  "creator";
 
+const creatorId =
+  group.creatorId ||
+  group.created_by ||
+  "";
+
+const canReceiveJoinNotifications =
+  isGroupAdmin(group) &&
+  (
+    approvalMode === "admins" ||
+    creatorId ===
+      state.currentUser?.id
+  );
 
   if (
     canReceiveJoinNotifications
