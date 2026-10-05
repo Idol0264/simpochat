@@ -3159,9 +3159,18 @@ function startGroupMessageRefresh(groupId) {
 
       await loadGroupMessages(groupId);
 
+      /*
+       * Do not rebuild the chat while the
+       * message box is focused.
+       *
+       * Rebuilding the chat replaces the
+       * textarea and makes Android close
+       * the keyboard.
+       */
       if (
         state.screen === "group-chat" &&
-        state.selectedGroup === groupId
+        state.selectedGroup === groupId &&
+        document.activeElement?.id !== "messageInput"
       ) {
         renderGroupChat();
       }
