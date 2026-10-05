@@ -1661,7 +1661,7 @@ function removeSelectedGroups() {
    OPEN GROUP
    --------------------------------------------------------- */
 
-function openGroup(id) {
+async function openGroup(id) {
 
   const group =
     getGroup(id);
@@ -1689,8 +1689,21 @@ function openGroup(id) {
   saveState();
 
   render();
-}
 
+  await loadGroupMessages(id);
+
+  /*
+   * Only refresh if the user is
+   * still viewing this same group.
+   */
+
+  if (
+    state.screen === "group-chat" &&
+    state.selectedGroup === id
+  ) {
+    renderGroupChat();
+  }
+}
 
 /* ---------------------------------------------------------
    NEW GROUP SCREEN
