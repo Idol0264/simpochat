@@ -1702,6 +1702,7 @@ async function openGroup(id) {
     state.selectedGroup === id
   ) {
     renderGroupChat();
+    startGroupMessageRefresh(id);
   }
 }
 
