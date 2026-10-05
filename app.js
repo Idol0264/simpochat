@@ -795,6 +795,153 @@ async function reviewGroupJoinRequest(
   }
 }
 
+/* ---------------------------------------------------------
+   OPEN GROUP JOIN NOTIFICATIONS
+   --------------------------------------------------------- */
+
+async function openGroupNotifications(groupId) {
+
+  const group = getGroup(groupId);
+
+  if (!group) {
+    return;
+  }
+
+  if (!isGroupAdmin(group)) {
+    return;
+  }
+
+  const allowed =
+    group.approval_mode === "admins" ||
+    group.creatorId ===
+      state.currentUser?.id;
+
+  if (!allowed) {
+    return;
+  }
+
+  const requests =
+    await loadGroupJoinNotifications(
+      groupId
+    );
+
+  modalRoot.innerHTML = `
+
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Join Requests
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="member-list">
+
+          ${
+            requests.length
+              ? requests
+                  .map(
+                    request => `
+
+                      <div
+                        class="member-row"
+                      >
+
+                        <span
+                          class="member-avatar"
+                          style="--h:${randomHue()}"
+                        >
+                          ${esc(
+                            request.avatar ||
+                            request.name
+                              ?.charAt(0)
+                              ?.toUpperCase() ||
+                            "?"
+                          )}
+                        </span>
+
+
+                        <span
+                          class="member-copy"
+                        >
+
+                          <strong>
+                            ${esc(
+                              request.name ||
+                              "SimpoChat user"
+                            )}
+                          </strong>
+
+                          <small>
+                            Wants to join
+                            this group
+                          </small>
+
+                        </span>
+
+
+                        <button
+                          class="primary-btn"
+                          data-action="review-join-request"
+                          data-request-id="${esc(
+                            request.id
+                          )}"
+                          data-request-decision="approved"
+                        >
+                          ✓
+                        </button>
+
+
+                        <button
+                          class="secondary-btn"
+                          data-action="review-join-request"
+                          data-request-id="${esc(
+                            request.id
+                          )}"
+                          data-request-decision="rejected"
+                        >
+                          ×
+                        </button>
+
+                      </div>
+
+                    `
+                  )
+                  .join("")
+              : `
+                  <div
+                    class="empty-state"
+                  >
+                    No pending join requests.
+                  </div>
+                `
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
 function isStarred(id) {
   return safeArray(state.starred).includes(id);
 }
