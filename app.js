@@ -8516,7 +8516,7 @@ function renderSearch() {
    SEARCH RESULTS
    --------------------------------------------------------- */
 
-function renderSearchResults() {
+async function renderSearchResults() {
 
   const container =
     $("#searchResults");
