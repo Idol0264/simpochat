@@ -2714,6 +2714,49 @@ async function loadGroupMessages(groupId) {
 }
 
 
+let groupMessageRefreshTimer = null;
+
+function startGroupMessageRefresh(groupId) {
+
+  stopGroupMessageRefresh();
+
+  groupMessageRefreshTimer =
+    setInterval(async () => {
+
+      if (
+        state.screen !== "group-chat" ||
+        state.selectedGroup !== groupId
+      ) {
+        stopGroupMessageRefresh();
+        return;
+      }
+
+      await loadGroupMessages(groupId);
+
+      if (
+        state.screen === "group-chat" &&
+        state.selectedGroup === groupId
+      ) {
+        renderGroupChat();
+      }
+
+    }, 3000);
+}
+
+function stopGroupMessageRefresh() {
+
+  if (groupMessageRefreshTimer) {
+
+    clearInterval(
+      groupMessageRefreshTimer
+    );
+
+    groupMessageRefreshTimer =
+      null;
+  }
+}
+
+
 /* ---------------------------------------------------------
    GROUP CHAT
    --------------------------------------------------------- */
