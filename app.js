@@ -4808,14 +4808,19 @@ function renderGroupProfile() {
 
 
     ${
-      (
-        isGroupAdmin(group) &&
-        (
-          group.approval_mode === "admins" ||
-          group.creatorId ===
-            state.currentUser?.id
-        )
-      )
+       (
+  isGroupAdmin(group) &&
+  (
+    (
+      group.approval_mode ||
+      group.joinApproval
+    ) === "admins" ||
+    (
+      group.creatorId ||
+      group.created_by
+    ) === state.currentUser?.id
+  )
+)
         ? `
           <button
             class="profile-notification-btn"
