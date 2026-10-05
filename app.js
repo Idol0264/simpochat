@@ -8615,28 +8615,7 @@ async function renderSearchResults() {
               ),
 
             members:
-              Array.from(
-                {
-                  length:
-                    Number(
-                      remoteGroup.member_count ||
-                      0
-                    )
-                },
-                (_, index) => ({
-                  id:
-                    `remote-member-${index}`,
-
-                  name:
-                    "Member",
-
-                  avatar:
-                    "M",
-
-                  hue:
-                    randomHue()
-                })
-              ),
+               [],
 
             join_mode:
               remoteGroup.join_mode,
