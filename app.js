@@ -8540,32 +8540,126 @@ function renderSearchResults() {
    * show all discoverable groups.
    */
 
-  const groups =
-    state.groups.filter(
-      group => {
+  let groups = [];
 
-        if (!query) {
-          return true;
+  try {
+
+    const sessionToken =
+      localStorage.getItem(
+        SESSION_TOKEN_KEY
+      );
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            ...(sessionToken
+              ? {
+                  "Authorization":
+                    `Bearer ${sessionToken}`
+                }
+              : {})
+          },
+
+          body: JSON.stringify({
+            action:
+              "search_groups",
+
+            query
+          })
         }
+      );
 
+    const data =
+      await response.json();
 
-        const searchable =
-          [
-            group.name,
-            ...safeArray(
-              group.category
-            )
-          ]
-            .join(" ")
-            .toLowerCase();
+    if (
+      response.ok &&
+      data.allowed === true
+    ) {
 
+      groups =
+        safeArray(
+          data.groups
+        ).map(
+          remoteGroup => ({
+            id:
+              remoteGroup.id,
 
-        return searchable.includes(
-          query
+            name:
+              remoteGroup.name,
+
+            icon:
+              remoteGroup.icon ||
+              remoteGroup.name
+                ?.charAt(0)
+                ?.toUpperCase() ||
+              "G",
+
+            hue:
+              randomHue(),
+
+            category:
+              safeArray(
+                remoteGroup.category
+              ),
+
+            members:
+              Array.from(
+                {
+                  length:
+                    Number(
+                      remoteGroup.member_count ||
+                      0
+                    )
+                },
+                (_, index) => ({
+                  id:
+                    `remote-member-${index}`,
+
+                  name:
+                    "Member",
+
+                  avatar:
+                    "M",
+
+                  hue:
+                    randomHue()
+                })
+              ),
+
+            join_mode:
+              remoteGroup.join_mode,
+
+            approval_mode:
+              remoteGroup.approval_mode,
+
+            creatorId:
+              remoteGroup.creator_id,
+
+            remote:
+              true
+          })
         );
 
-      }
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Remote group search failed:",
+      error
     );
+
+    groups = [];
+
+  }
 
 
   container.innerHTML = `
