@@ -8596,14 +8596,18 @@ async function renderSearchResults() {
               remoteGroup.name,
 
             icon:
-              remoteGroup.icon ||
-              remoteGroup.name
-                ?.charAt(0)
-                ?.toUpperCase() ||
-              "G",
-
-            hue:
-              randomHue(),
+               remoteGroup.icon ||
+               remoteGroup.name
+               ?.charAt(0)
+               ?.toUpperCase() ||
+               "G",
+             
+             photo:
+                remoteGroup.photo_url ||
+                "",
+             
+             hue:
+                randomHue(),
 
             category:
               safeArray(
