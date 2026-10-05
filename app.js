@@ -3258,16 +3258,15 @@ function renderMessage(
       message.member
     );
 
-
   const own =
     message.member ===
     state.currentUser.id;
-
 
   const sender =
     own
       ? state.currentUser
       : (
+          message.sender ||
           member || {
             name: "Member",
             avatar: "?",
