@@ -2679,11 +2679,12 @@ async function loadGroupMessages(groupId) {
       );
     }
 
-    state.messages[groupId] =
+        state.messages[groupId] =
       data.messages.map(
         message => ({
           id: message.id,
           member: message.sender_id,
+          sender: message.sender || null,
           text: message.text,
           createdAt: message.created_at,
           read: true,
