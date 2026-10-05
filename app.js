@@ -530,6 +530,271 @@ function getMember(group, id) {
   );
 }
 
+/* ---------------------------------------------------------
+   GROUP JOIN NOTIFICATIONS + ADMIN HELPERS
+   --------------------------------------------------------- */
+
+function isGroupAdmin(group) {
+
+  if (!group) {
+    return false;
+  }
+
+  /* Local admin flag */
+  if (group.admin === true) {
+    return true;
+  }
+
+  /* Creator */
+  if (
+    group.creatorId &&
+    state.currentUser?.id &&
+    group.creatorId ===
+      state.currentUser.id
+  ) {
+    return true;
+  }
+
+  /* Remote/member role */
+  const currentMember =
+    safeArray(group.members).find(
+      member =>
+        member.id ===
+        state.currentUser?.id
+    );
+
+  return (
+    currentMember?.role === "admin" ||
+    currentMember?.role === "creator"
+  );
+}
+
+
+/* ---------------------------------------------------------
+   LOAD GROUP JOIN REQUESTS
+   --------------------------------------------------------- */
+
+async function loadGroupJoinNotifications(
+  groupId
+) {
+
+  if (!groupId) {
+    return [];
+  }
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken) {
+    return [];
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "get_group_join_requests",
+
+            group_id:
+              groupId
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      data.success !== true
+    ) {
+      console.warn(
+        "Could not load group join requests:",
+        data.message
+      );
+
+      return [];
+    }
+
+    const requests =
+      safeArray(data.requests);
+
+    state.groupJoinNotifications =
+      state.groupJoinNotifications ||
+      {};
+
+    state.groupJoinNotifications[
+      groupId
+    ] = requests;
+
+    saveState();
+
+    return requests;
+
+  } catch (error) {
+
+    console.error(
+      "Group join notifications failed:",
+      error
+    );
+
+    return [];
+  }
+}
+
+
+/* ---------------------------------------------------------
+   GET CACHED GROUP JOIN REQUESTS
+   --------------------------------------------------------- */
+
+function getGroupJoinNotifications(
+  groupId
+) {
+
+  return safeArray(
+    state.groupJoinNotifications?.[
+      groupId
+    ]
+  );
+}
+
+
+/* ---------------------------------------------------------
+   REVIEW GROUP JOIN REQUEST
+   --------------------------------------------------------- */
+
+async function reviewGroupJoinRequest(
+  groupId,
+  requestId,
+  decision
+) {
+
+  if (
+    !groupId ||
+    !requestId ||
+    ![
+      "approved",
+      "rejected"
+    ].includes(decision)
+  ) {
+    return {
+      success: false,
+      message:
+        "Invalid join request."
+    };
+  }
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken) {
+    return {
+      success: false,
+      message:
+        "Your SimpoChat session has expired."
+    };
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "review_group_join_request",
+
+            group_id:
+              groupId,
+
+            request_id:
+              requestId,
+
+            decision:
+              decision
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      data.success !== true
+    ) {
+      return {
+        success: false,
+        message:
+          data.message ||
+          "Unable to review this request."
+      };
+    }
+
+    /*
+     * Refresh the notification list so the
+     * red notification dot disappears when
+     * there are no remaining pending requests.
+     */
+    await loadGroupJoinNotifications(
+      groupId
+    );
+
+    return {
+      success: true,
+      message:
+        data.message ||
+        (
+          decision === "approved"
+            ? "Member approved."
+            : "Request declined."
+        )
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Join request review failed:",
+      error
+    );
+
+    return {
+      success: false,
+      message:
+        "Unable to process the request right now."
+    };
+  }
+}
+
 function isStarred(id) {
   return safeArray(state.starred).includes(id);
 }
