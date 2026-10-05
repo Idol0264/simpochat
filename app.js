@@ -676,6 +676,144 @@ function getGroupJoinNotifications(
 
 
 /* ---------------------------------------------------------
+   GROUP JOIN NOTIFICATION REFRESH
+   --------------------------------------------------------- */
+
+let groupJoinNotificationRefreshTimer = null;
+
+let groupJoinNotificationRefreshGroupId = null;
+
+
+function updateGroupNotificationDot(groupId) {
+
+  const button =
+    document.querySelector(
+      '[data-action="group-notifications"]'
+    );
+
+  if (!button) {
+    return;
+  }
+
+
+  const hasNotifications =
+    getGroupJoinNotifications(
+      groupId
+    ).length > 0;
+
+
+  const existingDot =
+    button.querySelector(
+      ".profile-notification-dot"
+    );
+
+
+  if (
+    hasNotifications &&
+    !existingDot
+  ) {
+
+    const dot =
+      document.createElement(
+        "span"
+      );
+
+    dot.className =
+      "profile-notification-dot";
+
+    button.appendChild(dot);
+
+  }
+
+
+  if (
+    !hasNotifications &&
+    existingDot
+  ) {
+
+    existingDot.remove();
+
+  }
+
+}
+
+
+function startGroupJoinNotificationRefresh(
+  groupId
+) {
+
+  if (
+    groupJoinNotificationRefreshTimer &&
+    groupJoinNotificationRefreshGroupId ===
+      groupId
+  ) {
+    return;
+  }
+
+
+  stopGroupJoinNotificationRefresh();
+
+
+  groupJoinNotificationRefreshGroupId =
+    groupId;
+
+
+  groupJoinNotificationRefreshTimer =
+    setInterval(
+      async () => {
+
+        if (
+          state.screen !==
+            "group-profile" ||
+          state.selectedGroup !==
+            groupId
+        ) {
+
+          stopGroupJoinNotificationRefresh();
+
+          return;
+        }
+
+
+        await loadGroupJoinNotifications(
+          groupId
+        );
+
+
+        updateGroupNotificationDot(
+          groupId
+        );
+
+      },
+      2000
+    );
+
+}
+
+
+function stopGroupJoinNotificationRefresh() {
+
+  if (
+    groupJoinNotificationRefreshTimer
+  ) {
+
+    clearInterval(
+      groupJoinNotificationRefreshTimer
+    );
+
+  }
+
+
+  groupJoinNotificationRefreshTimer =
+    null;
+
+  groupJoinNotificationRefreshGroupId =
+    null;
+
+}
+
+
+/* ---------------------------------------------------------
    REVIEW GROUP JOIN REQUEST
    --------------------------------------------------------- */
 
