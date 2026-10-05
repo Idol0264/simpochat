@@ -2740,7 +2740,7 @@ function startGroupMessageRefresh(groupId) {
         renderGroupChat();
       }
 
-    }, 100);
+    }, 1000);
 }
 
 function stopGroupMessageRefresh() {
