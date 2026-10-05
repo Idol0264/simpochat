@@ -1347,6 +1347,113 @@ body::after {
   padding: 12px 0 24px;
 }
 
+/* =========================================================
+   GROUP PROFILE — PHOTO + NOTIFICATION BUTTON
+   ========================================================= */
+
+.profile-hero {
+  position: relative;
+}
+
+
+/* Back button — right side, slightly raised */
+
+.profile-hero .profile-back {
+  position: absolute;
+
+  top: 2px;
+  right: 0;
+
+  width: 40px;
+  height: 40px;
+
+  z-index: 5;
+}
+
+
+/* Photo wrapper */
+
+.profile-photo-wrap {
+  position: relative;
+
+  width: 88px;
+  height: 88px;
+
+  margin-top: 4px;
+}
+
+
+/* Notification button touches
+   the lower-right edge of the photo */
+
+.profile-notification-btn {
+  position: absolute;
+
+  right: -7px;
+  bottom: -7px;
+
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: var(--text);
+
+  background:
+    var(--surface-strong);
+
+  border:
+    1px solid var(--line-strong);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 7px 20px
+    rgba(0,0,0,.18);
+
+  font-size: 17px;
+
+  z-index: 6;
+
+  transition:
+    transform .16s ease,
+    background .16s ease;
+}
+
+
+.profile-notification-btn:active {
+  transform: scale(.88);
+}
+
+
+/* Red pending-notification dot */
+
+.profile-notification-dot {
+  position: absolute;
+
+  top: 1px;
+  right: 1px;
+
+  width: 10px;
+  height: 10px;
+
+  background:
+    var(--danger);
+
+  border:
+    2px solid
+    var(--surface-strong);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 3px 8px
+    rgba(232,77,104,.35);
+}
+
 .profile-hero .chat-back {
   align-self: flex-start;
 
