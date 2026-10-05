@@ -2216,46 +2216,252 @@ function removeSelectedGroups() {
 
 async function openGroup(id) {
 
-  const group =
+  const localGroup =
     getGroup(id);
 
-  if (!group) {
+  if (!localGroup) {
     return;
   }
 
-  state.selectedGroup =
-    id;
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
 
-  /*
-   * Opening a group marks its
-   * unseen messages as read.
-   */
+  if (!sessionToken) {
+    return;
+  }
 
-  group.unseen = 0;
+  try {
 
-  state.previousScreen =
-    state.screen;
+    /*
+     * Always get the authoritative group
+     * from Supabase before opening it.
+     *
+     * This is important because search results
+     * may contain only partial group information.
+     */
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
 
-  state.screen =
-    "group-chat";
+          headers: {
+            "Content-Type":
+              "application/json",
 
-  saveState();
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
 
-  render();
+          body: JSON.stringify({
+            action: "get_group",
+            group_id: id
+          })
+        }
+      );
 
-  await loadGroupMessages(id);
+    const data =
+      await response.json();
 
-  /*
-   * Only refresh if the user is
-   * still viewing this same group.
-   */
+    if (
+      !response.ok ||
+      data.allowed !== true ||
+      !data.group
+    ) {
 
-  if (
-    state.screen === "group-chat" &&
-    state.selectedGroup === id
-  ) {
+      throw new Error(
+        data.message ||
+        "Unable to open this group."
+      );
+
+    }
+
+    const remoteGroup =
+      data.group;
+
+    /*
+     * Replace the local copy with the
+     * authoritative Supabase copy.
+     */
+    const group = {
+
+      id:
+        remoteGroup.id,
+
+      name:
+        remoteGroup.name ||
+        localGroup.name,
+
+      icon:
+        remoteGroup.icon ||
+        localGroup.icon,
+
+      hue:
+        localGroup.hue ??
+        randomHue(),
+
+      category:
+        safeArray(
+          remoteGroup.category
+        ),
+
+      photo:
+        remoteGroup.photo_url ||
+        localGroup.photo ||
+        "",
+
+      creatorId:
+        remoteGroup.creator_id ||
+        remoteGroup.created_by ||
+        localGroup.creatorId ||
+        "",
+
+      approval_mode:
+        remoteGroup.approval_mode ||
+        remoteGroup.join_approval ||
+        localGroup.approval_mode ||
+        localGroup.joinApproval ||
+        "creator",
+
+      join_mode:
+        remoteGroup.join_mode ||
+        remoteGroup.join_policy ||
+        localGroup.join_mode ||
+        localGroup.joinPolicy ||
+        "open",
+
+      admin:
+        localGroup.admin === true,
+
+      unseen:
+        0,
+
+      members:
+        safeArray(
+          remoteGroup.members
+        ).map(
+          member => ({
+            id:
+              member.id,
+
+            name:
+              member.name ||
+              "Member",
+
+            avatar:
+              member.avatar ||
+              String(
+                member.name ||
+                "M"
+              )
+                .charAt(0)
+                .toUpperCase(),
+
+            hue:
+              member.hue ??
+              randomHue(),
+
+            role:
+              member.role ||
+              "member"
+          })
+        )
+
+    };
+
+    /*
+     * Make sure creator/admin status is
+     * based on the authoritative member list.
+     */
+    const currentMember =
+      group.members.find(
+        member =>
+          member.id ===
+          state.currentUser?.id
+      );
+
+    if (
+      currentMember?.role === "creator" ||
+      currentMember?.role === "admin"
+    ) {
+      group.admin = true;
+    }
+
+    /*
+     * Replace the local group copy.
+     */
+    state.groups =
+      safeArray(
+        state.groups
+      ).filter(
+        existing =>
+          existing.id !==
+          group.id
+      );
+
+    state.groups.unshift(
+      group
+    );
+
+    state.selectedGroup =
+      group.id;
+
+    group.unseen = 0;
+
+    state.previousScreen =
+      state.screen;
+
+    state.screen =
+      "group-chat";
+
+    state.selectionMode =
+      false;
+
+    state.selectedItems =
+      [];
+
+    saveState();
+
+    /*
+     * Load the real messages from Supabase
+     * before displaying the chat.
+     */
+    await loadGroupMessages(
+      group.id
+    );
+
+    if (
+      state.screen !== "group-chat" ||
+      state.selectedGroup !==
+        group.id
+    ) {
+      return;
+    }
+
     renderGroupChat();
-    startGroupMessageRefresh(id);
+
+    startGroupMessageRefresh(
+      group.id
+    );
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat openGroup error:",
+      error
+    );
+
+    /*
+     * If the remote group cannot be loaded,
+     * do not pretend the local copy is current.
+     */
+    alert(
+      error?.message ||
+      "Unable to open this group right now."
+    );
+
   }
 }
 
