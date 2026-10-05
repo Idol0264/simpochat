@@ -9898,7 +9898,7 @@ if (
    ACTION ROUTER
    --------------------------------------------------------- */
 
-function handleAction(
+async function handleAction(
    action,
    actionTarget
 ) {
