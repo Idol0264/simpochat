@@ -9022,28 +9022,163 @@ async function requestToJoinGroup(
      * the user is now a real member.
      */
 
+if (
+  data.join_status ===
+  "member"
+) {
+
+  try {
+
+    const groupResponse =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "get_group",
+
+            group_id:
+              groupId
+          })
+        }
+      );
+
+    const groupData =
+      await groupResponse.json();
+
     if (
-      data.join_status ===
-      "member"
+      groupResponse.ok &&
+      groupData.allowed === true &&
+      groupData.group
     ) {
 
-      delete state.joinRequests[
-        groupId
-      ];
+      const fullGroup =
+        groupData.group;
 
-      state.selectedGroup =
-        groupId;
+      const existingIndex =
+        state.groups.findIndex(
+          group =>
+            group.id ===
+            groupId
+        );
 
-      state.screen =
-        "group-chat";
+      const fullLocalGroup = {
 
-      saveState();
+        id:
+          fullGroup.id,
 
-      render();
+        name:
+          fullGroup.name,
 
-      return;
+        icon:
+          fullGroup.icon ||
+          fullGroup.name
+            ?.charAt(0)
+            ?.toUpperCase() ||
+          "G",
+
+        photo:
+          fullGroup.photo_url ||
+          "",
+
+        hue:
+          randomHue(),
+
+        category:
+          safeArray(
+            fullGroup.category
+          ),
+
+        members:
+          safeArray(
+            fullGroup.members
+          ),
+
+        join_mode:
+          fullGroup.join_mode,
+
+        approval_mode:
+          fullGroup.approval_mode,
+
+        creatorId:
+          fullGroup.created_by,
+
+        admin:
+          safeArray(
+            fullGroup.members
+          ).some(
+            member =>
+              member.id ===
+                state.currentUser?.id &&
+              (
+                member.role ===
+                  "admin" ||
+                member.role ===
+                  "creator"
+              )
+          )
+
+      };
+
+      if (
+        existingIndex >= 0
+      ) {
+
+        state.groups[
+          existingIndex
+        ] = {
+          ...state.groups[
+            existingIndex
+          ],
+          ...fullLocalGroup
+        };
+
+      } else {
+
+        state.groups.push(
+          fullLocalGroup
+        );
+
+      }
 
     }
+
+  } catch (error) {
+
+    console.error(
+      "Loading joined group failed:",
+      error
+    );
+
+  }
+
+  delete state.joinRequests[
+    groupId
+  ];
+
+  state.selectedGroup =
+    groupId;
+
+  state.screen =
+    "group-chat";
+
+  saveState();
+
+  render();
+
+  return;
+
+}
 
 
     /*
