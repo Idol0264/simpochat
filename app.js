@@ -3577,64 +3577,64 @@ function attachMessageLongPress() {
    SEND MESSAGE
    --------------------------------------------------------- */
 
-function sendMessage() {
+async function sendMessage() {
+  const input = $("#messageInput");
+  const group = getGroup(state.selectedGroup);
+  const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
 
-  const input =
-    $("#messageInput");
+  if (!input || !group || !sessionToken) return;
 
-  const group =
-    getGroup(state.selectedGroup);
+  const text = input.value.trim();
+  if (!text) return;
 
-  if (!input || !group) {
-    return;
+  const replyTo = pendingReplyMessageId || null;
+
+  try {
+    const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "send_message",
+        group_id: group.id,
+        text,
+        reply_to: replyTo
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.allowed || !data.message) {
+      throw new Error(data.message || "Unable to send message.");
+    }
+
+    if (!state.messages[group.id]) {
+      state.messages[group.id] = [];
+    }
+
+    state.messages[group.id].push({
+      id: data.message.id,
+      member: data.message.sender_id,
+      text: data.message.text,
+      createdAt: data.message.created_at,
+      read: true,
+      replyTo: data.message.reply_to || null,
+      expiresAt: data.message.expires_at
+    });
+
+    input.value = "";
+    pendingReplyMessageId = null;
+    activeMessageActionId = null;
+
+    saveState();
+    renderGroupChat();
+
+  } catch (error) {
+    console.error("SimpoChat sendMessage error:", error);
+    alert(error.message || "Unable to send message.");
   }
-
-  const text =
-    input.value.trim();
-
-  if (!text) {
-    return;
-  }
-
-
-  if (!state.messages[group.id]) {
-
-    state.messages[group.id] =
-      [];
-
-  }
-
-
-  state.messages[group.id].push({
-  id:
-    uid("message"),
-
-  member:
-    state.currentUser.id,
-
-  text,
-
-  createdAt:
-    now(),
-
-  read:
-    true,
-
-  replyTo:
-    pendingReplyMessageId || null
-});
-
-  input.value = "";
-   
-   pendingReplyMessageId =
-      null;
-   
-   activeMessageActionId =
-      null;
-
-  saveState();
-
-  renderGroupChat();
 }
 
 /* ---------------------------------------------------------
