@@ -13800,14 +13800,24 @@ function cleanupExpired() {
     .forEach(
       groupId => {
 
-        state.messages[groupId] =
+                state.messages[groupId] =
           safeArray(
             state.messages[groupId]
           ).filter(
-            message =>
-              Number(
-                message.createdAt
-              ) > cutoff
+            message => {
+              const createdAtMs =
+                typeof message.createdAt ===
+                "number"
+                  ? message.createdAt
+                  : new Date(
+                      message.createdAt
+                    ).getTime();
+
+              return (
+                Number.isFinite(createdAtMs) &&
+                createdAtMs > cutoff
+              );
+            }
           );
 
       }
