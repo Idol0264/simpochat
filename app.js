@@ -3902,22 +3902,51 @@ if (messageInput) {
      SCROLL TO NEWEST MESSAGE
      ------------------------------------------------------- */
 
-  const messagesBox =
-    $("#messages");
+  const scrollToNewestMessage =
+    () => {
 
+      const scrollRoot =
+        document.scrollingElement ||
+        document.documentElement;
 
-  if (messagesBox) {
-
-    requestAnimationFrame(
-      () => {
-
-        messagesBox.scrollTop =
-          messagesBox.scrollHeight;
-
+      if (!scrollRoot) {
+        return;
       }
-    );
 
-  }
+      const newestPosition =
+        scrollRoot.scrollHeight;
+
+      scrollRoot.scrollTop =
+        newestPosition;
+
+      window.scrollTo(
+        0,
+        newestPosition
+      );
+
+    };
+
+
+  requestAnimationFrame(
+    () => {
+
+      scrollToNewestMessage();
+
+      requestAnimationFrame(
+        () => {
+
+          scrollToNewestMessage();
+
+          setTimeout(
+            scrollToNewestMessage,
+            100
+          );
+
+        }
+      );
+
+    }
+  );
 
      attachMessageLongPress();
    
