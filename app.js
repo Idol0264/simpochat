@@ -14504,7 +14504,22 @@ const response =
 
   saveState();
 
-  render();
+  if (
+    state.screen === "group-chat" &&
+    state.selectedGroup
+  ) {
+    await loadGroupMessages(
+      state.selectedGroup
+    );
+
+    render();
+
+    startGroupMessageRefresh(
+      state.selectedGroup
+    );
+  } else {
+    render();
+  }
 
   return;
 
