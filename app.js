@@ -4762,7 +4762,32 @@ function attachMessageLongPress() {
    --------------------------------------------------------- */
 
 async function sendMessage() {
-  const input = $("#messageInput");
+   const input = $("#messageInput");
+const messagesBox =
+  $("#messages");
+
+if (messagesBox) {
+
+  messagesBox.addEventListener(
+    "touchstart",
+    () => {
+
+      if (
+        document.activeElement ===
+        messageInput
+      ) {
+
+        messageInput.blur();
+
+      }
+
+    },
+    {
+      passive: true
+    }
+  );
+
+}
   const group = getGroup(state.selectedGroup);
   const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
 
