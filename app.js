@@ -3922,34 +3922,36 @@ if (messageInput) {
 }
 
 
-  /* -------------------------------------------------------
-     SCROLL TO NEWEST MESSAGE
-     ------------------------------------------------------- */
+/* -------------------------------------------------------
+   SCROLL TO NEWEST MESSAGE
+   ------------------------------------------------------- */
 
-  const scrollToNewestMessage =
-    () => {
+const scrollToNewestMessage =
+  () => {
 
-      const scrollRoot =
-        document.scrollingElement ||
-        document.documentElement;
+    const scrollRoot =
+      document.scrollingElement ||
+      document.documentElement;
 
-      if (!scrollRoot) {
-        return;
-      }
+    if (!scrollRoot) {
+      return;
+    }
 
-      const newestPosition =
-        scrollRoot.scrollHeight;
+    const newestPosition =
+      scrollRoot.scrollHeight;
 
-      scrollRoot.scrollTop =
-        newestPosition;
+    scrollRoot.scrollTop =
+      newestPosition;
 
-      window.scrollTo(
-        0,
-        newestPosition
-      );
+    window.scrollTo(
+      0,
+      newestPosition
+    );
 
-    };
+  };
 
+
+if (autoScroll) {
 
   requestAnimationFrame(
     () => {
@@ -3971,6 +3973,8 @@ if (messageInput) {
 
     }
   );
+
+}
 
      attachMessageLongPress();
    
