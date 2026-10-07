@@ -888,7 +888,7 @@ async function reviewGroupJoinRequest(
 
     if (
       !response.ok ||
-      data.success !== true
+      data.allowed !== true
     ) {
       return {
         success: false,
