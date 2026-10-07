@@ -5051,6 +5051,15 @@ function createVoiceMessage() {
 
 function renderGroupProfile() {
 
+  const temporaryChatFab =
+    document.querySelector(
+      "#temporaryChatFab"
+    );
+
+  if (temporaryChatFab) {
+    temporaryChatFab.hidden = true;
+  }
+
   const group =
     getGroup(
       state.selectedGroup
