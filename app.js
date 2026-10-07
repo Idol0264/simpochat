@@ -4724,7 +4724,29 @@ function attachMessageLongPress() {
              
              saveState();
              
-             renderGroupChat();
+             renderGroupChat({
+                autoScroll: false
+             });
+             
+             requestAnimationFrame(
+                () => {
+                   
+                   const currentScrollRoot =
+                      document.scrollingElement ||
+                      document.documentElement;
+                   
+                   if (currentScrollRoot) {
+                      
+                      currentScrollRoot.scrollTop =
+                         Math.min(
+                            currentScrollRoot.scrollTop,
+                            currentScrollRoot.scrollHeight
+                         );
+                   
+                   }
+                
+                }
+             );
           }
 
         }
