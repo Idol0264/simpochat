@@ -658,7 +658,6 @@ async function loadGroupJoinNotifications(
   }
 }
 
-
 /* ---------------------------------------------------------
    GET CACHED GROUP JOIN REQUESTS
    --------------------------------------------------------- */
@@ -812,6 +811,95 @@ function stopGroupJoinNotificationRefresh() {
 
 }
 
+
+/* ---------------------------------------------------------
+   GLOBAL ADMIN JOIN REQUEST CHECK
+   --------------------------------------------------------- */
+
+let globalJoinRequestRefreshTimer = null;
+
+async function checkAdminJoinRequests() {
+
+  if (
+    !state.currentUser?.id ||
+    !safeArray(state.groups).length
+  ) {
+    return;
+  }
+
+  const adminGroups =
+    safeArray(state.groups).filter(
+      group =>
+        isGroupAdmin(group)
+    );
+
+  if (!adminGroups.length) {
+    return;
+  }
+
+  for (const group of adminGroups) {
+
+    const requests =
+      await loadGroupJoinNotifications(
+        group.id
+      );
+
+    if (requests.length > 0) {
+
+      state.groupJoinNotifications =
+        state.groupJoinNotifications ||
+        {};
+
+      state.groupJoinNotifications[
+        group.id
+      ] = requests;
+
+    }
+
+  }
+
+  saveState();
+
+}
+
+
+function startGlobalJoinRequestRefresh() {
+
+  if (
+    globalJoinRequestRefreshTimer
+  ) {
+    return;
+  }
+
+  checkAdminJoinRequests();
+
+  globalJoinRequestRefreshTimer =
+    setInterval(
+      () => {
+        checkAdminJoinRequests();
+      },
+      5000
+    );
+
+}
+
+
+function stopGlobalJoinRequestRefresh() {
+
+  if (
+    globalJoinRequestRefreshTimer
+  ) {
+
+    clearInterval(
+      globalJoinRequestRefreshTimer
+    );
+
+  }
+
+  globalJoinRequestRefreshTimer =
+    null;
+
+}
 
 /* ---------------------------------------------------------
    REVIEW GROUP JOIN REQUEST
