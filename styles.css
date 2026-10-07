@@ -7941,3 +7941,76 @@ html[data-theme="dark"] .simpo-access-card {
     0 24px 70px
     rgba(0, 0, 0, 0.42);
 }
+
+/* ---------------------------------------------------------
+   CHAT — SCROLL TO NEWEST MESSAGE
+--------------------------------------------------------- */
+
+.chat-scroll-down {
+  position: fixed;
+
+  right: 22px;
+
+  bottom:
+    calc(
+      142px +
+      env(safe-area-inset-bottom)
+    );
+
+  z-index: 30;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: var(--text);
+
+  background:
+    var(--surface-strong);
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 50%;
+
+  box-shadow:
+    var(--shadow-soft);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  font-size: 22px;
+  font-weight: 800;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transform:
+    translateY(8px);
+
+  transition:
+    opacity .18s ease,
+    transform .18s ease;
+}
+
+.chat-scroll-down.visible {
+
+  opacity: 1;
+
+  pointer-events: auto;
+
+  transform:
+    translateY(0);
+}
+
+.chat-scroll-down:active {
+  transform:
+    translateY(1px)
+    scale(.94);
+}
