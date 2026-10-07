@@ -14151,7 +14151,7 @@ async function acceptTemporaryChatInvite(
    REJECT TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
-function rejectTemporaryChatInvite(
+async function rejectTemporaryChatInvite(
   inviteId
 ) {
 
@@ -14167,19 +14167,84 @@ function rejectTemporaryChatInvite(
           "pending"
     );
 
-
   if (!invite) {
     return;
   }
 
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
 
-  invite.status =
-    "rejected";
+  if (!sessionToken) {
+    alert(
+      "Your SimpoChat session is not available. Please try again."
+    );
+    return;
+  }
 
+  try {
 
-  saveState();
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
 
-  render();
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "respond_temporary_invite",
+
+            invite_id:
+              inviteId,
+
+            decision:
+              "rejected"
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      data.allowed !== true
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to reject invitation."
+      );
+    }
+
+    invite.status =
+      "rejected";
+
+    saveState();
+
+    render();
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat temporary invite reject failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to reject invitation."
+    );
+
+  }
 
 }
 
