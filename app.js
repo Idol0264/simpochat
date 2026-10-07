@@ -3505,6 +3505,11 @@ function startGroupMessageRefresh(groupId) {
         document.scrollingElement ||
         document.documentElement;
 
+      const previousScrollTop =
+        scrollRoot
+          ? scrollRoot.scrollTop
+          : 0;
+
       const wasNearBottom =
         scrollRoot &&
         (
@@ -3515,26 +3520,80 @@ function startGroupMessageRefresh(groupId) {
           )
         ) <= 80;
 
-      await loadGroupMessages(groupId);
+      const previousMessages =
+        safeArray(
+          state.messages[groupId]
+        );
+
+      const previousSignature =
+        previousMessages
+          .map(
+            message =>
+              `${message.id}:${message.createdAt}`
+          )
+          .join("|");
+
+      const messages =
+        await loadGroupMessages(
+          groupId
+        );
+
+      const newSignature =
+        safeArray(messages)
+          .map(
+            message =>
+              `${message.id}:${message.createdAt}`
+          )
+          .join("|");
 
       /*
-       * Do not rebuild the chat while the
-       * message box is focused.
-       *
-       * Rebuilding the chat replaces the
-       * textarea and makes Android close
-       * the keyboard.
+       * Nothing changed.
+       * Do not rebuild the chat.
        */
       if (
+        previousSignature ===
+        newSignature
+      ) {
+        return;
+      }
+
+      if (
         state.screen === "group-chat" &&
-        state.selectedGroup === groupId &&
-        document.activeElement?.id !== "messageInput"
+        state.selectedGroup === groupId
       ) {
 
         renderGroupChat({
           autoScroll:
             wasNearBottom
         });
+
+        /*
+         * If the user was reading older
+         * messages, restore their exact
+         * previous position.
+         */
+        if (!wasNearBottom) {
+
+          requestAnimationFrame(
+            () => {
+
+              const currentScrollRoot =
+                document.scrollingElement ||
+                document.documentElement;
+
+              if (
+                currentScrollRoot
+              ) {
+
+                currentScrollRoot.scrollTop =
+                  previousScrollTop;
+
+              }
+
+            }
+          );
+
+        }
 
       }
 
