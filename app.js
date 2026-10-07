@@ -3501,6 +3501,20 @@ function startGroupMessageRefresh(groupId) {
         return;
       }
 
+      const scrollRoot =
+        document.scrollingElement ||
+        document.documentElement;
+
+      const wasNearBottom =
+        scrollRoot &&
+        (
+          scrollRoot.scrollHeight -
+          (
+            scrollRoot.scrollTop +
+            scrollRoot.clientHeight
+          )
+        ) <= 80;
+
       await loadGroupMessages(groupId);
 
       /*
@@ -3516,10 +3530,15 @@ function startGroupMessageRefresh(groupId) {
         state.selectedGroup === groupId &&
         document.activeElement?.id !== "messageInput"
       ) {
-        renderGroupChat();
+
+        renderGroupChat({
+          autoScroll:
+            wasNearBottom
+        });
+
       }
 
-    }, 1000);
+    }, 700);
 }
 
 function stopGroupMessageRefresh() {
