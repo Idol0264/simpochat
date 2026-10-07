@@ -14136,17 +14136,6 @@ async function acceptTemporaryChatInvite(
 }
 
 
-  state.temporaryChatTab =
-    "messages";
-
-
-  saveState();
-
-  render();
-
-}
-
-
 /* ---------------------------------------------------------
    REJECT TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
