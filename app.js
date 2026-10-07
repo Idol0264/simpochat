@@ -4642,8 +4642,34 @@ function attachMessageLongPress() {
              messageActionTimer =
                 null;
              
-             renderGroupChat();
+             const scrollRoot =
+                document.scrollingElement ||
+                document.documentElement;
+             const previousScrollTop =
+                scrollRoot
+                ? scrollRoot.scrollTop
+                : 0;
+             renderGroupChat({
+                autoScroll: false
+             });
+             
+             requestAnimationFrame(
+                () => {
+                   
+                   const currentScrollRoot =
+                      document.scrollingElement ||
+                      document.documentElement;
+                   
+                   if (currentScrollRoot) {
+                      currentScrollRoot.scrollTop =
+                         previousScrollTop;
+                   
+                   }
+                
+                }
+             );
           
+   
           }
 
 
