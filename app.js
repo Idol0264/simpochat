@@ -622,7 +622,7 @@ async function loadGroupJoinNotifications(
 
     if (
       !response.ok ||
-      data.success !== true
+      data.allowed !== true
     ) {
       console.warn(
         "Could not load group join requests:",
