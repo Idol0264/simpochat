@@ -5694,10 +5694,6 @@ function openTemporaryChatInvite(
 }
 
 
-/* ---------------------------------------------------------
-   TEMPORARY CHAT INBOX
-   --------------------------------------------------------- */
-
 async function syncTemporaryChatInvites() {
 
   const sessionToken =
@@ -5769,7 +5765,13 @@ async function syncTemporaryChatInvites() {
 }
 
 
-function renderTemporaryChatInbox() {
+/* ---------------------------------------------------------
+   TEMPORARY CHAT INBOX
+   --------------------------------------------------------- */
+
+async function renderTemporaryChatInbox() {
+
+  await syncTemporaryChatInvites();
 
   setHeader(
     "Temporary Chat",
