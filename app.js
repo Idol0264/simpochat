@@ -3622,6 +3622,15 @@ function renderGroupChat(
   options = {}
 ) {
 
+  const temporaryChatFab =
+    document.querySelector(
+      "#temporaryChatFab"
+    );
+
+  if (temporaryChatFab) {
+    temporaryChatFab.hidden = true;
+  }
+
   const autoScroll =
     options.autoScroll !== false;
 
