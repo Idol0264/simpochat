@@ -6122,9 +6122,9 @@ const group =
 
                 <span
                   class="temporary-chat-avatar"
-                  style="--h:${member.hue}"
+                  style="--h:${memberHue}"
                 >
-                  ${esc(member.avatar)}
+                  ${esc(memberAvatar)}
                 </span>
 
 
