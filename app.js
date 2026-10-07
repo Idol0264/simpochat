@@ -6081,18 +6081,34 @@ function renderTemporaryInvites(
         .map(invite => {
 
           const member =
-            findMemberAcrossGroups(
-              invite.from
-            );
+  findMemberAcrossGroups(
+    invite.from
+  );
 
-          if (!member) {
-            return "";
-          }
+const memberName =
+  member?.name ||
+  invite.fromName ||
+  "SimpoChat member";
 
-          const group =
-            getGroup(
-              invite.groupId
-            );
+const memberAvatar =
+  member?.avatar ||
+  memberName
+    .charAt(0)
+    .toUpperCase();
+
+const memberAvatarImage =
+  member?.avatarImage ||
+  invite.fromAvatarUrl ||
+  "";
+
+const memberHue =
+  member?.hue ??
+  randomHue();
+
+const group =
+  getGroup(
+    invite.groupId
+  );
 
           return `
 
