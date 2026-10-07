@@ -3559,7 +3559,12 @@ function stopGroupMessageRefresh() {
    GROUP CHAT
    --------------------------------------------------------- */
 
-function renderGroupChat() {
+function renderGroupChat(
+  options = {}
+) {
+
+  const autoScroll =
+    options.autoScroll !== false;
 
   const group =
     getGroup(state.selectedGroup);
