@@ -5698,6 +5698,77 @@ function openTemporaryChatInvite(
    TEMPORARY CHAT INBOX
    --------------------------------------------------------- */
 
+async function syncTemporaryChatInvites() {
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken) {
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "list_temporary_invites"
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.allowed !== true
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to load temporary chat invitations."
+      );
+    }
+
+
+    state.temporaryInvites =
+      safeArray(
+        data.invites
+      );
+
+
+    saveState();
+
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat temporary invite sync failed:",
+      error
+    );
+
+  }
+
+}
+
+
 function renderTemporaryChatInbox() {
 
   setHeader(
