@@ -13969,7 +13969,7 @@ function openTemporaryMemberPicker() {
    ACCEPT TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
-function acceptTemporaryChatInvite(
+async function acceptTemporaryChatInvite(
   inviteId
 ) {
 
@@ -13985,57 +13985,155 @@ function acceptTemporaryChatInvite(
           "pending"
     );
 
-
   if (!invite) {
     return;
   }
 
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
 
-  invite.status =
-    "accepted";
+  if (!sessionToken) {
+    alert(
+      "Your SimpoChat session is not available. Please try again."
+    );
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action:
+              "respond_temporary_invite",
+
+            invite_id:
+              inviteId,
+
+            decision:
+              "accepted"
+          })
+        }
+      );
 
 
-  state.temporaryChats =
-    safeArray(
-      state.temporaryChats
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.allowed !== true
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to accept invitation."
+      );
+    }
+
+
+    invite.status =
+      "accepted";
+
+
+    state.temporaryChats =
+      safeArray(
+        state.temporaryChats
+      );
+
+
+    const memberId =
+      invite.from;
+
+
+    const alreadyExists =
+      state.temporaryChats.some(
+        chat =>
+          chat.memberId ===
+            memberId &&
+          chat.status ===
+            "active"
+      );
+
+
+    if (!alreadyExists) {
+
+      state.temporaryChats.push({
+
+        id:
+          uid("temp-chat"),
+
+        memberId:
+
+          memberId,
+
+        memberName:
+          invite.fromName ||
+          "Member",
+
+        avatarImage:
+          invite.fromAvatarUrl ||
+          "",
+
+        groupId:
+          invite.groupId ||
+          null,
+
+        createdAt:
+          invite.createdAt ||
+          now(),
+
+        status:
+          "active",
+
+        messages:
+          []
+
+      });
+
+    }
+
+
+    state.temporaryChatTab =
+      "messages";
+
+
+    saveState();
+
+
+    render();
+
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat temporary invite accept failed:",
+      error
     );
 
 
-  const alreadyExists =
-    state.temporaryChats.some(
-      chat =>
-        chat.memberId ===
-          invite.from &&
-        chat.status ===
-          "active"
+    alert(
+      error?.message ||
+      "Unable to accept invitation."
     );
-
-
-  if (!alreadyExists) {
-
-    state.temporaryChats.push({
-
-      id:
-        uid("temp-chat"),
-
-      memberId:
-        invite.from,
-
-      groupId:
-        invite.groupId || null,
-
-      createdAt:
-        now(),
-
-      status:
-        "active",
-
-      messages:
-        []
-
-    });
 
   }
+
+}
 
 
   state.temporaryChatTab =
