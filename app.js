@@ -4523,18 +4523,46 @@ function attachMessageLongPress() {
         clearTimeout(
           messageActionTimer
         );
-
-
-        messageActionTimer =
-          setTimeout(() => {
-
-            activeMessageActionId =
-              messageId;
-
-            renderGroupChat();
-
-          }, 550);
-
+         
+         
+         messageActionTimer =
+            setTimeout(() => {
+               
+               const scrollRoot =
+                  document.scrollingElement ||
+                  document.documentElement;
+               
+               const previousScrollTop =
+                  scrollRoot
+                  ? scrollRoot.scrollTop
+                  : 0;
+               
+               activeMessageActionId =
+                  messageId;
+               
+               renderGroupChat({
+                  autoScroll: false
+               });
+               
+               requestAnimationFrame(
+                  () => {
+                     
+                     const currentScrollRoot =
+                        document.scrollingElement ||
+                        document.documentElement;
+                     
+                     if (currentScrollRoot) {
+                        
+                        currentScrollRoot.scrollTop =
+                           previousScrollTop;
+                     
+                     }
+                  
+                  }
+               );
+            
+            }, 550);
+      
       };
 
 
