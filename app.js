@@ -3753,6 +3753,17 @@ function renderGroupChat(
         }
 
       </div>
+      
+      
+      <button
+      type="button"
+      class="chat-scroll-down"
+      id="chatScrollDown"
+      aria-label="Go to newest messages"
+      title="Newest messages"
+      >
+      ⌄
+      </button>
 
 
       <!-- MESSAGE INPUT -->
