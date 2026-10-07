@@ -1401,6 +1401,8 @@ function goBack() {
 
 function render() {
 
+  startGlobalJoinRequestRefresh();
+
   cleanupExpired();
 
   applyTheme();
