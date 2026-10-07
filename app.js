@@ -3987,6 +3987,69 @@ if (autoScroll) {
 
 }
 
+/* -------------------------------------------------------
+   CHAT SCROLL-DOWN BUTTON
+   ------------------------------------------------------- */
+
+const scrollDownButton =
+  $("#chatScrollDown");
+
+const scrollRoot =
+  document.scrollingElement ||
+  document.documentElement;
+
+const updateChatScrollButton =
+  () => {
+
+    if (!scrollDownButton || !scrollRoot) {
+      return;
+    }
+
+    const distanceFromBottom =
+      scrollRoot.scrollHeight -
+      (
+        scrollRoot.scrollTop +
+        scrollRoot.clientHeight
+      );
+
+    scrollDownButton.classList.toggle(
+      "visible",
+      distanceFromBottom > 100
+    );
+
+  };
+
+
+if (scrollDownButton) {
+
+  scrollDownButton.addEventListener(
+    "click",
+    () => {
+
+      scrollRoot.scrollTo({
+        top: scrollRoot.scrollHeight,
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+}
+
+
+window.addEventListener(
+  "scroll",
+  updateChatScrollButton,
+  {
+    passive: true
+  }
+);
+
+
+requestAnimationFrame(
+  updateChatScrollButton
+);
+
      attachMessageLongPress();
    
      attachMediaImageViewer();
