@@ -14017,59 +14017,105 @@ function rejectTemporaryChatInvite(
    TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
-function sendTemporaryChatInvite(
-   memberId,
-   groupId
+async function sendTemporaryChatInvite(
+  memberId,
+  groupId
 ) {
-
   const member =
-    findMemberAcrossGroups(
-      memberId
+    findMemberAcrossGroups(memberId);
+
+  if (!member) return;
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
     );
 
-
-  if (!member) {
+  if (!sessionToken) {
+    alert(
+      "Your SimpoChat session is not available. Please try again."
+    );
     return;
   }
 
+  try {
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({
+            action:
+              "send_temporary_invite",
+            to_user_id:
+              member.id,
+            group_id:
+              groupId || null
+          })
+        }
+      );
 
-  state.temporaryInvites =
-    safeArray(
-      state.temporaryInvites
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      data.allowed !== true
+    ) {
+      throw new Error(
+        data.message ||
+        "Unable to send temporary chat invitation."
+      );
+    }
+
+    state.temporaryInvites =
+      safeArray(
+        state.temporaryInvites
+      );
+
+    if (data.invite) {
+      const index =
+        state.temporaryInvites.findIndex(
+          invite =>
+            invite.id ===
+            data.invite.id
+        );
+
+      if (index >= 0) {
+        state.temporaryInvites[index] =
+          data.invite;
+      } else {
+        state.temporaryInvites.push(
+          data.invite
+        );
+      }
+    }
+
+    saveState();
+
+    modalRoot.innerHTML = "";
+
+    alert(
+      `Temporary chat invitation sent to ${member.name}.`
     );
 
+  } catch (error) {
+    console.error(
+      "SimpoChat temporary invite failed:",
+      error
+    );
 
-  state.temporaryInvites.push({
-     
-     id:
-        uid("invite"),
-     
-     from:
-        state.currentUser.id,
-     
-     to:
-        member.id,
-     
-     groupId:
-        groupId || null,
-     
-     createdAt:
-        now(),
-     
-     status:
-        "pending"
-  
-  });
-
-
-  saveState();
-
-  modalRoot.innerHTML = "";
-
-
-  alert(
-    `Temporary chat invitation sent to ${member.name}.`
-  );
+    alert(
+      error?.message ||
+      "Unable to send temporary chat invitation."
+    );
+  }
 }
 
 
