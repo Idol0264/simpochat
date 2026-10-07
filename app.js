@@ -6133,7 +6133,7 @@ const group =
                 >
 
                   <strong>
-                    ${esc(member.name)}
+                    ${esc(memberName)}
                   </strong>
 
                   <small>
