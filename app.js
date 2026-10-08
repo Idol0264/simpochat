@@ -10639,74 +10639,189 @@ function openEditProfile() {
 
   if (form) {
 
-    form.addEventListener(
-      "submit",
-      event => {
+  form.addEventListener(
+    "submit",
+    async event => {
 
-        event.preventDefault();
-
-
-        const name =
-          $("#profileName")
-            ?.value
-            .trim();
+      event.preventDefault();
 
 
-        const email =
-          $("#profileEmail")
-            ?.value
-            .trim();
+      const name =
+        $("#profileName")
+          ?.value
+          .trim();
 
 
-        if (!name || !email) {
+      const email =
+        $("#profileEmail")
+          ?.value
+          .trim();
 
-          alert(
-            "Complete your profile details."
+
+      if (!name || !email) {
+
+        alert(
+          "Complete your profile details."
+        );
+
+        return;
+
+      }
+
+
+      const sessionToken =
+        localStorage.getItem(
+          SESSION_TOKEN_KEY
+        );
+
+
+      if (!sessionToken) {
+
+        alert(
+          "Your SimpoChat session is not available. Please try again."
+        );
+
+        return;
+
+      }
+
+
+      const saveButton =
+        form.querySelector(
+          'button[type="submit"]'
+        );
+
+
+      if (saveButton) {
+
+        saveButton.disabled =
+          true;
+
+        saveButton.textContent =
+          "Saving...";
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            SIMPOCHAT_ACCESS_URL,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                "Authorization":
+                  `Bearer ${sessionToken}`
+              },
+
+              body: JSON.stringify({
+
+                action:
+                  "update_profile",
+
+                name,
+
+                email,
+
+                avatar_data_url:
+                  pendingProfilePhoto !== null
+                    ? pendingProfilePhoto
+                    : undefined
+
+              })
+            }
           );
 
-          return;
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          data.allowed !== true ||
+          !data.user
+        ) {
+
+          throw new Error(
+            data.message ||
+            "Unable to save your profile."
+          );
 
         }
 
 
+        /*
+         * Use the authoritative
+         * Supabase profile.
+         */
+
         state.currentUser.name =
+          data.user.name ||
           name;
 
 
         state.currentUser.email =
+          data.user.email ||
           email;
 
 
+        state.currentUser.avatarImage =
+          data.user.avatar_url ||
+          "";
 
-         if (pendingProfilePhoto !== null) {
-            state.currentUser.avatarImage =
-               pendingProfilePhoto;
-         }
-
-
-        /*
-         * Keep the first letter as the
-         * fallback avatar.
-         *
-         * Do NOT remove avatarImage.
-         */
 
         state.currentUser.avatar =
-          name
+          state.currentUser.name
             .charAt(0)
             .toUpperCase();
 
 
         saveState();
 
-        modalRoot.innerHTML = "";
+
+        modalRoot.innerHTML =
+          "";
+
 
         render();
 
-      }
-    );
 
-  }
+      } catch (error) {
+
+        console.error(
+          "SimpoChat profile save failed:",
+          error
+        );
+
+
+        alert(
+          error?.message ||
+          "Unable to save your profile."
+        );
+
+
+        if (saveButton) {
+
+          saveButton.disabled =
+            false;
+
+          saveButton.textContent =
+            "Save Profile";
+
+        }
+
+      }
+
+    }
+  );
+
+}
 
 }
 
