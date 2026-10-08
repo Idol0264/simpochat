@@ -925,6 +925,30 @@ async function syncCurrentUserProfile() {
 
 }
 
+let profileSyncTimer =
+  null;
+
+
+function startProfileSync() {
+
+  if (profileSyncTimer) {
+    return;
+  }
+
+
+  syncCurrentUserProfile();
+
+
+  profileSyncTimer =
+    setInterval(
+      () => {
+        syncCurrentUserProfile();
+      },
+      10000
+    );
+
+}
+
 /* ---------------------------------------------------------
    GLOBAL ADMIN JOIN REQUEST CHECK
    --------------------------------------------------------- */
