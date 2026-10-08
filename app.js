@@ -2496,8 +2496,9 @@ async function openGroup(id) {
      * Always get the authoritative group
      * from Supabase before opening it.
      *
-     * This is important because search results
-     * may contain only partial group information.
+     * This makes group information,
+     * group photo and member profile
+     * photos come from the server.
      */
     const response =
       await fetch(
@@ -2540,8 +2541,8 @@ async function openGroup(id) {
       data.group;
 
     /*
-     * Replace the local copy with the
-     * authoritative Supabase copy.
+     * Build the group from the
+     * authoritative Supabase data.
      */
     const group = {
 
@@ -2565,6 +2566,11 @@ async function openGroup(id) {
           remoteGroup.category
         ),
 
+      /*
+       * IMPORTANT:
+       * The group photo comes directly
+       * from Supabase photo_url.
+       */
       photo:
         remoteGroup.photo_url ||
         localGroup.photo ||
@@ -2596,42 +2602,70 @@ async function openGroup(id) {
       unseen:
         0,
 
+      /*
+       * Build every member from the
+       * authoritative Supabase record.
+       */
       members:
         safeArray(
           remoteGroup.members
         ).map(
-          member => ({
-            id:
-              member.id,
+          member => {
 
-            name:
+            const memberName =
               member.name ||
-              "Member",
+              "Member";
 
-            avatar:
-              member.avatar ||
-              String(
-                member.name ||
-                "M"
-              )
-                .charAt(0)
-                .toUpperCase(),
+            const memberAvatarUrl =
+              member.avatar_url ||
+              member.avatarImage ||
+              "";
 
-            hue:
-              member.hue ??
-              randomHue(),
+            return {
 
-            role:
-              member.role ||
-              "member"
-          })
+              id:
+                member.id,
+
+              name:
+                memberName,
+
+              /*
+               * Keep the real profile
+               * image when Supabase has one.
+               */
+              avatarImage:
+                memberAvatarUrl,
+
+              /*
+               * Keep the letter as the
+               * fallback when there is
+               * no profile image.
+               */
+              avatar:
+                member.avatar ||
+                memberName
+                  .charAt(0)
+                  .toUpperCase(),
+
+              hue:
+                member.hue ??
+                randomHue(),
+
+              role:
+                member.role ||
+                "member"
+
+            };
+
+          }
         )
 
     };
 
     /*
-     * Make sure creator/admin status is
-     * based on the authoritative member list.
+     * Make sure creator/admin status
+     * is based on the authoritative
+     * Supabase member list.
      */
     const currentMember =
       group.members.find(
@@ -2644,11 +2678,14 @@ async function openGroup(id) {
       currentMember?.role === "creator" ||
       currentMember?.role === "admin"
     ) {
+
       group.admin = true;
+
     }
 
     /*
-     * Replace the local group copy.
+     * Replace the local group with
+     * the authoritative Supabase copy.
      */
     state.groups =
       safeArray(
@@ -2666,7 +2703,8 @@ async function openGroup(id) {
     state.selectedGroup =
       group.id;
 
-    group.unseen = 0;
+    group.unseen =
+      0;
 
     state.previousScreen =
       state.screen;
@@ -2683,8 +2721,9 @@ async function openGroup(id) {
     saveState();
 
     /*
-     * Load the real messages from Supabase
-     * before displaying the chat.
+     * Load the real messages from
+     * Supabase before displaying
+     * the group chat.
      */
     await loadGroupMessages(
       group.id
@@ -2695,7 +2734,9 @@ async function openGroup(id) {
       state.selectedGroup !==
         group.id
     ) {
+
       return;
+
     }
 
     renderGroupChat();
@@ -2712,8 +2753,9 @@ async function openGroup(id) {
     );
 
     /*
-     * If the remote group cannot be loaded,
-     * do not pretend the local copy is current.
+     * Do not pretend that the local
+     * copy is current if Supabase
+     * could not be reached.
      */
     alert(
       error?.message ||
@@ -2721,6 +2763,7 @@ async function openGroup(id) {
     );
 
   }
+
 }
 
 /* ---------------------------------------------------------
