@@ -813,6 +813,119 @@ function stopGroupJoinNotificationRefresh() {
 
 
 /* ---------------------------------------------------------
+   SYNC CURRENT USER PROFILE
+   --------------------------------------------------------- */
+
+async function syncCurrentUserProfile() {
+
+  const sessionToken =
+    localStorage.getItem(
+      SESSION_TOKEN_KEY
+    );
+
+  if (!sessionToken) {
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action: "access"
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.allowed !== true ||
+      !data.user
+    ) {
+      return;
+    }
+
+
+    const serverUser =
+      data.user;
+
+
+    const oldAvatar =
+      state.currentUser?.avatarImage ||
+      "";
+
+
+    state.currentUser =
+      state.currentUser ||
+      {};
+
+
+    state.currentUser.id =
+      serverUser.id;
+
+
+    state.currentUser.name =
+      serverUser.name ||
+      state.currentUser.name;
+
+
+    state.currentUser.email =
+      serverUser.email ||
+      state.currentUser.email;
+
+
+    state.currentUser.avatarImage =
+      serverUser.avatar_url ||
+      "";
+
+
+    state.currentUser.avatar =
+      state.currentUser.name
+        ?.charAt(0)
+        ?.toUpperCase() ||
+      "?";
+
+
+    if (
+      oldAvatar !==
+      state.currentUser.avatarImage
+    ) {
+
+      saveState();
+
+      render();
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat profile sync failed:",
+      error
+    );
+
+  }
+
+}
+
+/* ---------------------------------------------------------
    GLOBAL ADMIN JOIN REQUEST CHECK
    --------------------------------------------------------- */
 
