@@ -3460,21 +3460,27 @@ async function createGroup() {
           },
 
           body: JSON.stringify({
-            action:
-              "create_group",
-
-            name,
-
-            categories,
-
-            join_policy:
-              joinPolicy,
-
-            approval_mode:
-              joinApproval ===
-              "creator-only"
+             
+             action:
+                "create_group",
+             
+             name,
+             
+             categories,
+             
+             join_policy:
+                joinPolicy,
+             
+             approval_mode:
+                joinApproval ===
+                "creator-only"
                 ? "creator"
-                : "admins"
+                : "admins",
+             
+             photo_data_url:
+                pendingNewGroupPhoto ||
+                
+                ""
           })
         }
       );
