@@ -837,6 +837,8 @@ async function checkAdminJoinRequests() {
     return;
   }
 
+  let hasPendingRequests = false;
+
   for (const group of adminGroups) {
 
     const requests =
@@ -845,20 +847,47 @@ async function checkAdminJoinRequests() {
       );
 
     if (requests.length > 0) {
-
-      state.groupJoinNotifications =
-        state.groupJoinNotifications ||
-        {};
-
-      state.groupJoinNotifications[
-        group.id
-      ] = requests;
-
+      hasPendingRequests = true;
     }
 
   }
 
   saveState();
+
+  /*
+   * If a new request is found while the
+   * admin is already inside SimpoChat,
+   * refresh the current screen so the
+   * notification state becomes visible.
+   */
+  if (hasPendingRequests) {
+
+    if (
+      state.screen ===
+      "group-profile"
+    ) {
+
+      const currentGroup =
+        getGroup(
+          state.selectedGroup
+        );
+
+      if (
+        currentGroup &&
+        isGroupAdmin(
+          currentGroup
+        )
+      ) {
+
+        updateGroupNotificationDot(
+          currentGroup.id
+        );
+
+      }
+
+    }
+
+  }
 
 }
 
