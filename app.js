@@ -1569,6 +1569,8 @@ function render() {
 
   startGlobalJoinRequestRefresh();
 
+  startProfileSync();
+
   cleanupExpired();
 
   applyTheme();
