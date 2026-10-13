@@ -5955,12 +5955,10 @@ function openTemporaryChatInvite(
 
         <div class="invite-card">
 
-          <div
-            class="profile-avatar small"
-            style="--h:${member.hue}"
-          >
-            ${esc(member.avatar)}
-          </div>
+          ${renderUserAvatar(
+             member,
+             "profile-avatar small"
+          )}
 
 
           <h3>
