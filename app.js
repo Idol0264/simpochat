@@ -7092,16 +7092,10 @@ function renderPostCard(
 
         <span class="post-creator">
 
-          <span
-            class="member-avatar tiny"
-            style="--h:${group.hue}"
-          >
-            ${esc(
-              String(post.author)
-                .charAt(0)
-                .toUpperCase()
-            )}
-          </span>
+        ${renderUserAvatar(
+           getPostAuthorProfile(post, group),
+           "member-avatar tiny"
+        )}
 
           <span>
             ${esc(post.author)}
