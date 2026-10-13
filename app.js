@@ -7185,16 +7185,10 @@ function openPost(
 
           <div class="post-viewer-user">
 
-            <span
-              class="member-avatar"
-              style="--h:${group.hue}"
-            >
-              ${esc(
-                String(post.author)
-                  .charAt(0)
-                  .toUpperCase()
-              )}
-            </span>
+            ${renderUserAvatar(
+               getPostAuthorProfile(post, group),
+               "member-avatar"
+            )}
 
 
             <div>
