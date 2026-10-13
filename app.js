@@ -6424,12 +6424,15 @@ const group =
                 class="temporary-chat-invite-head"
               >
 
-                <span
-                  class="temporary-chat-avatar"
-                  style="--h:${memberHue}"
-                >
-                  ${esc(memberAvatar)}
-                </span>
+                ${renderUserAvatar(
+                   {
+                      name: memberName,
+                      avatar: memberAvatar,
+                      avatarImage: memberAvatarImage,
+                      hue: memberHue
+                   },
+                   "temporary-chat-avatar"
+                )}
 
 
                 <div
