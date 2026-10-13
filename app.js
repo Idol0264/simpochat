@@ -6540,12 +6540,10 @@ function renderTemporaryChat(
 
         <div class="chat-header-main">
 
-          <span
-            class="group-avatar small"
-            style="--h:${member.hue}"
-          >
-            ${esc(member.avatar)}
-          </span>
+          ${renderUserAvatar(
+             member,
+             "group-avatar small"
+          )}
 
 
           <span class="chat-header-copy">
