@@ -6961,6 +6961,53 @@ function getVisiblePosts(
 
 
 /* ---------------------------------------------------------
+   FIND POST AUTHOR PROFILE
+   --------------------------------------------------------- */
+
+function getPostAuthorProfile(post, group) {
+  const authorName = String(post?.author || "").trim();
+
+  if (!authorName) {
+    return null;
+  }
+
+  // Use the current user's saved profile when applicable.
+  if (
+    state.currentUser?.name?.trim().toLowerCase() ===
+    authorName.toLowerCase()
+  ) {
+    return state.currentUser;
+  }
+
+  // Prefer the author in the post's group.
+  const groupMember = safeArray(group?.members).find(
+    member =>
+      member.name?.trim().toLowerCase() ===
+      authorName.toLowerCase()
+  );
+
+  if (groupMember) {
+    return groupMember;
+  }
+
+  // Fallback: search other groups for the same member.
+  const otherMember = safeArray(state.groups)
+    .flatMap(item => safeArray(item.members))
+    .find(
+      member =>
+        member.name?.trim().toLowerCase() ===
+        authorName.toLowerCase()
+    );
+
+  return otherMember || {
+    name: authorName,
+    avatar: authorName.charAt(0).toUpperCase(),
+    hue: group?.hue || 210
+  };
+}
+
+
+/* ---------------------------------------------------------
    POST CARD
    --------------------------------------------------------- */
 
