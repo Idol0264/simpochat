@@ -6298,13 +6298,10 @@ function renderTemporaryMessages(
               )}"
             >
 
-              <span
-                class="temporary-chat-avatar"
-                style="--h:${member.hue}"
-              >
-                ${esc(member.avatar)}
-              </span>
-
+              ${renderUserAvatar(
+                 member,
+                 "temporary-chat-avatar"
+              )}
 
               <span
                 class="temporary-chat-copy"
