@@ -5618,6 +5618,7 @@ const canReceiveJoinNotifications =
    MEMBER ROW
    --------------------------------------------------------- */
 
+
 function renderMemberRow(
   member,
   group
@@ -5631,13 +5632,10 @@ function renderMemberRow(
       data-group-id="${esc(group.id)}"
     >
 
-      <span
-        class="member-avatar"
-        style="--h:${member.hue}"
-      >
-        ${esc(member.avatar)}
-      </span>
-
+      ${renderUserAvatar(
+        member,
+        "member-avatar"
+      )}
 
       <span class="member-copy">
 
@@ -5661,6 +5659,7 @@ function renderMemberRow(
     </button>
 
   `;
+
 }
 
 
