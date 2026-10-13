@@ -14375,14 +14375,10 @@ function openTemporaryMemberPicker() {
                         )}"
                       >
 
-                        <span
-                          class="member-avatar"
-                          style="--h:${member.hue}"
-                        >
-                          ${esc(
-                            member.avatar
-                          )}
-                        </span>
+                        ${renderUserAvatar(
+                           member,
+                           "member-avatar"
+                        )}
 
                         <span class="member-copy">
 
