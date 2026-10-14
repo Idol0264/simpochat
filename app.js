@@ -9894,12 +9894,20 @@ function renderSearchGroup(
     <div class="group-card search-group-card">
 
       <span
-        class="group-avatar"
+        class="group-avatar ${group.photo ? "has-photo" : ""}"
         style="--h:${group.hue}"
       >
-        ${esc(group.icon)}
+        ${
+          group.photo
+            ? `
+              <img
+                src="${esc(group.photo)}"
+                alt="${esc(group.name)}"
+              >
+            `
+            : esc(group.icon)
+        }
       </span>
-
 
       <span class="group-copy">
 
