@@ -10944,6 +10944,11 @@ function openEditProfile() {
           .trim();
 
 
+      const occupation =
+        $("#profileOccupation")
+          ?.value || "";
+
+
       if (!name || !email) {
 
         alert(
