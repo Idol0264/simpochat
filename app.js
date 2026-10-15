@@ -10698,6 +10698,64 @@ function openEditProfile() {
 
           </div>
 
+          <div class="field">
+
+            <label for="profileOccupation">
+              Occupation / Status
+            </label>
+
+            <select id="profileOccupation">
+
+              <option value="">Choose your occupation / status</option>
+
+              <option value="Student" ${user.occupation === "Student" ? "selected" : ""}>
+                Student
+              </option>
+
+              <option value="Working" ${user.occupation === "Working" ? "selected" : ""}>
+                Working / Employed
+              </option>
+
+              <option value="Entrepreneur" ${user.occupation === "Entrepreneur" ? "selected" : ""}>
+                Entrepreneur
+              </option>
+
+              <option value="Self-employed" ${user.occupation === "Self-employed" ? "selected" : ""}>
+                Self-employed
+              </option>
+
+              <option value="Freelancer" ${user.occupation === "Freelancer" ? "selected" : ""}>
+                Freelancer
+              </option>
+
+              <option value="Unemployed" ${user.occupation === "Unemployed" ? "selected" : ""}>
+                Unemployed
+              </option>
+
+              <option value="Married" ${user.occupation === "Married" ? "selected" : ""}>
+                Married
+              </option>
+
+              <option value="Single" ${user.occupation === "Single" ? "selected" : ""}>
+                Single
+              </option>
+
+              <option value="Retired" ${user.occupation === "Retired" ? "selected" : ""}>
+                Retired
+              </option>
+
+              <option value="Other" ${user.occupation === "Other" ? "selected" : ""}>
+                Other
+              </option>
+
+              <option value="Prefer not to say" ${user.occupation === "Prefer not to say" ? "selected" : ""}>
+                Prefer not to say
+              </option>
+
+            </select>
+
+          </div>
+
 
           <button
             class="primary-btn"
