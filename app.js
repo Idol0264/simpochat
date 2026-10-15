@@ -11019,6 +11019,8 @@ function openEditProfile() {
 
                 email,
 
+                occupation,
+
                 avatar_data_url:
                   pendingProfilePhoto !== null
                     ? pendingProfilePhoto
