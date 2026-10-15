@@ -10426,6 +10426,10 @@ function renderSettings() {
               ${esc(user.email)}
             </p>
 
+            <div class="profile-occupation-display">
+              ${esc(user.occupation || "Add your occupation / status")}
+            </div>
+
           </div>
 
         </div>
