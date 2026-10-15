@@ -5964,6 +5964,11 @@ function openTemporaryChatInvite(
           </h3>
 
 
+          <div class="invite-occupation">
+            ${esc(member.occupation || "Occupation not specified")}
+          </div>
+
+
           <p>
             Send a temporary chat invitation.
             The chat only begins after the other
