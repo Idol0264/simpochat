@@ -11064,6 +11064,11 @@ function openEditProfile() {
           email;
 
 
+        state.currentUser.occupation =
+          data.user.occupation ||
+          occupation;
+
+
         state.currentUser.avatarImage =
           data.user.avatar_url ||
           "";
