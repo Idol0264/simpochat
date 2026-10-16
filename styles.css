@@ -8181,3 +8181,27 @@ body {
   display: inline;
   white-space: nowrap;
 }
+
+.your-invite-occupation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.occupation-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.occupation-limit-hint {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.82rem;
+  color: var(--muted, #a6a8b5);
+}
