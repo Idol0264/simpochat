@@ -10461,12 +10461,41 @@ function renderSettings() {
             </p>
 
             <div class="profile-occupation-display">
-              ${esc(user.occupation || "Add your occupation / status")}
+            ${(Array.isArray(user.occupation)
+               ? user.occupation
+               : user.occupation
+               ? [user.occupation]
+               : []
+              ).map(value => {
+                 const occupations = {
+                    "Married": ["👩‍❤️‍👨", "Married"],
+                    "Working": ["💼", "Working / Employed"],
+                    "Student": ["🎓", "Student"],
+                    "Entrepreneur": ["🚀", "Entrepreneur"],
+                    "Self-employed": ["🏢", "Self-employed"],
+                    "Freelancer": ["💻", "Freelancer"],
+                    "Unemployed": ["🔍", "Unemployed"],
+                    "Single": ["💖", "Single"],
+                    "Retired": ["🏖️", "Retired"],
+                    "Other": ["✨", "Other"],
+                    "Prefer not to say": ["🤐", "Prefer not to say"]
+                 };
+                 
+                 const [emoji, label] =
+                    occupations[value] || ["•", value];
+                 
+                 return `
+                 <span class="occupation-chip">
+                 <span class="occupation-emoji">${emoji}</span>
+                 <span class="occupation-label">${esc(label)}</span>
+                 </span>
+                 `;
+              }).join("") || "Add your occupation / status"}
+              </div>
+              
             </div>
-
-          </div>
-
-        </div>
+              
+         </div>
 
 
         <button
