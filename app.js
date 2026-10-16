@@ -10805,47 +10805,102 @@ function openEditProfile() {
 
               <option value="">Choose your occupation / status</option>
 
-              <option value="Student" ${user.occupation === "Student" ? "selected" : ""}>
+              <option value="Student" ${(Array.isArray(user.occupation)
+                                         ? user.occupation
+                                         : user.occupation
+                                         ? [user.occupation]
+                                         : []
+                                        ).includes("Student") ? "selected" : ""}>
                 Student
               </option>
 
-              <option value="Working" ${user.occupation === "Working" ? "selected" : ""}>
+              <option value="Working" ${(Array.isArray(user.occupation)
+                                         ? user.occupation
+                                         : user.occupation
+                                         ? [user.occupation]
+                                         : []
+                                        ).includes("Working / Employed") ? "selected" : ""}>
                 Working / Employed
               </option>
 
-              <option value="Entrepreneur" ${user.occupation === "Entrepreneur" ? "selected" : ""}>
+              <option value="Entrepreneur" ${(Array.isArray(user.occupation)
+                                              ? user.occupation
+                                              : user.occupation
+                                              ? [user.occupation]
+                                              : []
+                                             ).includes("Entrepreneur") ? "selected" : ""}>
                 Entrepreneur
               </option>
 
-              <option value="Self-employed" ${user.occupation === "Self-employed" ? "selected" : ""}>
+              <option value="Self-employed" ${(Array.isArray(user.occupation)
+                                               ? user.occupation
+                                               : user.occupation
+                                               ? [user.occupation]
+                                               : []
+                                              ).includes("Self-employed") ? "selected" : ""}>
                 Self-employed
               </option>
 
-              <option value="Freelancer" ${user.occupation === "Freelancer" ? "selected" : ""}>
+              <option value="Freelancer" ${(Array.isArray(user.occupation)
+                                            ? user.occupation
+                                            : user.occupation
+                                            ? [user.occupation]
+                                            : []
+                                           ).includes("Freelancer") ? "selected" : ""}>
                 Freelancer
               </option>
 
-              <option value="Unemployed" ${user.occupation === "Unemployed" ? "selected" : ""}>
+              <option value="Unemployed" ${(Array.isArray(user.occupation)
+                                            ? user.occupation
+                                            : user.occupation
+                                            ? [user.occupation]
+                                            : []
+                                           ).includes("Unemployed") ? "selected" : ""}>
                 Unemployed
               </option>
 
-              <option value="Married" ${user.occupation === "Married" ? "selected" : ""}>
+              <option value="Married" ${(Array.isArray(user.occupation)
+                                         ? user.occupation
+                                         : user.occupation
+                                         ? [user.occupation]
+                                         : []
+                                        ).includes("Married") ? "selected" : ""}>
                 Married
               </option>
 
-              <option value="Single" ${user.occupation === "Single" ? "selected" : ""}>
+              <option value="Single" ${(Array.isArray(user.occupation)
+                                        ? user.occupation
+                                        : user.occupation
+                                        ? [user.occupation]
+                                        : []
+                                       ).includes("Single") ? "selected" : ""}>
                 Single
               </option>
 
-              <option value="Retired" ${user.occupation === "Retired" ? "selected" : ""}>
+              <option value="Retired" ${(Array.isArray(user.occupation)
+                                         ? user.occupation
+                                         : user.occupation
+                                         ? [user.occupation]
+                                         : []
+                                        ).includes("Retired") ? "selected" : ""}" >
                 Retired
               </option>
 
-              <option value="Other" ${user.occupation === "Other" ? "selected" : ""}>
+              <option value="Other" ${(Array.isArray(user.occupation)
+                                       ? user.occupation
+                                       : user.occupation
+                                       ? [user.occupation]
+                                       : []
+                                      ).includes("Other") ? "selected" : ""}>
                 Other
               </option>
 
-              <option value="Prefer not to say" ${user.occupation === "Prefer not to say" ? "selected" : ""}>
+              <option value="Prefer not to say" ${(Array.isArray(user.occupation)
+                                                   ? user.occupation
+                                                   : user.occupation
+                                                   ? [user.occupation]
+                                                   : []
+                                                  ).includes("Prefer not to say") ? "selected" : ""}>
                 Prefer not to say
               </option>
 
