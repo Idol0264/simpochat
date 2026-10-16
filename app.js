@@ -5882,39 +5882,69 @@ function leaveCurrentGroup() {
    START TEMPORARY CHAT
    --------------------------------------------------------- */
 
-function startTemporaryChat(
-  memberId
-) {
+async function startTemporaryChat(memberId) {
 
-  const group =
-    getGroup(
-      state.selectedGroup
-    );
+  const group = getGroup(state.selectedGroup);
 
   if (!group) {
     return;
   }
 
-
-  const member =
-    getMember(
-      group,
-      memberId
-    );
-
+  const member = getMember(group, memberId);
 
   if (!member) {
     return;
   }
 
+  state.selectedMember = member.id;
 
-  state.selectedMember =
-    member.id;
-
-
-  openTemporaryChatInvite(
-    member
+  const sessionToken = localStorage.getItem(
+    SESSION_TOKEN_KEY
   );
+
+  if (sessionToken) {
+    try {
+      const response = await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action: "get_member_profile",
+            member_id: member.id
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        response.ok &&
+        data.allowed === true &&
+        data.member
+      ) {
+        Object.assign(member, data.member);
+      } else {
+        console.warn(
+          "Could not load member profile:",
+          data.message
+        );
+      }
+
+    } catch (error) {
+      console.error(
+        "Unable to load member occupation:",
+        error
+      );
+    }
+  }
+
+  openTemporaryChatInvite(member);
 }
 
 
