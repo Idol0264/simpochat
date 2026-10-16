@@ -11241,8 +11241,11 @@ if (occupationSelect) {
 
 
         state.currentUser.occupation =
-          data.user.occupation ||
-          occupation;
+           Array.isArray(data.user.occupation)
+           ? data.user.occupation
+           : data.user.occupation
+           ? [data.user.occupation]
+           : occupation;
 
 
         state.currentUser.avatarImage =
