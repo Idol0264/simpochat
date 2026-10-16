@@ -6035,42 +6035,6 @@ function openTemporaryChatInvite(
           </p>
 
 
-          <div class="your-invite-occupation">
-          <strong>Your status:</strong>
-          
-          ${(Array.isArray(state.currentUser?.occupation)
-             ? state.currentUser.occupation
-             : state.currentUser?.occupation
-             ? [state.currentUser.occupation]
-             : []
-            ).map(value => {
-               const occupations = {
-                  "Married": ["👩‍❤️‍👨", "Married"],
-                  "Working": ["💼", "Working / Employed"],
-                  "Student": ["🎓", "Student"],
-                  "Entrepreneur": ["🚀", "Entrepreneur"],
-                  "Self-employed": ["🏢", "Self-employed"],
-                  "Freelancer": ["💻", "Freelancer"],
-                  "Unemployed": ["🔍", "Unemployed"],
-                  "Single": ["💖", "Single"],
-                  "Retired": ["🏖️", "Retired"],
-                  "Other": ["✨", "Other"],
-                  "Prefer not to say": ["🤐", "Prefer not to say"]
-               };
-               
-               const [emoji, label] =
-                  occupations[value] || ["•", value];
-               
-               return `
-               <span class="occupation-chip">
-               <span>${emoji}</span>
-               <span>${esc(label)}</span>
-               </span>
-               `;
-            }).join("") || "No status selected"}
-          </div>
-
-
           <button
             class="primary-btn"
             data-temp-invite="${esc(member.id)}"
