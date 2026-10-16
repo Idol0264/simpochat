@@ -10797,7 +10797,11 @@ function openEditProfile() {
               Occupation / Status
             </label>
 
-            <select id="profileOccupation">
+            <select
+            id="profileOccupation"
+            multiple
+            size="6"
+            >
 
               <option value="">Choose your occupation / status</option>
 
