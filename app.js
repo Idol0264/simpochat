@@ -7087,7 +7087,7 @@ function getVisiblePosts(
     safeArray(state.posts)
       .filter(
         post =>
-          post.type === "video"
+          (post.type === "video" || post.type === "photos")
       );
 
 
