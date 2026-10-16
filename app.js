@@ -6890,6 +6890,24 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
 
 function renderPosts() {
 
+  if (
+    !postsSyncInFlight &&
+    Date.now() - postsLastSyncedAt >= 30000
+  ) {
+    syncPostsFromSupabase()
+      .then(() => {
+        if (state.screen === "posts") {
+          renderPosts();
+        }
+      })
+      .catch(error => {
+        console.error(
+          "SimpoChat posts sync failed:",
+          error
+        );
+      });
+  }
+   
   setHeader(
     "Posts",
     "Video updates from your groups"
