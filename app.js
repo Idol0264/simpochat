@@ -11100,10 +11100,12 @@ function openEditProfile() {
           .trim();
 
 
-      const occupation =
-        $("#profileOccupation")
-          ?.value || "";
-
+      const occupation = Array.from(
+         $("#profileOccupation")?.selectedOptions || []
+      )
+         .map(option => option.value)
+         .filter(Boolean)
+         .slice(0, 3);
 
       if (!name || !email) {
 
