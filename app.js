@@ -6700,6 +6700,191 @@ function findMemberAcrossGroups(
    ========================================================= */
 
 /* ---------------------------------------------------------
+   SUPABASE POSTS + MEDIA HELPERS
+   --------------------------------------------------------- */
+
+let postsSyncInFlight = false;
+let postsLastSyncedAt = 0;
+
+async function simpoChatPostRequest(action, payload = {}) {
+  const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  if (!sessionToken) {
+    throw new Error(
+      "Your SimpoChat session has expired. Please reopen SimpoChat."
+    );
+  }
+
+  const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${sessionToken}`
+    },
+    body: JSON.stringify({
+      action,
+      ...payload
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.allowed !== true) {
+    throw new Error(
+      data.message ||
+      "SimpoChat could not complete this request."
+    );
+  }
+
+  return data;
+}
+
+function normalizeSupabasePost(row) {
+  const metadata =
+    row.metadata && typeof row.metadata === "object"
+      ? row.metadata
+      : {};
+
+  const contentType =
+    row.content_type === "photo"
+      ? "photos"
+      : row.content_type;
+
+  const mediaUrls = Array.isArray(row.media_urls)
+    ? row.media_urls.filter(
+        url => typeof url === "string" && url
+      )
+    : [];
+
+  return {
+    id: row.id,
+
+    author: row.author?.name || "Member",
+
+    authorId:
+      row.author?.id || row.author_id,
+
+    authorAvatarUrl:
+      row.author?.avatar_url || "",
+
+    groupIds:
+      Array.isArray(row.group_ids)
+        ? row.group_ids
+        : [],
+
+    type: contentType,
+
+    text: row.text || "",
+
+    mediaUrl: row.media_url || "",
+
+    photos:
+      contentType === "photos"
+        ? mediaUrls.map((url, index) => ({
+            fileName:
+              Array.isArray(metadata.fileNames)
+                ? metadata.fileNames[index] || "Photo"
+                : "Photo",
+            mediaUrl: url
+          }))
+        : [],
+
+    duration: Number(row.duration || 0),
+
+    originalDuration:
+      Number(metadata.originalDuration || row.duration || 0),
+
+    trimStart:
+      Number(metadata.trimStart || 0),
+
+    trimEnd:
+      Number(metadata.trimEnd || row.duration || 0),
+
+    photoDuration:
+      Number(metadata.photoDuration || PHOTO_SECONDS),
+
+    createdAt:
+      row.created_at
+        ? new Date(row.created_at).getTime()
+        : Date.now(),
+
+    expiresAt:
+      row.expires_at
+        ? new Date(row.expires_at).getTime()
+        : Date.now() + TWO_DAYS_MS,
+
+    views: 0,
+    reactions: 0,
+    comments: 0
+  };
+}
+
+async function syncPostsFromSupabase(force = false) {
+  if (postsSyncInFlight) return;
+
+  if (
+    !force &&
+    Date.now() - postsLastSyncedAt < 30000
+  ) {
+    return;
+  }
+
+  if (!localStorage.getItem(SESSION_TOKEN_KEY)) {
+    return;
+  }
+
+  postsSyncInFlight = true;
+
+  try {
+    const data =
+      await simpoChatPostRequest("list_posts");
+
+    state.posts =
+      (Array.isArray(data.posts) ? data.posts : [])
+        .map(normalizeSupabasePost)
+        .filter(post => post.expiresAt > Date.now());
+
+    postsLastSyncedAt = Date.now();
+
+    saveState();
+  } finally {
+    postsSyncInFlight = false;
+  }
+}
+
+async function uploadSimpoChatPostMedia(file, groupIds) {
+  const prepared =
+    await simpoChatPostRequest("create_post_upload", {
+      group_ids: groupIds,
+      content_type: file.type,
+      file_size: file.size
+    });
+
+  const uploadResponse = await fetch(
+    prepared.signed_url,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type
+      },
+      body: file
+    }
+  );
+
+  if (!uploadResponse.ok) {
+    const detail =
+      await uploadResponse.text().catch(() => "");
+
+    throw new Error(
+      detail || "Media upload failed. Please try again."
+    );
+  }
+
+  return prepared.public_url;
+}
+
+
+/* ---------------------------------------------------------
    POSTS PAGE
    --------------------------------------------------------- */
 
