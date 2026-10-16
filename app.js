@@ -10939,6 +10939,24 @@ function openEditProfile() {
   `;
 
 
+const occupationSelect = $("#profileOccupation");
+
+if (occupationSelect) {
+  occupationSelect.addEventListener("change", () => {
+    const selected = Array.from(
+      occupationSelect.selectedOptions
+    );
+
+    if (selected.length > 3) {
+      selected[selected.length - 1].selected = false;
+
+      alert(
+        "You can select a maximum of 3 occupations or statuses."
+      );
+    }
+  });
+}
+
   /*
    * PROFILE PHOTO PICKER
    */
