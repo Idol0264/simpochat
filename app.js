@@ -10906,6 +10906,10 @@ function openEditProfile() {
 
             </select>
 
+            <small class="occupation-limit-hint">
+              Select up to 3 occupations or statuses.
+            </small>
+
           </div>
 
 
