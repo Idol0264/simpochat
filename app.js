@@ -11801,16 +11801,22 @@ if (
        MEMBER
        ------------------------------------- */
 
-    if (
-      target.dataset.memberId
-    ) {
+if (
+  target.dataset.memberId
+) {
+  // Never open a temporary invitation to yourself.
+  if (
+    target.dataset.memberId === state.currentUser?.id
+  ) {
+    return;
+  }
 
-      startTemporaryChat(
-        target.dataset.memberId
-      );
+  startTemporaryChat(
+    target.dataset.memberId
+  );
 
-      return;
-    }
+  return;
+}
 
 
     /* -------------------------------------
