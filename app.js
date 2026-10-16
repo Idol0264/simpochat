@@ -5625,10 +5625,13 @@ function renderMemberRow(
   return `
 
     <button
-      class="member-row"
-      data-member-id="${esc(member.id)}"
-      data-group-id="${esc(group.id)}"
-    >
+    class="member-row"
+    data-member-id="${esc(member.id)}"
+    data-group-id="${esc(group.id)}"
+    ${member.id === state.currentUser?.id
+      ? 'disabled aria-label="Your own profile"'
+      : ""}
+      >
 
       ${renderUserAvatar(
         member,
