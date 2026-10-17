@@ -6884,6 +6884,22 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
 }
 
 
+async function saveSimpoChatPostToSupabase(postData) {
+  const data = await simpoChatPostRequest(
+    "create_post",
+    postData
+  );
+
+  if (!data.post) {
+    throw new Error(
+      "Supabase did not return the saved post."
+    );
+  }
+
+  return normalizeSupabasePost(data.post);
+}
+
+
 /* ---------------------------------------------------------
    POSTS PAGE
    --------------------------------------------------------- */
