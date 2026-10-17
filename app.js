@@ -6868,14 +6868,18 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
     );
   }
 
-  const projectUrl =
-    "https://uaxxzgkvjzemsevuzlcw.supabase.co";
+  const uploadUrl = prepared.signed_url;
 
-  const uploadUrl =
-    `${projectUrl}/storage/v1/object/upload/sign/` +
-    `${encodeURIComponent("simpochat-media")}/` +
-    `${prepared.path.split("/").map(encodeURIComponent).join("/")}` +
-    `?token=${encodeURIComponent(prepared.token)}`;
+  if (
+    typeof uploadUrl !== "string" ||
+    !uploadUrl.startsWith(
+      "https://uaxxzgkvjzemsevuzlcw.supabase.co/"
+    )
+  ) {
+    throw new Error(
+      "Supabase returned an invalid signed upload URL."
+    );
+  }
 
   const uploadResponse = await fetch(uploadUrl, {
     method: "PUT",
