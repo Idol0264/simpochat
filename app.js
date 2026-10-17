@@ -7447,11 +7447,23 @@ function openPost(
   }
 
 
-  const group =
-    getGroup(post.groupId);
+  const postGroupIds =
+    Array.isArray(post.groupIds)
+      ? post.groupIds
+      : post.groupId
+        ? [post.groupId]
+        : [];
 
+  const group =
+    getGroup(postGroupIds[0]);
 
   if (!group) {
+    console.error(
+      "Cannot open post: its group was not found.",
+      post.id,
+      postGroupIds
+    );
+
     return;
   }
 
