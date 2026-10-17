@@ -8205,3 +8205,79 @@ body {
   font-size: 0.82rem;
   color: var(--muted, #a6a8b5);
 }
+
+/* SIMPOCHAT POST MEDIA FIX */
+
+.post-card-media-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  overflow: hidden;
+  background: #111;
+}
+
+.post-card-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #111;
+}
+
+.post-card-media-wrap .post-video-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.post-viewer-video {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.post-viewer-real-media {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  margin: 0 auto;
+  background: #000;
+}
+
+.post-viewer-video video {
+  height: auto;
+  min-height: 220px;
+}
+
+.post-photo-collection {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.post-photo-collection img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 65vh;
+  object-fit: contain;
+  scroll-snap-align: center;
+}
