@@ -7321,16 +7321,7 @@ function getPostAuthorProfile(post, group) {
    POST CARD
    --------------------------------------------------------- */
 
-function renderPostCard(
-  post
-) {
-
-  /*
-   * New posts use groupIds.
-   * Older prototype posts may still
-   * use groupId.
-   */
-
+function renderPostCard(post) {
   const postGroupIds =
     Array.isArray(post.groupIds)
       ? post.groupIds
@@ -7338,92 +7329,102 @@ function renderPostCard(
         ? [post.groupId]
         : [];
 
-
   const postGroups =
     postGroupIds
-      .map(
-        id =>
-          getGroup(id)
-      )
+      .map(id => getGroup(id))
       .filter(Boolean);
 
-
-  const group =
-    postGroups[0];
-
+  const group = postGroups[0];
 
   if (!group) {
     return "";
   }
 
-
-  /*
-   * Display the groups this post
-   * belongs to.
-   */
-
   const groupNames =
     postGroups
-      .map(
-        item =>
-          item.name
-      )
+      .map(item => item.name)
       .join(" · ");
 
+  let mediaMarkup = "";
 
-  return `
-
-    <button
-      class="post-card"
-      data-post-id="${esc(post.id)}"
-    >
-
-      <!-- VIDEO VISUAL -->
-
+  if (post.type === "video" && post.mediaUrl) {
+    mediaMarkup = `
+      <video
+        class="post-card-media"
+        src="${esc(post.mediaUrl)}"
+        muted
+        playsinline
+        preload="metadata"
+      ></video>
+    `;
+  } else if (
+    post.type === "photos" &&
+    Array.isArray(post.photos) &&
+    post.photos.length
+  ) {
+    mediaMarkup = `
+      <img
+        class="post-card-media"
+        src="${esc(post.photos[0].mediaUrl)}"
+        alt="Photo post"
+        loading="lazy"
+      >
+    `;
+  } else if (
+    (post.type === "photo" || post.type === "image") &&
+    post.mediaUrl
+  ) {
+    mediaMarkup = `
+      <img
+        class="post-card-media"
+        src="${esc(post.mediaUrl)}"
+        alt="Photo post"
+        loading="lazy"
+      >
+    `;
+  } else {
+    mediaMarkup = `
       <span
         class="post-video-thumb"
         style="--h:${group.hue}"
       >
+        <span class="post-video-symbol">▷</span>
+      </span>
+    `;
+  }
 
-        <span class="post-video-symbol">
-          ▷
-        </span>
+  return `
+    <button
+      class="post-card"
+      data-post-id="${esc(post.id)}"
+      type="button"
+    >
+      <span class="post-card-media-wrap">
+        ${mediaMarkup}
 
-        <span class="post-video-label">
-          VIDEO
-        </span>
-
+        ${
+          post.type === "video"
+            ? `<span class="post-video-symbol">▷</span>`
+            : ""
+        }
       </span>
 
-
-      <!-- CREATOR -->
-
       <span class="post-card-info">
-
         <span class="post-creator">
+          ${renderUserAvatar(
+            getPostAuthorProfile(post, group),
+            "member-avatar tiny"
+          )}
 
-        ${renderUserAvatar(
-           getPostAuthorProfile(post, group),
-           "member-avatar tiny"
-        )}
-
-          <span>
-            ${esc(post.author)}
-          </span>
-
+          <span>${esc(post.author || "Member")}</span>
         </span>
-
 
         <span class="post-group">
           ${esc(groupNames)}
         </span>
-
       </span>
-
     </button>
-
   `;
-
 }
 
 
