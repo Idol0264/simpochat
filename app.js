@@ -7535,24 +7535,56 @@ function openPost(
         </div>
 
 
-        <!-- VIDEO -->
+                <!-- POST MEDIA -->
 
         <div class="post-viewer-video">
 
-          <div
-            class="post-video-placeholder"
-            style="--h:${group.hue}"
-          >
-
-            <span>
-              ▷
-            </span>
-
-            <small>
-              Video Post
-            </small>
-
-          </div>
+          ${
+            post.type === "video" && post.mediaUrl
+              ? `
+                <video
+                  class="post-viewer-real-media"
+                  src="${esc(post.mediaUrl)}"
+                  controls
+                  autoplay
+                  playsinline
+                  preload="metadata"
+                ></video>
+              `
+              : post.type === "photos" &&
+                Array.isArray(post.photos) &&
+                post.photos.length
+                  ? `
+                    <div class="post-photo-collection">
+                      ${
+                        post.photos.map((photo, index) => `
+                          <img
+                            class="post-viewer-real-media"
+                            src="${esc(photo.mediaUrl)}"
+                            alt="Photo ${index + 1}"
+                            loading="${index === 0 ? "eager" : "lazy"}"
+                          >
+                        `).join("")
+                      }
+                    </div>
+                  `
+                  : (
+                      post.type === "photo" ||
+                      post.type === "image"
+                    ) && post.mediaUrl
+                      ? `
+                        <img
+                          class="post-viewer-real-media"
+                          src="${esc(post.mediaUrl)}"
+                          alt="Post photo"
+                        >
+                      `
+                      : `
+                        <div class="post-video-placeholder">
+                          Media is unavailable for this post.
+                        </div>
+                      `
+          }
 
         </div>
 
