@@ -9455,7 +9455,7 @@ function openCreatePost() {
    CREATE VIDEO POST
    --------------------------------------------------------- */
 
-function createVideoPost() {
+async function createVideoPost() {
 
   if (
     !postDraftMedia.length
