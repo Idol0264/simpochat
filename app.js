@@ -6730,10 +6730,17 @@ async function simpoChatPostRequest(action, payload = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok || data.allowed !== true) {
-    throw new Error(
+    let errorMessage =
       data.message ||
-      "SimpoChat could not complete this request."
-    );
+      "SimpoChat could not complete this request.";
+
+    if (data.diagnostic) {
+      errorMessage +=
+        "\n\nTechnical details:\n" +
+        JSON.stringify(data.diagnostic, null, 2);
+    }
+
+    throw new Error(errorMessage);
   }
 
   return data;
