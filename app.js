@@ -9646,191 +9646,152 @@ async function createVideoPost() {
     now();
 
 
-  /*
-   * Create VIDEO posts.
+    /*
+   * UPLOAD AND SAVE VIDEO POSTS
    *
    * Every selected video becomes
-   * its own post.
+   * its own Supabase post.
    */
 
-  postDraftMedia
-    .filter(
-      item =>
-        item.kind === "video"
-    )
-    .forEach(
-      item => {
+  try {
 
-        const start =
-          Number(
-            item.start || 0
+    const videoItems =
+      postDraftMedia.filter(
+        item => item.kind === "video"
+      );
+
+    for (const item of videoItems) {
+
+      const start =
+        Number(item.start || 0);
+
+      const originalDuration =
+        Number(item.duration || 0);
+
+      const length =
+        Math.min(
+          MAX_VIDEO_SECONDS,
+          Number(item.length || 0)
+        );
+
+      const end =
+        Math.min(
+          originalDuration || length,
+          start + length
+        );
+
+      const duration =
+        end - start;
+
+      const mediaUrl =
+        await uploadSimpoChatPostMedia(
+          item.file,
+          groupIds
+        );
+
+      await saveSimpoChatPostToSupabase({
+
+        group_ids: [...groupIds],
+
+        content_type: "video",
+
+        text: "",
+
+        media_url: mediaUrl,
+
+        media_urls: [],
+
+        duration: duration,
+
+        metadata: {
+          originalDuration: originalDuration,
+          trimStart: start,
+          trimEnd: end,
+          fileName: item.file.name
+        }
+
+      });
+
+    }
+
+
+    /*
+     * UPLOAD AND SAVE ONE PHOTO COLLECTION
+     */
+
+    const photos =
+      postDraftMedia.filter(
+        item => item.kind === "image"
+      );
+
+    if (photos.length) {
+
+      const uploadedPhotoUrls = [];
+
+      const uploadedPhotoNames = [];
+
+      for (const item of photos) {
+
+        const mediaUrl =
+          await uploadSimpoChatPostMedia(
+            item.file,
+            groupIds
           );
 
+        uploadedPhotoUrls.push(mediaUrl);
 
-        const length =
-          Math.min(
-            MAX_VIDEO_SECONDS,
-            Number(
-              item.length ||
-              0
-            )
-          );
-
-
-        const end =
-          Math.min(
-            Number(
-              item.duration ||
-              length
-            ),
-            start +
-              length
-          );
-
-
-        state.posts.unshift({
-
-          id:
-            uid("post"),
-
-          author:
-            state.currentUser.name,
-
-          authorId:
-            state.currentUser.id,
-
-          groupIds:
-            [...groupIds],
-
-          type:
-            "video",
-
-          fileName:
-            item.file.name,
-
-          /*
-           * Temporary local preview URL.
-           *
-           * Supabase Storage will replace
-           * this later.
-           */
-
-          mediaUrl:
-            item.url,
-
-          originalDuration:
-            Number(
-              item.duration || 0
-            ),
-
-          trimStart:
-            start,
-
-          trimEnd:
-            end,
-
-          duration:
-            end - start,
-
-          createdAt,
-
-          expiresAt:
-            createdAt +
-            TWO_DAYS_MS,
-
-          views:
-            0,
-
-          reactions:
-            0,
-
-          comments:
-            0
-
-        });
+        uploadedPhotoNames.push(
+          item.file.name
+        );
 
       }
+
+      await saveSimpoChatPostToSupabase({
+
+        group_ids: [...groupIds],
+
+        content_type: "photos",
+
+        text: "",
+
+        media_url: uploadedPhotoUrls[0] || "",
+
+        media_urls: uploadedPhotoUrls,
+
+        duration:
+          photos.length * PHOTO_SECONDS,
+
+        metadata: {
+          fileNames: uploadedPhotoNames,
+          photoDuration: PHOTO_SECONDS
+        }
+
+      });
+
+    }
+
+
+    /*
+     * Refresh the posts from Supabase.
+     */
+
+    await syncPostsFromSupabase(true);
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat post upload failed:",
+      error
     );
 
-
-  /*
-   * Create ONE PHOTO COLLECTION
-   * from all selected photos.
-   */
-
-  const photos =
-    postDraftMedia.filter(
-      item =>
-        item.kind === "image"
+    alert(
+      "Your post could not be fully saved. " +
+      (error.message || "Please try again.")
     );
 
-
-  if (
-    photos.length
-  ) {
-
-    state.posts.unshift({
-
-      id:
-        uid("post"),
-
-      author:
-        state.currentUser.name,
-
-      authorId:
-        state.currentUser.id,
-
-      groupIds:
-        [...groupIds],
-
-      type:
-        "photos",
-
-      photos:
-        photos.map(
-          item => ({
-
-            fileName:
-              item.file.name,
-
-            mediaUrl:
-              item.url
-
-          })
-        ),
-
-      photoDuration:
-        PHOTO_SECONDS,
-
-      duration:
-        photos.length *
-        PHOTO_SECONDS,
-
-      createdAt,
-
-      expiresAt:
-        createdAt +
-        TWO_DAYS_MS,
-
-      views:
-        0,
-
-      reactions:
-        0,
-
-      comments:
-        0
-
-    });
+    return;
 
   }
-
-
-  /*
-   * Save prototype state.
-   */
-
-  saveState();
 
 
   /*
