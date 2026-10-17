@@ -6853,35 +6853,55 @@ async function syncPostsFromSupabase(force = false) {
 }
 
 async function uploadSimpoChatPostMedia(file, groupIds) {
-  const prepared =
-    await simpoChatPostRequest("create_post_upload", {
+  const prepared = await simpoChatPostRequest(
+    "create_post_upload",
+    {
       group_ids: groupIds,
       content_type: file.type,
       file_size: file.size
-    });
+    }
+  );
 
-  const uploadResponse = await fetch(prepared.signed_url, {
-     method: "POST",
-     headers: {
-        "Content-Type": file.type,
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheHh6Z2t2anplbXNldnV6bGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjk4MTMsImV4cCI6MjEwNjcwNTgxM30.jQhG34x6AQdoYGL1XziZVv69i-d9xyti6jzXIzZsHsU",
-        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheHh6Z2t2anplbXNldnV6bGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjk4MTMsImV4cCI6MjEwNjcwNTgxM30.jQhG34x6AQdoYGL1XziZVv69i-d9xyti6jzXIzZsHsU"
-     },
-     body: file
+  if (!prepared.path || !prepared.token) {
+    throw new Error(
+      "Supabase did not return a valid signed upload token."
+    );
+  }
+
+  const projectUrl =
+    "https://uaxxzgkvjzemsevuzlcw.supabase.co";
+
+  const uploadUrl =
+    `${projectUrl}/storage/v1/object/upload/sign/` +
+    `${encodeURIComponent("simpochat-media")}/` +
+    `${prepared.path.split("/").map(encodeURIComponent).join("/")}` +
+    `?token=${encodeURIComponent(prepared.token)}`;
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type
+    },
+    body: file
   });
 
   if (!uploadResponse.ok) {
-    const detail =
-      await uploadResponse.text().catch(() => "");
+    const detail = await uploadResponse.text().catch(() => "");
 
     throw new Error(
-      detail || "Media upload failed. Please try again."
+      `Supabase media upload failed (${uploadResponse.status}): ` +
+      (detail || "Please try again.")
+    );
+  }
+
+  if (!prepared.public_url) {
+    throw new Error(
+      "The upload succeeded, but Supabase did not return the media URL."
     );
   }
 
   return prepared.public_url;
 }
-
 
 async function saveSimpoChatPostToSupabase(postData) {
   const data = await simpoChatPostRequest(
