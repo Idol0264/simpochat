@@ -6860,16 +6860,15 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
       file_size: file.size
     });
 
-  const uploadResponse = await fetch(
-    prepared.signed_url,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": file.type
-      },
-      body: file
-    }
-  );
+  const uploadResponse = await fetch(prepared.signed_url, {
+     method: "POST",
+     headers: {
+        "Content-Type": file.type,
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheHh6Z2t2anplbXNldnV6bGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjk4MTMsImV4cCI6MjEwNjcwNTgxM30.jQhG34x6AQdoYGL1XziZVv69i-d9xyti6jzXIzZsHsU",
+        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVheHh6Z2t2anplbXNldnV6bGN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjk4MTMsImV4cCI6MjEwNjcwNTgxM30.jQhG34x6AQdoYGL1XziZVv69i-d9xyti6jzXIzZsHsU"
+     },
+     body: file
+  });
 
   if (!uploadResponse.ok) {
     const detail =
