@@ -11723,136 +11723,174 @@ function reactToPost(
 
 
 /* ---------------------------------------------------------
-   POST COMMENTS
+   POST COMMENTS — OVERLAY
+   Keeps the active post viewer open behind comments.
    --------------------------------------------------------- */
 
-function openPostComments(
-  postId
-) {
+function openPostComments(postId) {
+  const post = state.posts.find(
+    item => item.id === postId
+  );
 
-  const post =
-    state.posts.find(
-      item =>
-        item.id === postId
-    );
+  if (!post) return;
 
+  // Prevent duplicate comments panels.
+  const existingPanel = document.getElementById(
+    "simpoPostCommentsPanel"
+  );
 
-  if (!post) {
+  if (existingPanel) {
+    existingPanel.remove();
     return;
   }
 
+  // Remember the video and its previous playback state.
+  const activeVideo = modalRoot.querySelector(
+    ".post-viewer video"
+  );
 
-  modalRoot.innerHTML = `
+  const wasPlaying = Boolean(
+    activeVideo &&
+    !activeVideo.paused &&
+    !activeVideo.ended
+  );
 
-    <div
-      class="modal-backdrop"
-      data-close
+  // Pause the video while comments are open.
+  if (activeVideo && wasPlaying) {
+    activeVideo.pause();
+  }
+
+  const panel = document.createElement("div");
+
+  panel.id = "simpoPostCommentsPanel";
+  panel.className = "simpo-comments-overlay";
+
+  panel.innerHTML = `
+    <div class="simpo-comments-backdrop"></div>
+
+    <section
+      class="simpo-comments-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Post comments"
     >
+      <header class="simpo-comments-header">
+        <h2>Comments</h2>
 
-      <div class="modal">
+        <button
+          type="button"
+          class="simpo-comments-close"
+          aria-label="Close comments"
+        >×</button>
+      </header>
 
-        <div class="modal-head">
-
-          <div class="modal-title">
-            Comments
-          </div>
-
-          <button
-            class="close-btn"
-            data-close
-          >
-            ×
-          </button>
-
-        </div>
-
-
+      <div class="simpo-comments-list">
         <div class="empty">
-
-          <div class="empty-icon">
-            ◌
-          </div>
-
-          <h3>
-            Post comments
-          </h3>
-
-          <p>
-            Comments will appear here.
-          </p>
-
+          <div class="empty-icon">◌</div>
+          <h3>Post comments</h3>
+          <p>Comments will appear here.</p>
         </div>
-
-
-        <form
-          id="commentForm"
-          class="message-composer"
-        >
-
-          <input
-            id="commentInput"
-            placeholder="Write a comment..."
-            autocomplete="off"
-          >
-
-          <button
-            class="send-btn"
-            type="submit"
-          >
-            ➤
-          </button>
-
-        </form>
-
       </div>
 
-    </div>
+      <form
+        id="simpoPostCommentForm"
+        class="message-composer simpo-comments-composer"
+      >
+        <input
+          id="simpoPostCommentInput"
+          placeholder="Write a comment..."
+          autocomplete="off"
+          aria-label="Write a comment"
+        >
 
+        <button
+          class="send-btn"
+          type="submit"
+          aria-label="Send comment"
+        >➤</button>
+      </form>
+    </section>
   `;
 
+  // Append the panel without destroying the post viewer.
+  modalRoot.appendChild(panel);
 
-  const form =
-    $("#commentForm");
+  const closeButton = panel.querySelector(
+    ".simpo-comments-close"
+  );
 
+  const backdrop = panel.querySelector(
+    ".simpo-comments-backdrop"
+  );
 
-  if (form) {
+  let closed = false;
 
-    form.addEventListener(
-      "submit",
-      event => {
+  function closeComments() {
+    if (closed) return;
 
-        event.preventDefault();
+    closed = true;
+    panel.remove();
 
+    // Restore playback only if the video was playing before.
+    if (
+      wasPlaying &&
+      activeVideo &&
+      activeVideo.isConnected
+    ) {
+      const playPromise = activeVideo.play();
 
-        const input =
-          $("#commentInput");
-
-
-        const text =
-          input?.value.trim();
-
-
-        if (!text) {
-          return;
-        }
-
-
-        post.comments =
-          Number(
-            post.comments || 0
-          ) + 1;
-
-
-        saveState();
-
-        openPostComments(
-          postId
-        );
-
+      if (
+        playPromise &&
+        typeof playPromise.catch === "function"
+      ) {
+        playPromise.catch(() => {});
       }
+    }
+  }
+
+  closeButton.addEventListener(
+    "click",
+    closeComments
+  );
+
+  backdrop.addEventListener(
+    "click",
+    closeComments
+  );
+
+  const form = panel.querySelector(
+    "#simpoPostCommentForm"
+  );
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const input = panel.querySelector(
+      "#simpoPostCommentInput"
     );
 
-  }
+    const commentText = input.value.trim();
+
+    if (!commentText) return;
+
+    // Keep the existing comment-count behavior.
+    post.comments = Number(post.comments || 0) + 1;
+
+    saveState();
+
+    // Clear the input after submission.
+    input.value = "";
+
+    // Actual comment storage and display will be
+    // connected separately if required.
+  });
+
+  // Prevent clicks inside the sheet from closing it.
+  panel.querySelector(
+    ".simpo-comments-sheet"
+  ).addEventListener("click", event => {
+    event.stopPropagation();
+  });
 }
 
 /* =========================================================
