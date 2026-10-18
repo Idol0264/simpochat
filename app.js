@@ -11693,7 +11693,7 @@ function openAbout() {
 
 
 /* ---------------------------------------------------------
-   POST REACTIONS — OVERLAY
+   POST REACTIONS — SUPABASE CONNECTED
    --------------------------------------------------------- */
 
 function reactToPost(postId) {
@@ -11703,7 +11703,6 @@ function reactToPost(postId) {
 
   if (!post) return;
 
-  // Don't open duplicate reaction panels.
   const existing = document.getElementById(
     "simpoPostReactionsPanel"
   );
@@ -11713,7 +11712,6 @@ function reactToPost(postId) {
     return;
   }
 
-  // Pause the active video if it was playing.
   const activeVideo = modalRoot.querySelector(
     ".post-viewer video"
   );
@@ -11731,7 +11729,6 @@ function reactToPost(postId) {
   const panel = document.createElement("div");
 
   panel.id = "simpoPostReactionsPanel";
-  panel.className = "simpo-reactions-overlay";
 
   panel.innerHTML = `
     <div class="simpo-reactions-backdrop"></div>
@@ -11769,10 +11766,7 @@ function reactToPost(postId) {
           <span>Choose a reaction</span>
         </button>
 
-        <div
-          class="simpo-emoji-picker"
-          hidden
-        >
+        <div class="simpo-emoji-picker" hidden>
           <button type="button" data-emoji="❤️">❤️</button>
           <button type="button" data-emoji="😂">😂</button>
           <button type="button" data-emoji="😍">😍</button>
@@ -11804,7 +11798,12 @@ function reactToPost(postId) {
     ".simpo-emoji-trigger"
   );
 
+  const sessionToken = localStorage.getItem(
+    SESSION_TOKEN_KEY
+  );
+
   let closed = false;
+  let selectedEmoji = "";
 
   function closePanel() {
     if (closed) return;
@@ -11812,7 +11811,6 @@ function reactToPost(postId) {
     closed = true;
     panel.remove();
 
-    // Restore playback only if it was playing before.
     if (
       wasPlaying &&
       activeVideo &&
@@ -11844,34 +11842,207 @@ function reactToPost(postId) {
     picker.hidden = !picker.hidden;
   });
 
-  /*
-   * The database connection for listing and saving
-   * reactions will be connected in the next step.
-   */
+  async function reactionRequest(action, extra = {}) {
+    if (!sessionToken) {
+      throw new Error(
+        "Your session has expired. Please reopen SimpoChat."
+      );
+    }
 
-  list.innerHTML = `
-    <div class="simpo-reactions-empty">
-      <div class="simpo-reactions-empty-icon">♡</div>
-      <h3>No reactions yet</h3>
-      <p>Be the first to react to this post.</p>
-    </div>
-  `;
+    const response = await fetch(
+      SIMPOCHAT_ACCESS_URL,
+      {
+        method: "POST",
 
-  picker.querySelectorAll("[data-emoji]").forEach(button => {
-    button.addEventListener("click", () => {
-      const emoji = button.dataset.emoji;
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionToken}`
+        },
 
-      emojiTrigger.innerHTML = `
-        ${emoji}
-        <span>Selected reaction</span>
+        body: JSON.stringify({
+          action,
+          post_id: String(post.id),
+          ...extra
+        })
+      }
+    );
+
+    const result = await response.json().catch(
+      () => ({})
+    );
+
+    if (!response.ok || result.allowed === false) {
+      throw new Error(
+        result.message || "Unable to complete this action."
+      );
+    }
+
+    return result;
+  }
+
+  function showMessage(message) {
+    list.replaceChildren();
+
+    const empty = document.createElement("div");
+    empty.className = "simpo-reactions-empty";
+
+    const title = document.createElement("h3");
+    title.textContent = message;
+
+    empty.appendChild(title);
+    list.appendChild(empty);
+  }
+
+  function renderReactions(reactions) {
+    if (!reactions.length) {
+      list.innerHTML = `
+        <div class="simpo-reactions-empty">
+          <div class="simpo-reactions-empty-icon">♡</div>
+          <h3>No reactions yet</h3>
+          <p>Be the first to react to this post.</p>
+        </div>
       `;
 
-      picker.hidden = true;
+      return;
+    }
 
-      // The next step will save this reaction
-      // to Supabase and refresh the reactions list.
+    list.replaceChildren();
+
+    reactions.forEach(reaction => {
+      const row = document.createElement("div");
+
+      row.className = "simpo-reaction-row";
+
+      const avatar = document.createElement("div");
+
+      avatar.className = "simpo-reaction-avatar";
+
+      const name = String(
+        reaction.userName || "Member"
+      );
+
+      avatar.textContent =
+        name.trim().charAt(0).toUpperCase() || "?";
+
+      if (reaction.userAvatarUrl) {
+        const img = document.createElement("img");
+
+        img.src = reaction.userAvatarUrl;
+        img.alt = "";
+        img.loading = "lazy";
+
+        img.onerror = () => {
+          img.remove();
+        };
+
+        avatar.replaceChildren(img);
+      }
+
+      const userName = document.createElement("div");
+
+      userName.className = "simpo-reaction-user";
+      userName.textContent = name;
+
+      const emoji = document.createElement("span");
+
+      emoji.className = "simpo-reaction-emoji";
+      emoji.textContent = reaction.emoji;
+
+      row.append(avatar, userName, emoji);
+
+      list.appendChild(row);
+    });
+  }
+
+  async function loadReactions() {
+    list.innerHTML = `
+      <div class="simpo-reactions-loading">
+        <span class="simpo-reactions-spinner"></span>
+        <p>Loading reactions...</p>
+      </div>
+    `;
+
+    try {
+      const result = await reactionRequest(
+        "list_post_reactions"
+      );
+
+      if (closed) return;
+
+      const reactions = Array.isArray(result.reactions)
+        ? result.reactions
+        : [];
+
+      const mine = reactions.find(
+        reaction =>
+          reaction.userId &&
+          reaction.emoji &&
+          reaction.userId === result.currentUserId
+      );
+
+      if (mine) {
+        selectedEmoji = mine.emoji;
+      }
+
+      renderReactions(reactions);
+    } catch (error) {
+      if (closed) return;
+
+      showMessage(
+        error.message || "Unable to load reactions."
+      );
+    }
+  }
+
+  async function saveReaction(emoji) {
+    picker.hidden = true;
+
+    selectedEmoji = emoji;
+
+    emojiTrigger.innerHTML = "";
+
+    const selected = document.createElement("span");
+
+    selected.textContent = emoji;
+    selected.style.fontSize = "27px";
+
+    const label = document.createElement("span");
+
+    label.textContent = "Saving reaction...";
+
+    emojiTrigger.append(selected, label);
+
+    try {
+      await reactionRequest(
+        "set_post_reaction",
+        { emoji }
+      );
+
+      if (closed) return;
+
+      label.textContent = "Change reaction";
+
+      await loadReactions();
+    } catch (error) {
+      if (closed) return;
+
+      label.textContent = "Choose a reaction";
+
+      alert(
+        error.message || "Unable to save your reaction."
+      );
+    }
+  }
+
+  picker.querySelectorAll(
+    "[data-emoji]"
+  ).forEach(button => {
+    button.addEventListener("click", () => {
+      saveReaction(button.dataset.emoji);
     });
   });
+
+  loadReactions();
 }
 
 
