@@ -7678,6 +7678,58 @@ function openPost(
 
   `;
 
+  // Keep the photo-carousel dots synchronized with swiping.
+  const photoCollection =
+    modalRoot.querySelector(
+      ".post-photo-collection"
+    );
+
+  const photoDots =
+    modalRoot.querySelectorAll(
+      ".post-photo-dot"
+    );
+
+  if (photoCollection && photoDots.length) {
+
+    photoCollection.addEventListener(
+      "scroll",
+      () => {
+
+        const slideWidth =
+          photoCollection.clientWidth;
+
+        if (!slideWidth) {
+          return;
+        }
+
+        const activeIndex = Math.min(
+          photoDots.length - 1,
+          Math.max(
+            0,
+            Math.round(
+              photoCollection.scrollLeft /
+              slideWidth
+            )
+          )
+        );
+
+        photoDots.forEach(
+          (dot, index) => {
+
+            dot.classList.toggle(
+              "active",
+              index === activeIndex
+            );
+
+          }
+        );
+
+      },
+      { passive: true }
+    );
+
+  }
+
 }
 
 
