@@ -8666,3 +8666,371 @@ body {
     animation: none;
   }
 }
+
+/* =========================================
+   SIMPOCHAT — POST REACTIONS BOTTOM SHEET
+   ========================================= */
+
+#simpoPostReactionsPanel {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  color: #f8f8fc;
+  font-family: inherit;
+}
+
+/* Darkened post behind the panel */
+#simpoPostReactionsPanel .simpo-reactions-backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.62);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Main bottom sheet */
+#simpoPostReactionsPanel .simpo-reactions-sheet {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  max-width: 680px;
+
+  height: min(70vh, 700px);
+  height: min(70dvh, 700px);
+
+  overflow: hidden;
+
+  background: #191a22;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+
+  box-shadow: 0 -12px 45px rgba(0, 0, 0, 0.35);
+
+  animation: simpoReactionsSlideUp 0.24s ease-out;
+}
+
+/* Opening animation */
+@keyframes simpoReactionsSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+#simpoPostReactionsPanel .simpo-reactions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex: 0 0 auto;
+
+  min-height: 76px;
+  padding: 12px 20px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#simpoPostReactionsPanel .simpo-reactions-header h2 {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+}
+
+/* Close button */
+#simpoPostReactionsPanel .simpo-reactions-close {
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.035);
+  color: #fff;
+
+  font-size: 27px;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-close:active {
+  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+/* Scrollable reactions list */
+#simpoPostReactionsPanel .simpo-reactions-list {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  padding: 18px 16px;
+}
+
+/* Loading state */
+#simpoPostReactionsPanel .simpo-reactions-loading,
+#simpoPostReactionsPanel .simpo-reactions-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100%;
+
+  text-align: center;
+  color: #b8bac8;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-loading p,
+#simpoPostReactionsPanel .simpo-reactions-empty p {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-empty h3 {
+  margin: 14px 0 0;
+
+  color: #f4f4fa;
+  font-size: 19px;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-empty-icon {
+  display: grid;
+  place-items: center;
+
+  width: 70px;
+  height: 70px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  font-size: 38px;
+}
+
+/* Loading spinner */
+#simpoPostReactionsPanel .simpo-reactions-spinner {
+  width: 28px;
+  height: 28px;
+
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #9255ff;
+  border-radius: 50%;
+
+  animation: simpoReactionSpin 0.8s linear infinite;
+}
+
+@keyframes simpoReactionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Bottom emoji composer */
+#simpoPostReactionsPanel .simpo-reactions-composer {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  flex: 0 0 auto;
+
+  padding: 14px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: #191a22;
+}
+
+/* Emoji selection trigger */
+#simpoPostReactionsPanel .simpo-emoji-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 58px;
+
+  padding: 0 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 22px;
+
+  background: #22232d;
+  color: #fff;
+
+  font-size: 26px;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-trigger span {
+  color: #b8bac8;
+  font-size: 15px;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-trigger:active {
+  border-color: rgba(145, 85, 255, 0.8);
+}
+
+/* Emoji picker */
+#simpoPostReactionsPanel .simpo-emoji-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(100% + 10px);
+
+  padding: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+
+  background: #242530;
+
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+
+  animation: simpoReactionsSlideUp 0.18s ease-out;
+}
+
+/* Respect the hidden attribute */
+#simpoPostReactionsPanel .simpo-emoji-picker[hidden] {
+  display: none !important;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-picker button {
+  display: grid;
+  place-items: center;
+
+  min-width: 0;
+  min-height: 48px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  font-size: 25px;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-picker button:active {
+  background: rgba(145, 85, 255, 0.3);
+  transform: scale(0.94);
+}
+
+/* Individual reaction rows for the upcoming database integration */
+#simpoPostReactionsPanel .simpo-reaction-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 4px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+#simpoPostReactionsPanel .simpo-reaction-avatar {
+  display: grid;
+  place-items: center;
+
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  background: #30243f;
+  color: #fff;
+
+  font-weight: 700;
+}
+
+#simpoPostReactionsPanel .simpo-reaction-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#simpoPostReactionsPanel .simpo-reaction-user {
+  flex: 1;
+  min-width: 0;
+
+  color: #f4f4fa;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+#simpoPostReactionsPanel .simpo-reaction-emoji {
+  font-size: 25px;
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  #simpoPostReactionsPanel .simpo-reactions-sheet {
+    height: 76vh;
+    height: 76dvh;
+  }
+
+  #simpoPostReactionsPanel .simpo-reactions-header {
+    min-height: 66px;
+    padding: 10px 16px;
+  }
+
+  #simpoPostReactionsPanel .simpo-emoji-picker {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Reduced-motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  #simpoPostReactionsPanel .simpo-reactions-sheet,
+  #simpoPostReactionsPanel .simpo-emoji-picker {
+    animation: none;
+  }
+
+  #simpoPostReactionsPanel .simpo-reactions-spinner {
+    animation: none;
+  }
+}
