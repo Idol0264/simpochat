@@ -11693,32 +11693,185 @@ function openAbout() {
 
 
 /* ---------------------------------------------------------
-   POST REACTION
+   POST REACTIONS — OVERLAY
    --------------------------------------------------------- */
 
-function reactToPost(
-  postId
-) {
+function reactToPost(postId) {
+  const post = state.posts.find(
+    item => String(item.id) === String(postId)
+  );
 
-  const post =
-    state.posts.find(
-      item =>
-        item.id === postId
-    );
+  if (!post) return;
 
+  // Don't open duplicate reaction panels.
+  const existing = document.getElementById(
+    "simpoPostReactionsPanel"
+  );
 
-  if (!post) {
+  if (existing) {
+    existing.remove();
     return;
   }
 
+  // Pause the active video if it was playing.
+  const activeVideo = modalRoot.querySelector(
+    ".post-viewer video"
+  );
 
-  post.reactions =
-    Number(post.reactions || 0) + 1;
+  const wasPlaying = Boolean(
+    activeVideo &&
+    !activeVideo.paused &&
+    !activeVideo.ended
+  );
 
+  if (wasPlaying) {
+    activeVideo.pause();
+  }
 
-  saveState();
+  const panel = document.createElement("div");
 
-  openPost(postId);
+  panel.id = "simpoPostReactionsPanel";
+  panel.className = "simpo-reactions-overlay";
+
+  panel.innerHTML = `
+    <div class="simpo-reactions-backdrop"></div>
+
+    <section
+      class="simpo-reactions-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Post reactions"
+    >
+      <header class="simpo-reactions-header">
+        <h2>Reactions</h2>
+
+        <button
+          type="button"
+          class="simpo-reactions-close"
+          aria-label="Close reactions"
+        >×</button>
+      </header>
+
+      <div class="simpo-reactions-list">
+        <div class="simpo-reactions-loading">
+          <span class="simpo-reactions-spinner"></span>
+          <p>Loading reactions...</p>
+        </div>
+      </div>
+
+      <div class="simpo-reactions-composer">
+        <button
+          type="button"
+          class="simpo-emoji-trigger"
+          aria-label="Choose an emoji reaction"
+        >
+          😊
+          <span>Choose a reaction</span>
+        </button>
+
+        <div
+          class="simpo-emoji-picker"
+          hidden
+        >
+          <button type="button" data-emoji="❤️">❤️</button>
+          <button type="button" data-emoji="😂">😂</button>
+          <button type="button" data-emoji="😍">😍</button>
+          <button type="button" data-emoji="😮">😮</button>
+          <button type="button" data-emoji="😢">😢</button>
+          <button type="button" data-emoji="🔥">🔥</button>
+          <button type="button" data-emoji="👍">👍</button>
+          <button type="button" data-emoji="👏">👏</button>
+          <button type="button" data-emoji="🥰">🥰</button>
+          <button type="button" data-emoji="🙏">🙏</button>
+          <button type="button" data-emoji="💯">💯</button>
+          <button type="button" data-emoji="🎉">🎉</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  modalRoot.appendChild(panel);
+
+  const list = panel.querySelector(
+    ".simpo-reactions-list"
+  );
+
+  const picker = panel.querySelector(
+    ".simpo-emoji-picker"
+  );
+
+  const emojiTrigger = panel.querySelector(
+    ".simpo-emoji-trigger"
+  );
+
+  let closed = false;
+
+  function closePanel() {
+    if (closed) return;
+
+    closed = true;
+    panel.remove();
+
+    // Restore playback only if it was playing before.
+    if (
+      wasPlaying &&
+      activeVideo &&
+      activeVideo.isConnected
+    ) {
+      const result = activeVideo.play();
+
+      if (result && typeof result.catch === "function") {
+        result.catch(() => {});
+      }
+    }
+  }
+
+  panel.querySelector(
+    ".simpo-reactions-close"
+  ).addEventListener("click", closePanel);
+
+  panel.querySelector(
+    ".simpo-reactions-backdrop"
+  ).addEventListener("click", closePanel);
+
+  panel.querySelector(
+    ".simpo-reactions-sheet"
+  ).addEventListener("click", event => {
+    event.stopPropagation();
+  });
+
+  emojiTrigger.addEventListener("click", () => {
+    picker.hidden = !picker.hidden;
+  });
+
+  /*
+   * The database connection for listing and saving
+   * reactions will be connected in the next step.
+   */
+
+  list.innerHTML = `
+    <div class="simpo-reactions-empty">
+      <div class="simpo-reactions-empty-icon">♡</div>
+      <h3>No reactions yet</h3>
+      <p>Be the first to react to this post.</p>
+    </div>
+  `;
+
+  picker.querySelectorAll("[data-emoji]").forEach(button => {
+    button.addEventListener("click", () => {
+      const emoji = button.dataset.emoji;
+
+      emojiTrigger.innerHTML = `
+        ${emoji}
+        <span>Selected reaction</span>
+      `;
+
+      picker.hidden = true;
+
+      // The next step will save this reaction
+      // to Supabase and refresh the reactions list.
+    });
+  });
 }
 
 
