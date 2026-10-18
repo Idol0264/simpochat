@@ -8421,3 +8421,248 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
 }
+
+/* =========================================
+   SIMPOCHAT — TIKTOK-STYLE POST COMMENTS
+   ========================================= */
+
+#simpoPostCommentsPanel {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  font-family: inherit;
+  color: #f8f8fc;
+}
+
+/* Dim and blur the active post behind comments */
+#simpoPostCommentsPanel .simpo-comments-backdrop {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Bottom sheet */
+#simpoPostCommentsPanel .simpo-comments-sheet {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  max-width: 680px;
+  height: min(72vh, 760px);
+  height: min(72dvh, 760px);
+
+  overflow: hidden;
+
+  background: #191a22;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+
+  box-shadow: 0 -12px 45px rgba(0, 0, 0, 0.3);
+
+  animation: simpoCommentsSlideUp 0.24s ease-out;
+}
+
+/* Opening animation */
+@keyframes simpoCommentsSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+#simpoPostCommentsPanel .simpo-comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex: 0 0 auto;
+  min-height: 76px;
+  padding: 12px 20px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#simpoPostCommentsPanel .simpo-comments-header h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+}
+
+/* Close button */
+#simpoPostCommentsPanel .simpo-comments-close {
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.035);
+  color: #fff;
+
+  font-size: 27px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#simpoPostCommentsPanel .simpo-comments-close:active {
+  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+/* Scrollable comments area */
+#simpoPostCommentsPanel .simpo-comments-list {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  padding: 20px 16px;
+}
+
+/* Empty state */
+#simpoPostCommentsPanel .simpo-comments-list .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100%;
+  text-align: center;
+  color: #b8bac8;
+}
+
+#simpoPostCommentsPanel .simpo-comments-list .empty-icon {
+  display: grid;
+  place-items: center;
+
+  width: 70px;
+  height: 70px;
+  margin-bottom: 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 34px;
+}
+
+#simpoPostCommentsPanel .simpo-comments-list .empty h3 {
+  margin: 0 0 8px;
+  color: #f4f4fa;
+  font-size: 19px;
+}
+
+#simpoPostCommentsPanel .simpo-comments-list .empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Fixed comment composer */
+#simpoPostCommentsPanel .simpo-comments-composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 12px 14px;
+
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+
+  background: #191a22;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#simpoPostCommentsPanel .simpo-comments-composer input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  height: 52px;
+
+  padding: 0 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 26px;
+  outline: none;
+
+  background: #22232d;
+  color: #fff;
+
+  font: inherit;
+  font-size: 15px;
+}
+
+#simpoPostCommentsPanel .simpo-comments-composer input::placeholder {
+  color: #9295a7;
+}
+
+#simpoPostCommentsPanel .simpo-comments-composer input:focus {
+  border-color: rgba(139, 92, 246, 0.75);
+}
+
+#simpoPostCommentsPanel .simpo-comments-composer .send-btn {
+  display: grid;
+  place-items: center;
+
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+
+  border: none;
+  border-radius: 17px;
+
+  background: linear-gradient(135deg, #a855f7, #7545ff);
+  color: #fff;
+
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Smaller phones */
+@media (max-width: 380px) {
+  #simpoPostCommentsPanel .simpo-comments-sheet {
+    height: 78vh;
+    height: 78dvh;
+  }
+
+  #simpoPostCommentsPanel .simpo-comments-header {
+    min-height: 66px;
+    padding: 10px 16px;
+  }
+
+  #simpoPostCommentsPanel .simpo-comments-list {
+    padding: 16px 12px;
+  }
+}
+
+/* Respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  #simpoPostCommentsPanel .simpo-comments-sheet {
+    animation: none;
+  }
+}
