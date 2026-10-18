@@ -2405,15 +2405,17 @@ body::after {
    2 × 3 POST GRID
    --------------------------------------------------------- */
 
+/* SIMPOCHAT POSTS — TWO COLUMNS, THREE ROWS */
+
 .posts-page .post-grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: auto;
-
-  gap: 9px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  align-items: start;
 }
 
 
