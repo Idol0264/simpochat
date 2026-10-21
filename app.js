@@ -5389,6 +5389,16 @@ async function createVoiceMessage() {
     simpoVoiceStartedAt = Date.now();
     simpoVoiceRecording = true;
 
+const voiceButton = document.querySelector(
+  '.composer-btn[data-action="voice-message"]'
+);
+
+if (voiceButton) {
+  voiceButton.classList.add("is-recording");
+  voiceButton.textContent = "🔴";
+  voiceButton.setAttribute("aria-label", "Stop and send voice message");
+}
+
     simpoVoiceRecorder.ondataavailable = event => {
       if (event.data && event.data.size > 0) {
         simpoVoiceChunks.push(event.data);
