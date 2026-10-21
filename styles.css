@@ -9340,3 +9340,23 @@ body {
 .chat-screen .message-composer {
   z-index: 120 !important;
 }
+
+/* =========================================================
+   SIMPOCHAT — VOICE MESSAGE AUDIO PLAYER
+   ========================================================= */
+
+.voice-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.voice-message audio {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  min-width: 0;
+  height: 40px;
+}
