@@ -9289,3 +9289,54 @@ body {
     height: calc(100dvh - 100px);
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — EMOJI AND ATTACHMENT MENU LAYER FIX
+   Keep popups above the message composer.
+   ========================================================= */
+
+.modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+
+  z-index: 10000 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    16px
+    16px
+    calc(16px + env(safe-area-inset-bottom));
+
+  box-sizing: border-box;
+}
+
+.modal-backdrop > .modal {
+  position: relative;
+
+  z-index: 10001 !important;
+
+  width: 100%;
+  max-width: 420px;
+
+  max-height: calc(100dvh - 40px);
+
+  overflow-y: auto;
+
+  box-sizing: border-box;
+}
+
+/* Keep emoji choices visible and clickable */
+
+.emoji-picker-modal {
+  position: relative;
+  z-index: 10001 !important;
+}
+
+/* Prevent the composer from appearing above these menus */
+
+.chat-screen .message-composer {
+  z-index: 120 !important;
+}
