@@ -12257,17 +12257,16 @@ function openPostComments(postId) {
   }
 
   function renderComments(comments) {
-    if (!comments.length) {
-      list.innerHTML = `
-        <div class="simpo-comments-empty">
-          <div class="simpo-comments-empty-icon">💬</div>
-          <h3>No comments yet</h3>
-          <p>Start the conversation.</p>
+     if (!comments.length) {
+        list.innerHTML = `
+        <div class="empty">
+        <div class="empty-icon">◌</div>
+        <h3>Post comments</h3>
         </div>
-      `;
+        `;
 
-      return;
-    }
+        return;
+     }
 
     list.replaceChildren();
 
