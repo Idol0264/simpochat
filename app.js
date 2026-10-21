@@ -4735,8 +4735,6 @@ function renderMessage(
            </div>
            `
 
-    : message.type === "media"
-
    : message.type === "media"
    ? `
    <div class="media-message">
