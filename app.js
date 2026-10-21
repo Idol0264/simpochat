@@ -13953,7 +13953,7 @@ function openAttachmentMenu() {
   modalRoot.innerHTML = `
 
     <div
-      class="modal-backdrop"
+      class="modal-backdrop attachment-picker-backdrop"
       data-close
     >
 
