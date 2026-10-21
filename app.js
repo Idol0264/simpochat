@@ -12047,28 +12047,26 @@ function reactToPost(postId) {
 
 
 /* ---------------------------------------------------------
-   POST COMMENTS — OVERLAY
-   Keeps the active post viewer open behind comments.
+   POST COMMENTS — SUPABASE CONNECTED
    --------------------------------------------------------- */
 
 function openPostComments(postId) {
   const post = state.posts.find(
-    item => item.id === postId
+    item => String(item.id) === String(postId)
   );
 
   if (!post) return;
 
-  // Prevent duplicate comments panels.
-  const existingPanel = document.getElementById(
+  const existing = document.getElementById(
     "simpoPostCommentsPanel"
   );
 
-  if (existingPanel) {
-    existingPanel.remove();
+  if (existing) {
+    existing.remove();
     return;
   }
 
-  // Remember the video and its previous playback state.
+  // Pause video while comments are open.
   const activeVideo = modalRoot.querySelector(
     ".post-viewer video"
   );
@@ -12079,8 +12077,7 @@ function openPostComments(postId) {
     !activeVideo.ended
   );
 
-  // Pause the video while comments are open.
-  if (activeVideo && wasPlaying) {
+  if (wasPlaying) {
     activeVideo.pause();
   }
 
@@ -12099,7 +12096,10 @@ function openPostComments(postId) {
       aria-label="Post comments"
     >
       <header class="simpo-comments-header">
-        <h2>Comments</h2>
+        <h2>
+          Comments
+          <span class="simpo-comments-count"></span>
+        </h2>
 
         <button
           type="button"
@@ -12109,20 +12109,21 @@ function openPostComments(postId) {
       </header>
 
       <div class="simpo-comments-list">
-        <div class="empty">
-          <div class="empty-icon">◌</div>
-          <h3>Post comments</h3>
-          <p>Comments will appear here.</p>
+        <div class="simpo-comments-loading">
+          <span class="simpo-reactions-spinner"></span>
+          <p>Loading comments...</p>
         </div>
       </div>
 
       <form
-        id="simpoPostCommentForm"
         class="message-composer simpo-comments-composer"
+        id="simpoPostCommentForm"
       >
         <input
           id="simpoPostCommentInput"
-          placeholder="Write a comment..."
+          type="text"
+          maxlength="2000"
+          placeholder="Add a comment..."
           autocomplete="off"
           aria-label="Write a comment"
         >
@@ -12136,18 +12137,30 @@ function openPostComments(postId) {
     </section>
   `;
 
-  // Append the panel without destroying the post viewer.
   modalRoot.appendChild(panel);
 
-  const closeButton = panel.querySelector(
-    ".simpo-comments-close"
+  const list = panel.querySelector(
+    ".simpo-comments-list"
   );
 
-  const backdrop = panel.querySelector(
-    ".simpo-comments-backdrop"
+  const form = panel.querySelector(
+    "#simpoPostCommentForm"
+  );
+
+  const input = panel.querySelector(
+    "#simpoPostCommentInput"
+  );
+
+  const count = panel.querySelector(
+    ".simpo-comments-count"
   );
 
   let closed = false;
+  let sending = false;
+
+  const sessionToken = localStorage.getItem(
+    SESSION_TOKEN_KEY
+  );
 
   function closeComments() {
     if (closed) return;
@@ -12155,7 +12168,7 @@ function openPostComments(postId) {
     closed = true;
     panel.remove();
 
-    // Restore playback only if the video was playing before.
+    // Resume only if the video was previously playing.
     if (
       wasPlaying &&
       activeVideo &&
@@ -12172,49 +12185,249 @@ function openPostComments(postId) {
     }
   }
 
-  closeButton.addEventListener(
-    "click",
-    closeComments
-  );
+  panel.querySelector(
+    ".simpo-comments-close"
+  ).addEventListener("click", closeComments);
 
-  backdrop.addEventListener(
-    "click",
-    closeComments
-  );
+  panel.querySelector(
+    ".simpo-comments-backdrop"
+  ).addEventListener("click", closeComments);
 
-  const form = panel.querySelector(
-    "#simpoPostCommentForm"
-  );
-
-  form.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const input = panel.querySelector(
-      "#simpoPostCommentInput"
-    );
-
-    const commentText = input.value.trim();
-
-    if (!commentText) return;
-
-    // Keep the existing comment-count behavior.
-    post.comments = Number(post.comments || 0) + 1;
-
-    saveState();
-
-    // Clear the input after submission.
-    input.value = "";
-
-    // Actual comment storage and display will be
-    // connected separately if required.
-  });
-
-  // Prevent clicks inside the sheet from closing it.
   panel.querySelector(
     ".simpo-comments-sheet"
   ).addEventListener("click", event => {
     event.stopPropagation();
   });
+
+  async function commentRequest(action, extra = {}) {
+    if (!sessionToken) {
+      throw new Error(
+        "Your SimpoChat session is unavailable. Please reopen the app."
+      );
+    }
+
+    const response = await fetch(
+      SIMPOCHAT_ACCESS_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionToken}`
+        },
+
+        body: JSON.stringify({
+          action,
+          post_id: String(post.id),
+          ...extra
+        })
+      }
+    );
+
+    const result = await response.json().catch(
+      () => ({})
+    );
+
+    if (
+      !response.ok ||
+      result.allowed === false
+    ) {
+      throw new Error(
+        result.message ||
+        "Unable to complete the comment request."
+      );
+    }
+
+    return result;
+  }
+
+  function showCommentMessage(message) {
+    list.replaceChildren();
+
+    const wrapper = document.createElement("div");
+
+    wrapper.className = "simpo-comments-empty";
+
+    const title = document.createElement("h3");
+
+    title.textContent = message;
+
+    wrapper.appendChild(title);
+    list.appendChild(wrapper);
+  }
+
+  function renderComments(comments) {
+    if (!comments.length) {
+      list.innerHTML = `
+        <div class="simpo-comments-empty">
+          <div class="simpo-comments-empty-icon">💬</div>
+          <h3>No comments yet</h3>
+          <p>Start the conversation.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    list.replaceChildren();
+
+    comments.forEach(comment => {
+      const row = document.createElement("article");
+
+      row.className = "simpo-comment-row";
+
+      const avatar = document.createElement("div");
+
+      avatar.className = "simpo-comment-avatar";
+
+      const authorName = String(
+        comment.authorName || "Member"
+      );
+
+      avatar.textContent =
+        authorName.trim().charAt(0).toUpperCase() || "?";
+
+      if (comment.authorAvatarUrl) {
+        const image = document.createElement("img");
+
+        image.src = comment.authorAvatarUrl;
+        image.alt = "";
+        image.loading = "lazy";
+
+        image.onerror = () => {
+          image.remove();
+          avatar.textContent =
+            authorName.trim().charAt(0).toUpperCase() || "?";
+        };
+
+        avatar.replaceChildren(image);
+      }
+
+      const content = document.createElement("div");
+
+      content.className = "simpo-comment-content";
+
+      const author = document.createElement("div");
+
+      author.className = "simpo-comment-author";
+      author.textContent = authorName;
+
+      const body = document.createElement("div");
+
+      body.className = "simpo-comment-body";
+      body.textContent = comment.body || "";
+
+      content.append(author, body);
+
+      row.append(avatar, content);
+
+      list.appendChild(row);
+    });
+  }
+
+  async function loadComments() {
+    list.innerHTML = `
+      <div class="simpo-comments-loading">
+        <span class="simpo-reactions-spinner"></span>
+        <p>Loading comments...</p>
+      </div>
+    `;
+
+    try {
+      const result = await commentRequest(
+        "list_post_comments"
+      );
+
+      if (closed) return;
+
+      const comments = Array.isArray(result.comments)
+        ? result.comments
+        : [];
+
+      count.textContent = `(${comments.length})`;
+
+      renderComments(comments);
+
+      // Keep the newest comments visible.
+      list.scrollTop = list.scrollHeight;
+
+    } catch (error) {
+      if (closed) return;
+
+      showCommentMessage(
+        error.message || "Unable to load comments."
+      );
+    }
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    if (sending || closed) return;
+
+    const commentText = input.value.trim();
+
+    if (!commentText) {
+      input.focus();
+      return;
+    }
+
+    if (commentText.length > 2000) {
+      alert("Your comment is too long.");
+      return;
+    }
+
+    sending = true;
+
+    const sendButton = form.querySelector(
+      'button[type="submit"]'
+    );
+
+    sendButton.disabled = true;
+
+    try {
+      const result = await commentRequest(
+        "add_post_comment",
+        {
+          comment: commentText
+        }
+      );
+
+      if (closed) return;
+
+      if (!result.comment) {
+        throw new Error(
+          "The server did not return the saved comment."
+        );
+      }
+
+      input.value = "";
+
+      // Update the local count after a successful save.
+      post.comments = Number(post.comments || 0) + 1;
+
+      saveState();
+
+      // Reload from Supabase to show the saved comment.
+      await loadComments();
+
+    } catch (error) {
+      if (closed) return;
+
+      alert(
+        error.message || "Unable to send your comment."
+      );
+
+    } finally {
+      sending = false;
+
+      if (sendButton.isConnected) {
+        sendButton.disabled = false;
+      }
+    }
+  });
+
+  loadComments();
 }
 
 /* =========================================================
