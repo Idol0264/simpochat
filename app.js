@@ -3754,21 +3754,35 @@ async function loadGroupMessages(groupId) {
       );
     }
 
-        state.messages[groupId] =
-      data.messages.map(
-        message => ({
-          id: message.id,
-          member: message.sender_id,
-          sender: message.sender || null,
-          text: message.text,
-          createdAt: message.created_at,
-          read: true,
-          replyTo:
-            message.reply_to || null,
-          expiresAt:
-            message.expires_at
-        })
-      );
+state.messages[groupId] =
+  data.messages.map(
+    message => ({
+      id: message.id,
+      member: message.sender_id,
+      sender: message.sender || null,
+      text: message.text,
+
+      type:
+        message.content_type === "audio"
+          ? "voice"
+          : "text",
+
+      mediaUrl:
+        message.media_url || "",
+
+      durationSeconds:
+        message.duration_seconds || null,
+
+      createdAt: message.created_at,
+      read: true,
+
+      replyTo:
+        message.reply_to || null,
+
+      expiresAt:
+        message.expires_at
+    })
+  );
 
     saveState();
 
