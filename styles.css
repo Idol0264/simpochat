@@ -9381,3 +9381,39 @@ body {
     transform: scale(1.08);
   }
 }
+
+/* SIMPOCHAT — ATTACHMENT MENU CONNECTED TO COMPOSER */
+
+.attachment-picker-backdrop {
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 0 14px calc(82px + env(safe-area-inset-bottom)) !important;
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+
+.attachment-picker-backdrop > .modal {
+  width: min(100%, var(--max-width, 420px)) !important;
+  max-width: 420px !important;
+  margin: 0 auto !important;
+  transform-origin: bottom center;
+  animation: simpoAttachmentRise 180ms ease-out;
+  border-radius: 22px !important;
+}
+
+@keyframes simpoAttachmentRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attachment-picker-backdrop > .modal {
+    animation: none;
+  }
+}
