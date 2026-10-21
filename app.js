@@ -5505,6 +5505,16 @@ if (voiceButton) {
 
     simpoVoiceRecording = false;
 
+const voiceButton = document.querySelector(
+  '.composer-btn[data-action="voice-message"]'
+);
+
+if (voiceButton) {
+  voiceButton.classList.remove("is-recording");
+  voiceButton.textContent = "🎙";
+  voiceButton.setAttribute("aria-label", "Voice message");
+}
+
     console.error("SimpoChat microphone error:", error);
 
     alert(
