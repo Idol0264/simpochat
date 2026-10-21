@@ -4313,24 +4313,15 @@ if (messageInput) {
 const scrollToNewestMessage =
   () => {
 
-    const scrollRoot =
-      document.scrollingElement ||
-      document.documentElement;
+    const messageList =
+      document.querySelector("#messages");
 
-    if (!scrollRoot) {
+    if (!messageList) {
       return;
     }
 
-    const newestPosition =
-      scrollRoot.scrollHeight;
-
-    scrollRoot.scrollTop =
-      newestPosition;
-
-    window.scrollTo(
-      0,
-      newestPosition
-    );
+    messageList.scrollTop =
+      messageList.scrollHeight;
 
   };
 
