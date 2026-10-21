@@ -5294,50 +5294,190 @@ modalRoot.innerHTML = "";
    VOICE MESSAGE
    --------------------------------------------------------- */
 
-function createVoiceMessage() {
+/* ---------------------------------------------------------
+   SIMPOCHAT — VOICE MESSAGE RECORDING
+   Tap microphone to start.
+   Tap again to stop and send.
+   --------------------------------------------------------- */
 
-  const group =
-    getGroup(state.selectedGroup);
+let simpoVoiceRecorder = null;
+let simpoVoiceChunks = [];
+let simpoVoiceStartedAt = 0;
+let simpoVoiceRecording = false;
 
-  if (!group) {
+async function createVoiceMessage() {
+  const group = getGroup(state.selectedGroup);
+  const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  if (!group || !sessionToken) {
+    alert("Please open a group and make sure you are signed in.");
     return;
   }
 
-
-  if (!state.messages[group.id]) {
-
-    state.messages[group.id] =
-      [];
-
+  // Second tap stops recording and sends the audio.
+  if (
+    simpoVoiceRecording &&
+    simpoVoiceRecorder &&
+    simpoVoiceRecorder.state === "recording"
+  ) {
+    simpoVoiceRecorder.stop();
+    return;
   }
 
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Audio recording is not supported here. Open SimpoChat in Chrome and try again.");
+    return;
+  }
 
-  state.messages[group.id].push({
+  if (typeof MediaRecorder === "undefined") {
+    alert("Your browser does not support audio recording.");
+    return;
+  }
 
-    id:
-      uid("voice"),
+  let stream;
 
-    member:
-      state.currentUser.id,
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
 
-    type:
-      "voice",
+    const mimeOptions = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus"
+    ];
 
-    text:
-      "",
+    let mimeType = "";
 
-    createdAt:
-      now(),
+    for (const candidate of mimeOptions) {
+      if (MediaRecorder.isTypeSupported(candidate)) {
+        mimeType = candidate;
+        break;
+      }
+    }
 
-    read:
-      true
+    simpoVoiceChunks = [];
 
-  });
+    simpoVoiceRecorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
 
+    simpoVoiceStartedAt = Date.now();
+    simpoVoiceRecording = true;
 
-  saveState();
+    simpoVoiceRecorder.ondataavailable = event => {
+      if (event.data && event.data.size > 0) {
+        simpoVoiceChunks.push(event.data);
+      }
+    };
 
-  renderGroupChat();
+    simpoVoiceRecorder.onerror = () => {
+      simpoVoiceRecording = false;
+      stream.getTracks().forEach(track => track.stop());
+      alert("Recording failed. Please try again.");
+    };
+
+    simpoVoiceRecorder.onstop = async () => {
+      simpoVoiceRecording = false;
+
+      stream.getTracks().forEach(track => track.stop());
+
+      const durationSeconds = Math.round(
+        (Date.now() - simpoVoiceStartedAt) / 1000
+      );
+
+      if (!simpoVoiceChunks.length) {
+        alert("No audio was recorded. Please try again.");
+        return;
+      }
+
+      if (durationSeconds > 180) {
+        alert("Voice messages can be up to 3 minutes long.");
+        return;
+      }
+
+      const audioBlob = new Blob(simpoVoiceChunks, {
+        type: simpoVoiceRecorder.mimeType || "audio/webm"
+      });
+
+      if (audioBlob.size > 10 * 1024 * 1024) {
+        alert("This recording is too large. Please record a shorter message.");
+        return;
+      }
+
+      try {
+        const audioDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(
+            new Error("Unable to prepare the audio recording.")
+          );
+
+          reader.readAsDataURL(audioBlob);
+        });
+
+        const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+          method: "POST",
+
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            action: "send_message",
+            group_id: group.id,
+            content_type: "audio",
+            audio_data_url: audioDataUrl,
+            duration_seconds: durationSeconds,
+            reply_to: pendingReplyMessageId || null
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.allowed || !data.message) {
+          throw new Error(
+            data.message || "Unable to send voice message."
+          );
+        }
+
+        await loadGroupMessages(group.id);
+
+        pendingReplyMessageId = null;
+        activeMessageActionId = null;
+
+        saveState();
+        renderGroupChat();
+
+      } catch (error) {
+        console.error("SimpoChat voice message error:", error);
+
+        alert(
+          error.message || "Unable to send voice message."
+        );
+      }
+    };
+
+    simpoVoiceRecorder.start();
+
+    alert("Recording started. Tap the microphone again to send.");
+
+  } catch (error) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    simpoVoiceRecording = false;
+
+    console.error("SimpoChat microphone error:", error);
+
+    alert(
+      "Could not access your microphone. Please allow microphone permission and try again."
+    );
+  }
 }
 
 
