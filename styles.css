@@ -8459,8 +8459,8 @@ body {
 
   width: 100%;
   max-width: 680px;
-  height: min(72vh, 760px);
-  height: min(72dvh, 760px);
+  height: min(70vh, 700px);
+  height: min(70dvh, 700px);
 
   overflow: hidden;
 
