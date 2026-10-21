@@ -4711,20 +4711,31 @@ function renderMessage(
         
         
         ${
-   message.type === "voice"
-   ? `
-   <div class="voice-message">
-   
-   <span>
-   🎙
-   </span>
-   
-   <span>
-   Voice message
-   </span>
-   
-   </div>
-   `
+           message.type === "voice"
+           ? `
+           <div class="voice-message">
+           
+           <span>🎙</span>
+           
+           ${
+              message.mediaUrl
+              ? `
+              <audio
+              controls
+              preload="metadata"
+              src="${esc(message.mediaUrl)}"
+              aria-label="Play voice message"
+              ></audio>
+              `
+              : `
+              <span>Voice message unavailable</span>
+              `
+           }
+           
+           </div>
+           `
+
+    : message.type === "media"
 
    : message.type === "media"
    ? `
