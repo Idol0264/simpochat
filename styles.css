@@ -8646,8 +8646,8 @@ body {
 /* Smaller phones */
 @media (max-width: 380px) {
   #simpoPostCommentsPanel .simpo-comments-sheet {
-    height: 78vh;
-    height: 78dvh;
+    height: 76vh;
+    height: 76dvh;
   }
 
   #simpoPostCommentsPanel .simpo-comments-header {
