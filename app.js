@@ -13525,22 +13525,29 @@ async function handleAction(
       );
 
       break;
+     
+     
+     case "voice-message":
+        
+        createVoiceMessage();
+        
+        break;
+     
+     
+     case "cancel-voice-recording":
+        
+        cancelVoiceMessageRecording();
+        
+        break;
+     
+     
+     case "attachment":
+        
+        openAttachmentMenu();
+        
+        break;
 
-
-    case "voice-message":
-
-      createVoiceMessage();
-
-      break;
-
-
-    case "attachment":
-
-      openAttachmentMenu();
-
-      break;
-
-
+        
     case "camera":
 
       openCamera();
