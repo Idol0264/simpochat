@@ -5533,10 +5533,18 @@ if (attachmentButton) {
       alert("Recording failed. Please try again.");
     };
 
-    simpoVoiceRecorder.onstop = async () => {
-      simpoVoiceRecording = false;
+simpoVoiceRecorder.onstop = async () => {
+  simpoVoiceRecording = false;
 
-      stream.getTracks().forEach(track => track.stop());
+  stream.getTracks().forEach(track => track.stop());
+
+  resetSimpoVoiceButtons();
+
+  if (simpoVoiceCancelled) {
+    simpoVoiceCancelled = false;
+    simpoVoiceChunks = [];
+    return;
+  }
 
       const durationSeconds = Math.round(
         (Date.now() - simpoVoiceStartedAt) / 1000
