@@ -5400,6 +5400,46 @@ let simpoVoiceChunks = [];
 let simpoVoiceStartedAt = 0;
 let simpoVoiceRecording = false;
 
+let simpoVoiceCancelled = false;
+
+function resetSimpoVoiceButtons() {
+  const voiceButton = document.querySelector(
+    '.composer-btn[data-action="voice-message"]'
+  );
+
+  if (voiceButton) {
+    voiceButton.classList.remove("is-recording");
+    voiceButton.textContent = "🎙";
+    voiceButton.setAttribute("aria-label", "Voice message");
+  }
+
+  const attachmentButton = document.querySelector(
+    '.composer-btn[data-action="cancel-voice-recording"], .composer-btn[data-action="attachment"]'
+  );
+
+  if (attachmentButton) {
+    attachmentButton.dataset.action = "attachment";
+    attachmentButton.textContent = "＋";
+    attachmentButton.setAttribute("aria-label", "Attachment");
+  }
+}
+
+function cancelVoiceMessageRecording() {
+  if (
+    !simpoVoiceRecording ||
+    !simpoVoiceRecorder ||
+    simpoVoiceRecorder.state === "inactive"
+  ) {
+    return;
+  }
+
+  simpoVoiceCancelled = true;
+  simpoVoiceChunks = [];
+
+  resetSimpoVoiceButtons();
+  simpoVoiceRecorder.stop();
+}
+
 async function createVoiceMessage() {
   const group = getGroup(state.selectedGroup);
   const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
