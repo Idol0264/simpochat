@@ -5511,6 +5511,16 @@ if (voiceButton) {
   voiceButton.setAttribute("aria-label", "Stop and send voice message");
 }
 
+const attachmentButton = document.querySelector(
+  '.composer-btn[data-action="attachment"]'
+);
+
+if (attachmentButton) {
+  attachmentButton.dataset.action = "cancel-voice-recording";
+  attachmentButton.textContent = "×";
+  attachmentButton.setAttribute("aria-label", "Cancel voice recording");
+}
+     
     simpoVoiceRecorder.ondataavailable = event => {
       if (event.data && event.data.size > 0) {
         simpoVoiceChunks.push(event.data);
