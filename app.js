@@ -4710,30 +4710,102 @@ function renderMessage(
         }
         
         
+${
+  message.type === "voice"
+    ? `
+      <div
+        class="voice-message simpo-audio-player"
+        data-audio-player
+        data-message-id="${esc(message.id)}"
+      >
+
         ${
-           message.type === "voice"
-           ? `
-           <div class="voice-message">
-           
-           <span>🎙</span>
-           
-           ${
-              message.mediaUrl
-              ? `
+          message.mediaUrl
+            ? `
               <audio
-              controls
-              preload="metadata"
-              src="${esc(message.mediaUrl)}"
-              aria-label="Play voice message"
+                class="simpo-audio-element"
+                preload="metadata"
+                playsinline
+                src="${esc(message.mediaUrl)}"
               ></audio>
-              `
-              : `
-              <span>Voice message unavailable</span>
-              `
-           }
-           
-           </div>
-           `
+
+              <div class="simpo-audio-top">
+
+                <span
+                  class="simpo-audio-icon"
+                  aria-label="Voice message"
+                >🎙</span>
+
+                <a
+                  class="simpo-audio-download"
+                  href="${esc(message.mediaUrl)}"
+                  download="simpochat-voice-${esc(message.id)}"
+                  aria-label="Download voice message"
+                  title="Download audio"
+                >⇩</a>
+
+              </div>
+
+              <div class="simpo-audio-controls">
+
+                <span
+                  class="simpo-audio-duration"
+                  data-audio-duration
+                >${formatAudioTime(message.durationSeconds || 0)}</span>
+
+                <button
+                  type="button"
+                  class="simpo-audio-play"
+                  data-audio-play
+                  aria-label="Play voice message"
+                >
+                  <span data-audio-play-icon>▶</span>
+                  <svg
+                    class="simpo-audio-progress"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      class="simpo-audio-progress-track"
+                      cx="50"
+                      cy="50"
+                      r="45"
+                    ></circle>
+                    <circle
+                      class="simpo-audio-progress-value"
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      data-audio-progress
+                    ></circle>
+                  </svg>
+                </button>
+
+                <span
+                  class="simpo-audio-elapsed"
+                  data-audio-elapsed
+                >0:00</span>
+
+              </div>
+
+              <div class="simpo-audio-divider"></div>
+
+              <button
+                type="button"
+                class="simpo-audio-mute"
+                data-audio-mute
+                aria-label="Mute audio"
+              >Mute</button>
+            `
+            : `
+              <div class="simpo-audio-unavailable">
+                Voice message unavailable
+              </div>
+            `
+        }
+
+      </div>
+    `
 
    : message.type === "media"
    ? `
