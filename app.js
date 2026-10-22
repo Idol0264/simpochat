@@ -17464,3 +17464,226 @@ function bindTemporaryChatSwipe() {
 
   });
 }
+
+/* =========================================================
+   SIMPOCHAT — CUSTOM VOICE MESSAGE PLAYER
+   ========================================================= */
+
+function formatAudioTime(seconds) {
+  const value = Number(seconds);
+
+  if (!Number.isFinite(value) || value < 0) {
+    return "0:00";
+  }
+
+  const total = Math.floor(value);
+  const minutes = Math.floor(total / 60);
+  const remainingSeconds = total % 60;
+
+  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+
+/* Set up each voice player's progress ring */
+
+function updateSimpoAudioPlayer(player) {
+  if (!player) return;
+
+  const audio = player.querySelector(".simpo-audio-element");
+
+  if (!audio) return;
+
+  const elapsed = player.querySelector("[data-audio-elapsed]");
+  const durationLabel = player.querySelector("[data-audio-duration]");
+  const progress = player.querySelector("[data-audio-progress]");
+  const playIcon = player.querySelector("[data-audio-play-icon]");
+  const playButton = player.querySelector("[data-audio-play]");
+
+  const duration = Number.isFinite(audio.duration)
+    ? audio.duration
+    : Number(durationLabel?.textContent?.split(":")[0] || 0) * 60
+      + Number(durationLabel?.textContent?.split(":")[1] || 0);
+
+  const current = Number.isFinite(audio.currentTime)
+    ? audio.currentTime
+    : 0;
+
+  if (elapsed) {
+    elapsed.textContent = formatAudioTime(current);
+  }
+
+  if (durationLabel && Number.isFinite(audio.duration) && audio.duration > 0) {
+    durationLabel.textContent = formatAudioTime(audio.duration);
+  }
+
+  if (progress) {
+    const circumference = 2 * Math.PI * 45;
+    const ratio = duration > 0
+      ? Math.min(current / duration, 1)
+      : 0;
+
+    progress.style.strokeDasharray = String(circumference);
+    progress.style.strokeDashoffset = String(
+      circumference * (1 - ratio)
+    );
+  }
+
+  if (playIcon) {
+    playIcon.textContent = audio.paused ? "▶" : "Ⅱ";
+  }
+
+  if (playButton) {
+    playButton.setAttribute(
+      "aria-label",
+      audio.paused ? "Play voice message" : "Pause voice message"
+    );
+  }
+}
+
+
+/* Play, pause, and mute controls */
+
+document.addEventListener("click", async event => {
+  const playButton = event.target.closest("[data-audio-play]");
+  const muteButton = event.target.closest("[data-audio-mute]");
+
+  if (playButton) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const player = playButton.closest("[data-audio-player]");
+    const audio = player?.querySelector(".simpo-audio-element");
+
+    if (!audio) return;
+
+    try {
+      if (audio.paused) {
+        // Pause other voice messages before playing this one.
+        document.querySelectorAll(".simpo-audio-element").forEach(otherAudio => {
+          if (otherAudio !== audio) {
+            otherAudio.pause();
+            updateSimpoAudioPlayer(
+              otherAudio.closest("[data-audio-player]")
+            );
+          }
+        });
+
+        if (audio.ended) {
+          audio.currentTime = 0;
+        }
+
+        await audio.play();
+      } else {
+        audio.pause();
+      }
+
+      updateSimpoAudioPlayer(player);
+    } catch (error) {
+      console.error("SimpoChat audio playback failed:", error);
+      alert("This voice message could not play. Please check your connection and try again.");
+    }
+
+    return;
+  }
+
+  if (muteButton) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const player = muteButton.closest("[data-audio-player]");
+    const audio = player?.querySelector(".simpo-audio-element");
+
+    if (!audio) return;
+
+    audio.muted = !audio.muted;
+
+    muteButton.textContent = audio.muted ? "Unmute" : "Mute";
+    muteButton.setAttribute(
+      "aria-label",
+      audio.muted ? "Unmute audio" : "Mute audio"
+    );
+  }
+});
+
+
+/* Keep time and progress updated during playback */
+
+document.addEventListener("loadedmetadata", event => {
+  const audio = event.target;
+
+  if (!audio.matches(".simpo-audio-element")) return;
+
+  updateSimpoAudioPlayer(
+    audio.closest("[data-audio-player]")
+  );
+}, true);
+
+
+document.addEventListener("timeupdate", event => {
+  const audio = event.target;
+
+  if (!audio.matches(".simpo-audio-element")) return;
+
+  updateSimpoAudioPlayer(
+    audio.closest("[data-audio-player]")
+  );
+}, true);
+
+
+document.addEventListener("play", event => {
+  const audio = event.target;
+
+  if (!audio.matches(".simpo-audio-element")) return;
+
+  updateSimpoAudioPlayer(
+    audio.closest("[data-audio-player]")
+  );
+}, true);
+
+
+document.addEventListener("pause", event => {
+  const audio = event.target;
+
+  if (!audio.matches(".simpo-audio-element")) return;
+
+  updateSimpoAudioPlayer(
+    audio.closest("[data-audio-player]")
+  );
+}, true);
+
+
+document.addEventListener("ended", event => {
+  const audio = event.target;
+
+  if (!audio.matches(".simpo-audio-element")) return;
+
+  updateSimpoAudioPlayer(
+    audio.closest("[data-audio-player]")
+  );
+}, true);
+
+
+/* Handle unavailable or failed audio */
+
+document.addEventListener("error", event => {
+  const audio = event.target;
+
+  if (!audio.matches?.(".simpo-audio-element")) return;
+
+  console.error("SimpoChat voice message failed to load:", audio.error);
+}, true);
+
+
+/* Initialize players whenever the chat is rendered */
+
+function initializeSimpoAudioPlayers() {
+  document.querySelectorAll("[data-audio-player]").forEach(player => {
+    const audio = player.querySelector(".simpo-audio-element");
+
+    if (!audio) return;
+
+    updateSimpoAudioPlayer(player);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initializeSimpoAudioPlayers);
