@@ -3821,8 +3821,10 @@ function startGroupMessageRefresh(groupId) {
       }
 
       const scrollRoot =
-        document.scrollingElement ||
-        document.documentElement;
+         document.querySelector("#messages") ||
+         document.scrollingElement ||
+         document.documentElement;
+
 
       const previousScrollTop =
         scrollRoot
