@@ -9650,3 +9650,60 @@ body {
     font-size: 11px;
   }
 }
+
+
+/* SIMPOCHAT — MOBILE BOTTOM SHEETS */
+@media (max-width: 699px) {
+  .modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+
+    padding: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+
+    z-index: 9999 !important;
+  }
+
+  .modal-backdrop > .modal {
+    position: relative !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+
+    margin: auto 0 0 !important;
+
+    border-radius: 28px 28px 0 0 !important;
+
+    box-sizing: border-box !important;
+
+    animation: simpoBottomSheetIn 0.28s ease-out both;
+  }
+
+  @keyframes simpoBottomSheetIn {
+    from {
+      transform: translateY(100%);
+      opacity: 0.85;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop > .modal {
+    animation: none !important;
+  }
+}
