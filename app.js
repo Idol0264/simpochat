@@ -4952,9 +4952,12 @@ function attachMessageLongPress() {
                requestAnimationFrame(
                   () => {
                      
+                     
                      const currentScrollRoot =
+                        document.querySelector("#messages") ||
                         document.scrollingElement ||
                         document.documentElement;
+
                      
                      if (currentScrollRoot) {
                         
