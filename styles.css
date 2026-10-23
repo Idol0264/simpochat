@@ -9707,3 +9707,16 @@ body {
     animation: none !important;
   }
 }
+
+
+/* SIMPOCHAT — HIDE CHAT COMPOSER ON OVERLAYS */
+
+/* Hide the message input while the camera is open */
+body:has(.camera-screen) .message-composer {
+  display: none !important;
+}
+
+/* Hide the message input while a modal/menu is open */
+body:has(.modal-backdrop) .message-composer {
+  display: none !important;
+}
