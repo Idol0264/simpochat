@@ -5615,7 +5615,40 @@ simpoVoiceRecorder.onstop = async () => {
           );
         }
 
-        await loadGroupMessages(group.id);
+        const saved = data.message;
+
+        const savedVoiceMessage = {
+          id: saved.id,
+          member: saved.sender_id,
+          sender: state.currentUser,
+          text: saved.text || "",
+          type: "voice",
+          mediaUrl: saved.media_url || "",
+          durationSeconds:
+            saved.duration_seconds || durationSeconds,
+          createdAt: saved.created_at,
+          read: true,
+          replyTo: saved.reply_to || null,
+          expiresAt: saved.expires_at
+        };
+
+        const groupMessages =
+          safeArray(state.messages[group.id]);
+
+        if (
+          !groupMessages.some(
+            message => message.id === savedVoiceMessage.id
+          )
+        ) {
+          groupMessages.push(savedVoiceMessage);
+
+          groupMessages.sort(
+            (a, b) =>
+              new Date(a.createdAt) - new Date(b.createdAt)
+          );
+
+          state.messages[group.id] = groupMessages;
+        }
 
         pendingReplyMessageId = null;
         activeMessageActionId = null;
