@@ -4930,9 +4930,12 @@ function attachMessageLongPress() {
          messageActionTimer =
             setTimeout(() => {
                
+               
                const scrollRoot =
+                  document.querySelector("#messages") ||
                   document.scrollingElement ||
                   document.documentElement;
+
                
                const previousScrollTop =
                   scrollRoot
