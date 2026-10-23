@@ -17760,3 +17760,53 @@ function initializeSimpoAudioPlayers() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeSimpoAudioPlayers);
+
+
+/* SIMPOCHAT — REFRESH MESSAGES ON APP RETURN */
+
+let simpoReturnRefreshRunning = false;
+
+async function simpoRefreshOpenGroupOnReturn() {
+  if (simpoReturnRefreshRunning) return;
+  if (document.visibilityState === "hidden") return;
+  if (state.screen !== "group-chat") return;
+
+  const groupId = state.selectedGroup;
+  if (!groupId) return;
+
+  simpoReturnRefreshRunning = true;
+
+  try {
+    await loadGroupMessages(groupId);
+
+    // Do not replace another screen or another group
+    // if the user navigated away during the request.
+    if (
+      state.screen === "group-chat" &&
+      state.selectedGroup === groupId
+    ) {
+      renderGroupChat({ autoScroll: false });
+    }
+  } catch (error) {
+    console.error(
+      "SimpoChat return refresh failed:",
+      error
+    );
+  } finally {
+    simpoReturnRefreshRunning = false;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    simpoRefreshOpenGroupOnReturn();
+  }
+});
+
+window.addEventListener("focus", () => {
+  simpoRefreshOpenGroupOnReturn();
+});
+
+window.addEventListener("pageshow", () => {
+  simpoRefreshOpenGroupOnReturn();
+});
