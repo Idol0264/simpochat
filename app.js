@@ -4834,7 +4834,10 @@ ${
 
        return `
          <div class="media-message">
-           <div class="media-message-grid">
+           <div
+           class="media-message-grid"
+           data-photo-urls="${esc(JSON.stringify(photos.map(photo => photo.url)))}"
+           >
              ${
                photos.slice(0, 2).map((photo, index) => `
                  <button
