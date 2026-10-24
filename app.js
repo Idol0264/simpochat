@@ -5301,140 +5301,105 @@ if (messagesBox) {
    SEND CAMERA MEDIA MESSAGE
    --------------------------------------------------------- */
 
-function sendCameraMediaMessage() {
+async function sendCameraMediaMessage() {
+  const group = getGroup(state.selectedGroup);
 
-  const group =
-    getGroup(state.selectedGroup);
+  if (!group || !cameraMediaItems.length) return;
 
-  if (!group) {
-    return;
+  const textInput = document.querySelector("#cameraGalleryText");
+  const text = textInput ? textInput.value.trim() : "";
+
+  try {
+    const uploadedUrls = [];
+
+    for (const item of cameraMediaItems) {
+      if (!item.file) {
+        throw new Error("A selected photo could not be read. Please select it again.");
+      }
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(
+          new Error("Unable to read a selected photo.")
+        );
+
+        reader.readAsDataURL(item.file);
+      });
+
+      const uploaded = await simpoChatPostRequest(
+        "upload_chat_photo",
+        {
+          group_id: group.id,
+          image_data_url: dataUrl,
+          file_name: item.name || "photo.jpg"
+        }
+      );
+
+      if (!uploaded.media_url) {
+        throw new Error("Supabase did not return the uploaded photo URL.");
+      }
+
+      uploadedUrls.push(uploaded.media_url);
+    }
+
+    const saved = await simpoChatPostRequest("send_message", {
+      group_id: group.id,
+      content_type: "photos",
+      text,
+      media_url: uploadedUrls[0] || "",
+      media_urls: uploadedUrls
+    });
+
+    if (!state.messages[group.id]) {
+      state.messages[group.id] = [];
+    }
+
+    const savedMessage = saved.message || saved.data || {};
+
+    state.messages[group.id].push({
+      id: savedMessage.id || uid("message"),
+      member: state.currentUser.id,
+      type: "media",
+      media: uploadedUrls.map(url => ({
+        type: "image",
+        url
+      })),
+      text,
+      createdAt: savedMessage.created_at || now(),
+      read: true,
+      replyTo: null
+    });
+
+    cameraMediaItems.forEach(item => {
+      if (item.url && item.url.startsWith("blob:")) {
+        URL.revokeObjectURL(item.url);
+      }
+    });
+
+    cameraMediaItems = [];
+
+    if (textInput) textInput.value = "";
+
+    const textWrap = document.querySelector("#cameraGalleryTextWrap");
+    if (textWrap) textWrap.hidden = true;
+
+    if (activeCameraStream) {
+      activeCameraStream.getTracks().forEach(track => track.stop());
+      activeCameraStream = null;
+    }
+
+    modalRoot.innerHTML = "";
+    saveState();
+    renderGroupChat();
+
+  } catch (error) {
+    console.error("SimpoChat photo send error:", error);
+    alert(error.message || "Unable to send photos. Please try again.");
   }
-
-
-  if (!cameraMediaItems.length) {
-    return;
-  }
-
-
-  const textInput =
-    document.querySelector(
-      "#cameraGalleryText"
-    );
-
-
-  const text =
-    textInput
-      ? textInput.value.trim()
-      : "";
-
-
-  /*
-   * Keep the current Gallery order.
-   *
-   * Selection is only for rearranging/removing.
-   * Sending sends every picture currently
-   * remaining in the Gallery.
-   */
-  const media =
-    cameraMediaItems.map(
-      item => ({
-        type:
-          item.type || "image",
-
-        url:
-          item.url,
-
-        name:
-          item.name || ""
-      })
-    );
-
-
-  if (!state.messages[group.id]) {
-
-    state.messages[group.id] =
-      [];
-
-  }
-
-
-  state.messages[group.id].push({
-
-    id:
-      uid("message"),
-
-    member:
-      state.currentUser.id,
-
-    type:
-      "media",
-
-    media,
-
-    text,
-
-    createdAt:
-      now(),
-
-    read:
-      true,
-
-    replyTo:
-      null
-
-  });
-
-
-  /*
-   * Clean up the Gallery object URLs
-   * only after the message has received
-   * their references.
-   */
-  cameraMediaItems =
-    [];
-
-
-  if (textInput) {
-    textInput.value = "";
-  }
-
-
-  const textWrap =
-    document.querySelector(
-      "#cameraGalleryTextWrap"
-    );
-
-
-  if (textWrap) {
-    textWrap.hidden = true;
-  }
-
-
-  saveState();
-
-  renderGroupChat();
-
-
-  /*
- * Return from Camera to the Group Chat.
- */
-
-if (activeCameraStream) {
-
-  activeCameraStream
-    .getTracks()
-    .forEach(
-      track => track.stop()
-    );
-
-  activeCameraStream =
-    null;
 }
 
-
-modalRoot.innerHTML = "";
-
-}
 
 /* ---------------------------------------------------------
    VOICE MESSAGE
