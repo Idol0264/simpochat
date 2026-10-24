@@ -4449,87 +4449,96 @@ requestAnimationFrame(
    --------------------------------------------------------- */
 
 function attachMediaImageViewer() {
+  const messagesBox = document.querySelector("#messages");
 
-  const messagesBox =
-    document.querySelector(
-      "#messages"
-    );
+  if (!messagesBox) return;
 
-  if (!messagesBox) {
-    return;
-  }
+  messagesBox.querySelectorAll(".media-message-photo").forEach(button => {
+    if (button.dataset.viewerBound === "true") return;
+    button.dataset.viewerBound = "true";
 
+    button.addEventListener("click", event => {
+      event.stopPropagation();
 
-  messagesBox
-    .querySelectorAll(
-      ".message-media-image"
-    )
-    .forEach(image => {
+      const messageBox = button.closest(".media-message");
+      if (!messageBox) return;
 
-      image.addEventListener(
-        "click",
-        event => {
+      const urls = Array.from(
+        messageBox.querySelectorAll(".media-message-photo img")
+      )
+        .map(img => img.getAttribute("src"))
+        .filter(Boolean);
 
-          event.stopPropagation();
+      if (!urls.length) return;
 
+      let currentIndex = Number(button.dataset.photoIndex || 0);
+      currentIndex = Math.max(0, Math.min(currentIndex, urls.length - 1));
 
-          const imageUrl =
-            image.getAttribute(
-              "src"
-            );
+      const renderViewer = () => {
+        modalRoot.innerHTML = `
+          <div class="camera-preview-screen">
+            <button
+              type="button"
+              class="camera-preview-close"
+              id="messageImageViewerClose"
+              aria-label="Close image"
+            >×</button>
 
+            ${
+              urls.length > 1
+                ? `
+                  <button
+                    type="button"
+                    id="messageImageViewerPrev"
+                    aria-label="Previous photo"
+                    style="position:absolute;left:12px;top:50%;z-index:5"
+                  >‹</button>
+                  <button
+                    type="button"
+                    id="messageImageViewerNext"
+                    aria-label="Next photo"
+                    style="position:absolute;right:12px;top:50%;z-index:5"
+                  >›</button>
+                `
+                : ""
+            }
 
-          if (!imageUrl) {
-            return;
-          }
-
-
-          modalRoot.innerHTML = `
-
-            <div
-              class="camera-preview-screen"
+            <img
+              class="camera-preview-image"
+              src="${esc(urls[currentIndex])}"
+              alt="Photo ${currentIndex + 1}"
+              draggable="false"
             >
 
-              <button
-                type="button"
-                class="camera-preview-close"
-                id="messageImageViewerClose"
-                aria-label="Close image"
-              >
-                ×
-              </button>
+            ${
+              urls.length > 1
+                ? `<div class="message-image-counter">${currentIndex + 1} / ${urls.length}</div>`
+                : ""
+            }
+          </div>
+        `;
 
+        document.querySelector("#messageImageViewerClose")
+          ?.addEventListener("click", () => {
+            modalRoot.innerHTML = "";
+          });
 
-              <img
-                class="camera-preview-image"
-                src="${esc(imageUrl)}"
-                alt="Full screen image"
-                draggable="false"
-              >
+        document.querySelector("#messageImageViewerPrev")
+          ?.addEventListener("click", () => {
+            currentIndex = (currentIndex - 1 + urls.length) % urls.length;
+            renderViewer();
+          });
 
-            </div>
+        document.querySelector("#messageImageViewerNext")
+          ?.addEventListener("click", () => {
+            currentIndex = (currentIndex + 1) % urls.length;
+            renderViewer();
+          });
+      };
 
-          `;
-
-
-          document
-            .querySelector(
-              "#messageImageViewerClose"
-            )
-            ?.addEventListener(
-              "click",
-              () => {
-
-                modalRoot.innerHTML = "";
-
-              }
-            );
-
-        }
-      );
-
+      renderViewer();
     });
-
+  });
 }
 
 
