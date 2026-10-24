@@ -4818,36 +4818,60 @@ ${
     `
 
    : message.type === "media"
-   ? `
-   <div class="media-message">
+   ? (() => {
+       const photos = safeArray(message.media).filter(
+         photo => photo && typeof photo.url === "string" && photo.url
+       );
 
-     ${
-       safeArray(message.media)
-         .map(
-           media => `
-             <img
-               class="message-media-image"
-               src="${esc(media.url)}"
-               alt="Photo"
-               draggable="false"
-             >
-           `
-         )
-         .join("")
-     }
+       return `
+         <div class="media-message">
+           <div class="media-message-grid">
+             ${
+               photos.slice(0, 2).map((photo, index) => `
+                 <button
+                   type="button"
+                   class="media-message-photo"
+                   data-photo-index="${index}"
+                   aria-label="View photo ${index + 1}"
+                 >
+                   <img
+                     src="${esc(photo.url)}"
+                     alt="Photo ${index + 1}"
+                     draggable="false"
+                   >
+                 </button>
+               `).join("")
+             }
 
-     ${
-       message.text
-         ? `
-           <div class="media-message-text">
-             ${esc(message.text)}
+             ${
+               photos.length > 2
+                 ? `
+                   <button
+                     type="button"
+                     class="media-message-photo media-message-more"
+                     data-photo-index="2"
+                     aria-label="View more photos"
+                   >
+                     <img
+                       src="${esc(photos[2].url)}"
+                       alt="More photos"
+                       draggable="false"
+                     >
+                     <span>+${photos.length - 2}</span>
+                   </button>
+                 `
+                 : ""
+             }
            </div>
-           `
-         : ""
-     }
 
-   </div>
-   `
+           ${
+             message.text
+               ? `<div class="media-message-text">${esc(message.text)}</div>`
+               : ""
+           }
+         </div>
+       `;
+     })()
 
    : esc(message.text)
 }
