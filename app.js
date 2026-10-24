@@ -4463,9 +4463,18 @@ function attachMediaImageViewer() {
       const messageBox = button.closest(".media-message");
       if (!messageBox) return;
 
-      const urls = Array.from(
-        messageBox.querySelectorAll(".media-message-photo img")
-      )
+      let urls = [];
+
+      try {
+        urls = JSON.parse(
+          messageBox.querySelector(".media-message-grid")
+            ?.dataset.photoUrls || "[]"
+        );
+      } catch {
+        urls = [];
+      }
+
+      if (!Array.isArray(urls) || !urls.length) return;
         .map(img => img.getAttribute("src"))
         .filter(Boolean);
 
