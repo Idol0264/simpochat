@@ -9720,3 +9720,53 @@ body:has(.camera-screen) .message-composer {
 body:has(.modal-backdrop) .message-composer {
   display: none !important;
 }
+
+
+/* SimpoChat persistent chat photo thumbnails */
+.media-message-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  width: min(220px, 68vw);
+}
+
+.media-message-photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 9px;
+  background: var(--surface, #242424);
+  cursor: pointer;
+}
+
+.media-message-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-message-more span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgb(0 0 0 / 55%);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.message-image-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+}
