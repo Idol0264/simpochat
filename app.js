@@ -3755,34 +3755,42 @@ async function loadGroupMessages(groupId) {
     }
 
 state.messages[groupId] =
-  data.messages.map(
-    message => ({
+  data.messages.map(message => {
+    const contentType =
+      message.content_type === "audio"
+        ? "voice"
+        : message.content_type === "photos"
+          ? "media"
+          : "text";
+
+    const mediaUrls = Array.isArray(message.media_urls)
+      ? message.media_urls.filter(
+          url => typeof url === "string" && url
+        )
+      : message.media_url
+        ? [message.media_url]
+        : [];
+
+    return {
       id: message.id,
       member: message.sender_id,
       sender: message.sender || null,
-      text: message.text,
+      text: message.text || "",
+      type: contentType,
 
-      type:
-        message.content_type === "audio"
-          ? "voice"
-          : "text",
+      media: mediaUrls.map(url => ({
+        type: "image",
+        url
+      })),
 
-      mediaUrl:
-        message.media_url || "",
-
-      durationSeconds:
-        message.duration_seconds || null,
-
+      mediaUrl: message.media_url || "",
+      durationSeconds: message.duration_seconds || null,
       createdAt: message.created_at,
       read: true,
-
-      replyTo:
-        message.reply_to || null,
-
-      expiresAt:
-        message.expires_at
-    })
-  );
+      replyTo: message.reply_to || null,
+      expiresAt: message.expires_at
+    };
+  });
 
     saveState();
 
