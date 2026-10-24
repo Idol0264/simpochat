@@ -5081,80 +5081,115 @@ function attachMessageLongPress() {
           }
 
 
+           
           if (action === "delete") {
-             
-             const group =
-                getGroup(
-                   state.selectedGroup
-                );
-             
-             if (!group) {
+            (async () => {
+              const group = getGroup(state.selectedGroup);
+
+              if (!group) return;
+
+              const sessionToken =
+                localStorage.getItem(SESSION_TOKEN_KEY);
+
+              if (!sessionToken) {
+                alert("Your SimpoChat session is not available. Please try again.");
                 return;
-             }
-             
-             const messages =
-                safeArray(
-                   state.messages[group.id]
+              }
+
+              const messages = safeArray(state.messages[group.id]);
+              const messageExists = messages.some(
+                message => message.id === messageId
+              );
+
+              if (!messageExists) return;
+
+              try {
+                const response = await fetch(
+                  SIMPOCHAT_ACCESS_URL,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({
+                      action: "delete_message",
+                      group_id: group.id,
+                      message_id: messageId
+                    })
+                  }
                 );
-             
-             const messageIndex =
-                messages.findIndex(
-                   message =>
-                      message.id ===
-                      messageId
-                );
-             
-             if (messageIndex === -1) {
-                return;
-             }
-             
-             messages.splice(
-                messageIndex,
-                1
-             );
-             
-             state.messages[group.id] =
-                messages;
-             
-             if (
-                pendingReplyMessageId ===
-                messageId
-             ) {
-                pendingReplyMessageId =
-                   null;
-             }
-             
-             activeMessageActionId =
-                null;
-             
-             messageActionTimer =
-                null;
-             
-             saveState();
-             
-             renderGroupChat({
-                autoScroll: false
-             });
-             
-             requestAnimationFrame(
-                () => {
-                   
-                   const currentScrollRoot =
-                      document.scrollingElement ||
-                      document.documentElement;
-                   
-                   if (currentScrollRoot) {
-                      
-                      currentScrollRoot.scrollTop =
-                         Math.min(
-                            currentScrollRoot.scrollTop,
-                            currentScrollRoot.scrollHeight
-                         );
-                   
-                   }
-                
+
+                const data = await response.json();
+
+                if (
+                  !response.ok ||
+                  !data.allowed ||
+                  !data.deleted
+                ) {
+                  alert(
+                    data.message ||
+                    "The message could not be deleted. Please try again."
+                  );
+                  return;
                 }
-             );
+
+                const updatedMessages =
+                  safeArray(state.messages[group.id]);
+
+                const messageIndex = updatedMessages.findIndex(
+                  message => message.id === messageId
+                );
+
+                if (messageIndex !== -1) {
+                  updatedMessages.splice(messageIndex, 1);
+                }
+
+                state.messages[group.id] = updatedMessages;
+
+                if (pendingReplyMessageId === messageId) {
+                  pendingReplyMessageId = null;
+                }
+
+                activeMessageActionId = null;
+                messageActionTimer = null;
+
+                const scrollRoot =
+                  document.querySelector("#messages") ||
+                  document.scrollingElement ||
+                  document.documentElement;
+
+                const previousScrollTop =
+                  scrollRoot ? scrollRoot.scrollTop : 0;
+
+                saveState();
+
+                renderGroupChat({ autoScroll: false });
+
+                requestAnimationFrame(() => {
+                  const currentScrollRoot =
+                    document.querySelector("#messages") ||
+                    document.scrollingElement ||
+                    document.documentElement;
+
+                  if (currentScrollRoot) {
+                    currentScrollRoot.scrollTop = Math.min(
+                      previousScrollTop,
+                      currentScrollRoot.scrollHeight
+                    );
+                  }
+                });
+              } catch (error) {
+                console.error(
+                  "SimpoChat message deletion failed:",
+                  error
+                );
+
+                alert(
+                  "Unable to delete the message right now. Please try again."
+                );
+              }
+            })();
           }
 
         }
