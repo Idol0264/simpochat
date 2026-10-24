@@ -16986,6 +16986,64 @@ function renderAccessSetup() {
    STARTUP
    --------------------------------------------------------- */
 
+async function syncJoinedGroupsFromSupabase() {
+  const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(sessionToken
+        ? { Authorization: `Bearer ${sessionToken}` }
+        : {})
+    },
+    body: JSON.stringify({
+      action: "search_groups",
+      query: ""
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.allowed !== true) {
+    throw new Error(data.message || "Unable to load your groups.");
+  }
+
+  const remoteGroups = safeArray(data.groups)
+    .filter(group => group.join_status === "member")
+    .map(group => ({
+      id: group.id,
+      name: group.name,
+      icon:
+        group.icon ||
+        group.name?.charAt(0)?.toUpperCase() ||
+        "G",
+      photo: group.photo_url || "",
+      hue: randomHue(),
+      category: safeArray(group.category),
+      members: [],
+      join_mode: group.join_mode || group.join_policy,
+      approval_mode: group.approval_mode || group.join_approval,
+      creatorId: group.creator_id,
+      remote: true
+    }));
+
+  const remoteIds = new Set(remoteGroups.map(group => group.id));
+
+  const localOnlyGroups = safeArray(state.groups).filter(
+    group => !group.remote && !remoteIds.has(group.id)
+  );
+
+  state.groups = [
+    ...remoteGroups,
+    ...localOnlyGroups
+  ];
+
+  saveState();
+
+  return remoteGroups.length;
+}
+
 async function startSimpoChat() {
 
   cleanupExpired();
