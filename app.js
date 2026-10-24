@@ -17178,20 +17178,39 @@ const response =
 
   saveState();
 
+  
+  try {
+    await syncJoinedGroupsFromSupabase();
+  } catch (groupError) {
+    console.error(
+      "SimpoChat joined-groups sync failed:",
+      groupError
+    );
+  }
+
+  saveState();
+
   if (
     state.screen === "group-chat" &&
-    state.selectedGroup
+    state.selectedGroup &&
+    state.groups.some(
+      group => group.id === state.selectedGroup
+    )
   ) {
-    await loadGroupMessages(
-      state.selectedGroup
-    );
-
+    await loadGroupMessages(state.selectedGroup);
     render();
-
-    startGroupMessageRefresh(
-      state.selectedGroup
-    );
+    startGroupMessageRefresh(state.selectedGroup);
   } else {
+    if (
+      state.screen === "group-chat" &&
+      !state.groups.some(
+        group => group.id === state.selectedGroup
+      )
+    ) {
+      state.screen = "home";
+      state.selectedGroup = null;
+    }
+
     render();
   }
 
