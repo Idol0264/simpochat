@@ -12022,10 +12022,10 @@ if (occupationSelect) {
         }
 
       }
-
     }
   );
 
+  }
 }
 
 
