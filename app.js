@@ -4475,8 +4475,6 @@ function attachMediaImageViewer() {
       }
 
       if (!Array.isArray(urls) || !urls.length) return;
-        .map(img => img.getAttribute("src"))
-        .filter(Boolean);
 
       if (!urls.length) return;
 
