@@ -5344,6 +5344,64 @@ if (messagesBox) {
    SEND CAMERA MEDIA MESSAGE
    --------------------------------------------------------- */
 
+/* FAST IMAGE PREPARATION */
+async function simpoPrepareImageFile(
+  file,
+  maxDimension = 1440,
+  quality = 0.76
+) {
+  if (!file || !file.type.startsWith("image/")) return file;
+
+  // Preserve animations and formats that should not be flattened.
+  if (["image/gif", "image/svg+xml"].includes(file.type)) {
+    return file;
+  }
+
+  try {
+    if (typeof createImageBitmap !== "function") return file;
+
+    const bitmap = await createImageBitmap(file);
+    const largestSide = Math.max(bitmap.width, bitmap.height);
+
+    if (largestSide <= maxDimension && file.size <= 300 * 1024) {
+      bitmap.close?.();
+      return file;
+    }
+
+    const scale = Math.min(1, maxDimension / largestSide);
+    const canvas = document.createElement("canvas");
+
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const context = canvas.getContext("2d", { alpha: false });
+
+    if (!context) {
+      bitmap.close?.();
+      return file;
+    }
+
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, "image/jpeg", quality)
+    );
+
+    if (!blob || blob.size >= file.size) return file;
+
+    const name = (file.name || "image").replace(/\.[^.]+$/, "");
+
+    return new File([blob], name + ".jpg", {
+      type: "image/jpeg",
+      lastModified: Date.now()
+    });
+  } catch (error) {
+    console.warn("Image compression skipped:", error);
+    return file;
+  }
+}
+
 async function sendCameraMediaMessage() {
   const group = getGroup(state.selectedGroup);
 
