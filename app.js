@@ -5336,11 +5336,12 @@ if (messagesBox) {
       throw new Error(data.message || "Unable to send message.");
     }
 
-    if (!state.messages[group.id]) {
-      state.messages[group.id] = [];
-    }
+    const messages = state.messages[group.id] || [];
+    const pendingIndex = messages.findIndex(
+      message => message.id === pendingId
+    );
 
-    state.messages[group.id].push({
+    const savedMessage = {
       id: data.message.id,
       member: data.message.sender_id,
       text: data.message.text,
@@ -5348,17 +5349,32 @@ if (messagesBox) {
       read: true,
       replyTo: data.message.reply_to || null,
       expiresAt: data.message.expires_at
-    });
+    };
 
-    input.value = "";
-    pendingReplyMessageId = null;
-    activeMessageActionId = null;
+    if (pendingIndex >= 0) {
+      messages[pendingIndex] = savedMessage;
+    } else {
+      messages.push(savedMessage);
+    }
 
     saveState();
     renderGroupChat();
 
   } catch (error) {
     console.error("SimpoChat sendMessage error:", error);
+
+    state.messages[group.id] = (state.messages[group.id] || [])
+      .filter(message => message.id !== pendingId);
+
+    if (input && !input.value) {
+      input.value = text;
+    }
+
+    pendingReplyMessageId = replyTo;
+
+    saveState();
+    renderGroupChat();
+
     alert(error.message || "Unable to send message.");
   }
 }
