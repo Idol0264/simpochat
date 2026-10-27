@@ -12904,14 +12904,28 @@ function openPostComments(postId) {
       'button[type="submit"]'
     );
 
-    sendButton.disabled = true;
+    if (sendButton) sendButton.disabled = true;
+
+    const optimisticId = `pending-${Date.now()}`;
+
+    const optimisticComment = {
+      id: optimisticId,
+      authorName: state.currentUser?.name || "You",
+      authorAvatarUrl: state.currentUser?.avatarImage || "",
+      body: commentText,
+      createdAt: new Date().toISOString(),
+      pending: true
+    };
+
+    commentsCache.push(optimisticComment);
+    input.value = "";
+    renderComments(commentsCache);
+    list.scrollTop = list.scrollHeight;
 
     try {
       const result = await commentRequest(
         "add_post_comment",
-        {
-          comment: commentText
-        }
+        { comment: commentText }
       );
 
       if (closed) return;
@@ -12922,18 +12936,32 @@ function openPostComments(postId) {
         );
       }
 
-      input.value = "";
+      const pendingIndex = commentsCache.findIndex(
+        comment => comment.id === optimisticId
+      );
 
-      // Update the local count after a successful save.
+      if (pendingIndex >= 0) {
+        commentsCache[pendingIndex] = result.comment;
+      } else {
+        commentsCache.push(result.comment);
+      }
+
       post.comments = Number(post.comments || 0) + 1;
+      count.textContent = `(${commentsCache.length})`;
 
       saveState();
-
-      // Reload from Supabase to show the saved comment.
-      await loadComments();
+      renderComments(commentsCache);
+      list.scrollTop = list.scrollHeight;
 
     } catch (error) {
       if (closed) return;
+
+      commentsCache = commentsCache.filter(
+        comment => comment.id !== optimisticId
+      );
+
+      input.value = commentText;
+      renderComments(commentsCache);
 
       alert(
         error.message || "Unable to send your comment."
@@ -12942,7 +12970,7 @@ function openPostComments(postId) {
     } finally {
       sending = false;
 
-      if (sendButton.isConnected) {
+      if (sendButton?.isConnected) {
         sendButton.disabled = false;
       }
     }
