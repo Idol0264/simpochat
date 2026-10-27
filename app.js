@@ -17173,7 +17173,12 @@ async function syncJoinedGroupsFromSupabase() {
       photo: group.photo_url || "",
       hue: randomHue(),
       category: safeArray(group.category),
-      members: [],
+      members: safeArray(
+         state.groups.find(
+            existing =>
+               String(existing.id) === String(group.id)
+         )?.members
+      ),
       join_mode: group.join_mode || group.join_policy,
       approval_mode: group.approval_mode || group.join_approval,
       creatorId: group.creator_id,
