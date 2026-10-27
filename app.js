@@ -10343,25 +10343,23 @@ async function createVideoPost() {
 
     if (photos.length) {
 
-      const uploadedPhotoUrls = [];
-
-      const uploadedPhotoNames = [];
-
-      for (const item of photos) {
-
-        const mediaUrl =
-          await uploadSimpoChatPostMedia(
+      const uploadedPhotoResults = await Promise.all(
+        photos.map(async item => ({
+          mediaUrl: await uploadSimpoChatPostMedia(
             item.file,
             groupIds
-          );
+          ),
+          fileName: item.file.name
+        }))
+      );
 
-        uploadedPhotoUrls.push(mediaUrl);
+      const uploadedPhotoUrls = uploadedPhotoResults.map(
+        item => item.mediaUrl
+      );
 
-        uploadedPhotoNames.push(
-          item.file.name
-        );
-
-      }
+      const uploadedPhotoNames = uploadedPhotoResults.map(
+        item => item.fileName
+      );
 
       await saveSimpoChatPostToSupabase({
 
