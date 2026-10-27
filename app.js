@@ -12863,6 +12863,8 @@ function openPostComments(postId) {
         ? result.comments
         : [];
 
+      commentsCache = [...comments];
+
       count.textContent = `(${comments.length})`;
 
       renderComments(comments);
