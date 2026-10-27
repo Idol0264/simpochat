@@ -12775,6 +12775,7 @@ function openPostComments(postId) {
     list.appendChild(wrapper);
   }
 
+  let commentsCache = [];
   function renderComments(comments) {
      if (!comments.length) {
         list.innerHTML = `
