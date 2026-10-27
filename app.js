@@ -7326,16 +7326,20 @@ async function syncPostsFromSupabase(force = false) {
 }
 
 async function uploadSimpoChatPostMedia(file, groupIds) {
+  const uploadFile = file?.type?.startsWith("image/")
+    ? await simpoPrepareImageFile(file)
+    : file;
+
   const prepared = await simpoChatPostRequest(
     "create_post_upload",
     {
       group_ids: groupIds,
-      content_type: file.type,
-      file_size: file.size
+      content_type: uploadFile.type,
+      file_size: uploadFile.size
     }
   );
 
-  if (!prepared.path || !prepared.token) {
+  if (!prepared.path || !prepared.token || !prepared.signed_url) {
     throw new Error(
       "Supabase did not return a valid signed upload token."
     );
@@ -7349,17 +7353,15 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
       "https://uaxxzgkvjzemsevuzlcw.supabase.co/"
     )
   ) {
-    throw new Error(
-      "Supabase returned an invalid signed upload URL."
-    );
+    throw new Error("Supabase returned an invalid upload URL.");
   }
 
   const uploadResponse = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
-      "Content-Type": file.type
+      "Content-Type": uploadFile.type
     },
-    body: file
+    body: uploadFile
   });
 
   if (!uploadResponse.ok) {
