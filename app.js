@@ -5411,39 +5411,51 @@ async function sendCameraMediaMessage() {
   const text = textInput ? textInput.value.trim() : "";
 
   try {
-    const uploadedUrls = [];
+     
+    // Prepare and upload selected photos concurrently.
+    // The original gallery order is preserved.
+    const uploadedUrls = await Promise.all(
+      cameraMediaItems.map(async item => {
+        if (!item.file) {
+          throw new Error(
+            "A selected photo could not be read. Please select it again."
+          );
+        }
 
-    for (const item of cameraMediaItems) {
-      if (!item.file) {
-        throw new Error("A selected photo could not be read. Please select it again.");
-      }
+        const file = await simpoPrepareImageFile(item.file);
 
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(
-          new Error("Unable to read a selected photo.")
+        const prepared = await simpoChatPostRequest(
+          "create_chat_photo_upload",
+          {
+            group_id: group.id,
+            content_type: file.type,
+            file_size: file.size
+          }
         );
 
-        reader.readAsDataURL(item.file);
-      });
-
-      const uploaded = await simpoChatPostRequest(
-        "upload_chat_photo",
-        {
-          group_id: group.id,
-          image_data_url: dataUrl,
-          file_name: item.name || "photo.jpg"
+        if (!prepared.signed_url || !prepared.public_url) {
+          throw new Error(
+            "Supabase could not prepare the photo upload."
+          );
         }
-      );
 
-      if (!uploaded.media_url) {
-        throw new Error("Supabase did not return the uploaded photo URL.");
-      }
+        const response = await fetch(prepared.signed_url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type
+          },
+          body: file
+        });
 
-      uploadedUrls.push(uploaded.media_url);
-    }
+        if (!response.ok) {
+          throw new Error(
+            "Photo upload failed (" + response.status + ")."
+          );
+        }
+
+        return prepared.public_url;
+      })
+    );
 
     const saved = await simpoChatPostRequest("send_message", {
       group_id: group.id,
