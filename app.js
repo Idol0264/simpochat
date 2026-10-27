@@ -11797,35 +11797,50 @@ if (occupationSelect) {
         }
 
 
-        const reader =
-          new FileReader();
+        simpoPrepareImageFile(file, 800, 0.72)
+          .then(async preparedFile => {
+            const prepared = await simpoChatPostRequest(
+              "create_profile_photo_upload",
+              {
+                content_type: preparedFile.type,
+                file_size: preparedFile.size
+              }
+            );
 
-
-        reader.onload = event => {
-           
-           const image =
-              event.target?.result;
-           
-           if (!image || !photoPreview) {
-              return;
-           }
-           
-           pendingProfilePhoto =
-              String(image);
-           
-           photoPreview.innerHTML =
-              renderUserAvatar(
-                 {
-                    ...user,
-                    avatarImage: String(image)
-                 },
-                 "profile-photo-preview"
+            if (!prepared.signed_url || !prepared.public_url) {
+              throw new Error(
+                "Supabase could not prepare the profile photo."
               );
+            }
 
-        };
+            const response = await fetch(prepared.signed_url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": preparedFile.type
+              },
+              body: preparedFile
+            });
 
+            if (!response.ok) {
+              throw new Error("Profile photo upload failed.");
+            }
 
-        reader.readAsDataURL(file);
+            pendingProfilePhoto = prepared.public_url;
+
+            if (photoPreview) {
+              photoPreview.innerHTML = renderUserAvatar(
+                {
+                  ...user,
+                  avatarImage: prepared.public_url
+                },
+                "profile-photo-preview"
+              );
+            }
+          })
+          .catch(error => {
+            console.error("Profile photo upload failed:", error);
+            alert(error.message || "Unable to upload profile photo.");
+          });
 
       }
     );
