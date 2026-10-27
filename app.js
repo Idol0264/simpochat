@@ -5292,6 +5292,29 @@ if (messagesBox) {
 
   const replyTo = pendingReplyMessageId || null;
 
+  const pendingId = uid("pending-message");
+
+  if (!state.messages[group.id]) {
+    state.messages[group.id] = [];
+  }
+
+  state.messages[group.id].push({
+    id: pendingId,
+    member: state.currentUser.id,
+    text,
+    createdAt: now(),
+    read: true,
+    replyTo,
+    pending: true
+  });
+
+  input.value = "";
+  pendingReplyMessageId = null;
+  activeMessageActionId = null;
+
+  saveState();
+  renderGroupChat();
+
   try {
     const response = await fetch(SIMPOCHAT_ACCESS_URL, {
       method: "POST",
