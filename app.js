@@ -12010,7 +12010,7 @@ if (occupationSelect) {
 
                 occupation,
 
-                avatar_data_url:
+                avatar_url:
                   pendingProfilePhoto !== null
                     ? pendingProfilePhoto
                     : undefined
