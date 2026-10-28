@@ -3754,7 +3754,7 @@ async function loadGroupMessages(groupId) {
       );
     }
 
-state.messages[groupId] =
+const serverMessages =
   data.messages.map(message => {
     const contentType =
       message.content_type === "audio"
@@ -3791,6 +3791,24 @@ state.messages[groupId] =
       expiresAt: message.expires_at
     };
   });
+
+/* Keep messages that have not reached the server. */
+const localUnsentMessages =
+  safeArray(state.messages[groupId]).filter(
+    message => message.pending || message.failed
+  );
+
+/* Combine server messages with locally saved unsent messages. */
+state.messages[groupId] = [
+  ...serverMessages,
+  ...localUnsentMessages.filter(
+    localMessage =>
+      !serverMessages.some(
+        serverMessage =>
+          serverMessage.id === localMessage.id
+      )
+  )
+];
 
     saveState();
 
