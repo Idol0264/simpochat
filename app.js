@@ -4541,6 +4541,30 @@ function attachMediaImageViewer() {
             currentIndex = (currentIndex + 1) % urls.length;
             renderViewer();
           });
+         
+        const viewerScreen = modalRoot.querySelector(
+          ".camera-preview-screen"
+        );
+
+        viewerScreen?.addEventListener("click", event => {
+          if (urls.length < 2) return;
+
+          // Let the close and arrow buttons handle their own clicks.
+          if (event.target.closest("button")) return;
+
+          const rect = viewerScreen.getBoundingClientRect();
+          const edgeWidth = 40; // About 1 cm on many phone screens.
+          const tapX = event.clientX - rect.left;
+
+          if (tapX <= edgeWidth) {
+            currentIndex =
+              (currentIndex - 1 + urls.length) % urls.length;
+            renderViewer();
+          } else if (tapX >= rect.width - edgeWidth) {
+            currentIndex = (currentIndex + 1) % urls.length;
+            renderViewer();
+          }
+        });
       };
 
       renderViewer();
