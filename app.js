@@ -5387,19 +5387,18 @@ if (messagesBox) {
   } catch (error) {
     console.error("SimpoChat sendMessage error:", error);
 
-    state.messages[group.id] = (state.messages[group.id] || [])
-      .filter(message => message.id !== pendingId);
+    const messages = state.messages[group.id] || [];
+    const failedMessage = messages.find(
+      message => message.id === pendingId
+    );
 
-    if (input && !input.value) {
-      input.value = text;
+    if (failedMessage) {
+      failedMessage.pending = false;
+      failedMessage.failed = true;
     }
-
-    pendingReplyMessageId = replyTo;
 
     saveState();
     renderGroupChat();
-
-    alert(error.message || "Unable to send message.");
   }
 }
 
