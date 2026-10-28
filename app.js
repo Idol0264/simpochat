@@ -5987,33 +5987,73 @@ simpoVoiceRecorder.onstop = async () => {
         return;
       }
 
+      const pendingVoiceId = uid("voice-pending");
+      let localAudioUrl = "";
+
       try {
+        // 1. Save the actual recording on this device first.
+        await simpoSaveOfflineAudio(pendingVoiceId, audioBlob);
+
+        localAudioUrl = URL.createObjectURL(audioBlob);
+
+        // 2. Show the voice message immediately, even offline.
+        const localVoiceMessage = {
+          id: pendingVoiceId,
+          member: state.currentUser.id,
+          sender: state.currentUser,
+          text: "",
+          type: "voice",
+          mediaUrl: localAudioUrl,
+          localAudioKey: pendingVoiceId,
+          durationSeconds,
+          createdAt: new Date().toISOString(),
+          read: true,
+          replyTo: pendingReplyMessageId || null,
+          failed: false,
+          pending: true
+        };
+
+        if (!state.messages[group.id]) {
+          state.messages[group.id] = [];
+        }
+
+        state.messages[group.id].push(localVoiceMessage);
+
+        state.messages[group.id].sort(
+          (a, b) =>
+            new Date(a.createdAt) - new Date(b.createdAt)
+        );
+
+        pendingReplyMessageId = null;
+        activeMessageActionId = null;
+
+        saveState();
+        renderGroupChat();
+
+        // 3. Prepare the recording for upload.
         const audioDataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
 
           reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(
-            new Error("Unable to prepare the audio recording.")
-          );
+          reader.onerror = () =>
+            reject(new Error("Unable to prepare the audio recording."));
 
           reader.readAsDataURL(audioBlob);
         });
 
         const response = await fetch(SIMPOCHAT_ACCESS_URL, {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${sessionToken}`,
             "Content-Type": "application/json"
           },
-
           body: JSON.stringify({
             action: "send_message",
             group_id: group.id,
             content_type: "audio",
             audio_data_url: audioDataUrl,
             duration_seconds: durationSeconds,
-            reply_to: pendingReplyMessageId || null
+            reply_to: localVoiceMessage.replyTo
           })
         });
 
@@ -6025,7 +6065,12 @@ simpoVoiceRecorder.onstop = async () => {
           );
         }
 
+        // 4. Replace the local message with the saved server message.
         const saved = data.message;
+        const groupMessages = safeArray(state.messages[group.id]);
+        const localIndex = groupMessages.findIndex(
+          message => message.id === pendingVoiceId
+        );
 
         const savedVoiceMessage = {
           id: saved.id,
@@ -6033,35 +6078,37 @@ simpoVoiceRecorder.onstop = async () => {
           sender: state.currentUser,
           text: saved.text || "",
           type: "voice",
-          mediaUrl: saved.media_url || "",
-          durationSeconds:
-            saved.duration_seconds || durationSeconds,
-          createdAt: saved.created_at,
+          mediaUrl: saved.media_url || localAudioUrl,
+          localAudioKey: saved.media_url ? null : pendingVoiceId,
+          durationSeconds: saved.duration_seconds || durationSeconds,
+          createdAt: saved.created_at || localVoiceMessage.createdAt,
           read: true,
-          replyTo: saved.reply_to || null,
-          expiresAt: saved.expires_at
+          replyTo: saved.reply_to || localVoiceMessage.replyTo,
+          expiresAt: saved.expires_at,
+          failed: false,
+          pending: false
         };
 
-        const groupMessages =
-          safeArray(state.messages[group.id]);
-
-        if (
-          !groupMessages.some(
-            message => message.id === savedVoiceMessage.id
-          )
+        if (localIndex !== -1) {
+          groupMessages[localIndex] = savedVoiceMessage;
+        } else if (
+          !groupMessages.some(message => message.id === saved.id)
         ) {
           groupMessages.push(savedVoiceMessage);
-
-          groupMessages.sort(
-            (a, b) =>
-              new Date(a.createdAt) - new Date(b.createdAt)
-          );
-
-          state.messages[group.id] = groupMessages;
         }
 
-        pendingReplyMessageId = null;
-        activeMessageActionId = null;
+        groupMessages.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+
+        state.messages[group.id] = groupMessages;
+
+        // The server has saved the recording, so remove the local audio
+        // copy only when the server returned its own playable media URL.
+        if (saved.media_url) {
+          await simpoDeleteOfflineAudio(pendingVoiceId);
+          URL.revokeObjectURL(localAudioUrl);
+        }
 
         saveState();
         renderGroupChat();
@@ -6069,9 +6116,23 @@ simpoVoiceRecorder.onstop = async () => {
       } catch (error) {
         console.error("SimpoChat voice message error:", error);
 
-        alert(
-          error.message || "Unable to send voice message."
+        // Keep the local message and its audio for the upcoming retry step.
+        const groupMessages = safeArray(state.messages[group.id]);
+        const localMessage = groupMessages.find(
+          message => message.id === pendingVoiceId
         );
+
+        if (localMessage) {
+          localMessage.failed = true;
+          localMessage.pending = false;
+          localMessage.mediaUrl = localAudioUrl;
+          saveState();
+          renderGroupChat();
+        } else {
+          alert(
+            error.message || "Unable to save the voice message on this device."
+          );
+        }
       }
     };
 
