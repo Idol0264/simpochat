@@ -4922,12 +4922,12 @@ ${
         </div>
 
 
-        <div class="message-time">
-
-          ${formatTime(
-            message.createdAt
-          )}
-
+        <div class="message-time ${message.failed ? "message-time-failed" : ""}">
+          ${
+            message.failed
+              ? `<span class="message-failed-label">Not sent</span>`
+              : formatTime(message.createdAt)
+          }
         </div>
 
 
