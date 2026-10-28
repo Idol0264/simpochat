@@ -5434,7 +5434,8 @@ function attachMessageLongPress() {
 
     });
 
-  // Retry a locally saved failed text message.
+
+  // Retry locally saved failed text or voice messages.
   messagesBox
     .querySelectorAll("[data-retry-message]")
     .forEach(button => {
@@ -5456,7 +5457,13 @@ function attachMessageLongPress() {
           item => item.id === messageId
         );
 
-        if (!message || !message.failed || !message.text) {
+        const isVoice = message?.type === "voice";
+
+        if (
+          !message ||
+          !message.failed ||
+          (!message.text && !isVoice)
+        ) {
           return;
         }
 
@@ -5464,18 +5471,54 @@ function attachMessageLongPress() {
         button.textContent = "Sending…";
 
         try {
+          let requestBody = {
+            action: "send_message",
+            group_id: group.id,
+            client_message_id: message.id,
+            reply_to: message.replyTo || null
+          };
+
+          let audioBlob = null;
+
+          if (isVoice) {
+            audioBlob = await simpoGetOfflineAudio(
+              message.localAudioKey || message.id
+            );
+
+            if (!audioBlob) {
+              throw new Error(
+                "The saved recording could not be found on this device."
+              );
+            }
+
+            const audioDataUrl = await new Promise(
+              (resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(
+                  new Error("Unable to prepare the saved recording.")
+                );
+
+                reader.readAsDataURL(audioBlob);
+              }
+            );
+
+            requestBody.content_type = "audio";
+            requestBody.audio_data_url = audioDataUrl;
+            requestBody.duration_seconds =
+              message.durationSeconds || 0;
+          } else {
+            requestBody.text = message.text;
+          }
+
           const response = await fetch(SIMPOCHAT_ACCESS_URL, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${sessionToken}`,
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-              action: "send_message",
-              group_id: group.id,
-              text: message.text,
-              reply_to: message.replyTo || null
-            })
+            body: JSON.stringify(requestBody)
           });
 
           const data = await response.json();
@@ -5490,6 +5533,7 @@ function attachMessageLongPress() {
             );
           }
 
+          const saved = data.message;
           const currentMessages =
             safeArray(state.messages[group.id]);
 
@@ -5497,17 +5541,70 @@ function attachMessageLongPress() {
             item => item.id === messageId
           );
 
-          if (messageIndex !== -1) {
-            currentMessages[messageIndex] = {
-              id: data.message.id,
-              member: data.message.sender_id,
-              text: data.message.text,
-              createdAt: data.message.created_at,
+          if (isVoice) {
+            const savedVoiceMessage = {
+              id: saved.id,
+              member: saved.sender_id,
+              sender: state.currentUser,
+              text: saved.text || "",
+              type: "voice",
+              mediaUrl: saved.media_url || message.mediaUrl,
+              localAudioKey: saved.media_url
+                ? null
+                : (message.localAudioKey || message.id),
+              durationSeconds:
+                saved.duration_seconds || message.durationSeconds || 0,
+              createdAt: saved.created_at || message.createdAt,
               read: true,
-              replyTo: data.message.reply_to || null,
-              expiresAt: data.message.expires_at
+              replyTo: saved.reply_to || message.replyTo || null,
+              expiresAt: saved.expires_at,
+              failed: false,
+              pending: false
+            };
+
+            if (messageIndex !== -1) {
+              currentMessages[messageIndex] = savedVoiceMessage;
+            } else if (
+              !currentMessages.some(item => item.id === saved.id)
+            ) {
+              currentMessages.push(savedVoiceMessage);
+            }
+
+            if (saved.media_url) {
+              try {
+                await simpoDeleteOfflineAudio(
+                  message.localAudioKey || message.id
+                );
+              } catch (cleanupError) {
+                console.warn(
+                  "Unable to remove the saved voice copy:",
+                  cleanupError
+                );
+              }
+
+              if (
+                message.mediaUrl &&
+                message.mediaUrl.startsWith("blob:")
+              ) {
+                URL.revokeObjectURL(message.mediaUrl);
+              }
+            }
+          } else if (messageIndex !== -1) {
+            currentMessages[messageIndex] = {
+              id: saved.id,
+              member: saved.sender_id,
+              text: saved.text,
+              createdAt: saved.created_at,
+              read: true,
+              replyTo: saved.reply_to || null,
+              expiresAt: saved.expires_at
             };
           }
+
+          currentMessages.sort(
+            (a, b) =>
+              new Date(a.createdAt) - new Date(b.createdAt)
+          );
 
           state.messages[group.id] = currentMessages;
           saveState();
