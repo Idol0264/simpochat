@@ -92,6 +92,107 @@ function safeArray(value) {
 }
 
 /* ---------------------------------------------------------
+   SIMPOCHAT — OFFLINE VOICE MESSAGE STORAGE
+   Keep audio files on this device until they can be sent.
+   --------------------------------------------------------- */
+
+const SIMPO_AUDIO_DB_NAME = "simpochat-offline-audio";
+const SIMPO_AUDIO_STORE_NAME = "voice-messages";
+
+function simpoOpenAudioDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(SIMPO_AUDIO_DB_NAME, 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+
+      if (!db.objectStoreNames.contains(SIMPO_AUDIO_STORE_NAME)) {
+        db.createObjectStore(SIMPO_AUDIO_STORE_NAME);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function simpoSaveOfflineAudio(messageId, audioBlob) {
+  const db = await simpoOpenAudioDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      SIMPO_AUDIO_STORE_NAME,
+      "readwrite"
+    );
+
+    transaction.objectStore(SIMPO_AUDIO_STORE_NAME).put(
+      audioBlob,
+      messageId
+    );
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error);
+    };
+
+    transaction.onabort = () => {
+      db.close();
+      reject(transaction.error || new Error("Audio storage was interrupted."));
+    };
+  });
+}
+
+async function simpoGetOfflineAudio(messageId) {
+  const db = await simpoOpenAudioDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      SIMPO_AUDIO_STORE_NAME,
+      "readonly"
+    );
+
+    const request = transaction
+      .objectStore(SIMPO_AUDIO_STORE_NAME)
+      .get(messageId);
+
+    request.onsuccess = () => resolve(request.result || null);
+
+    request.onerror = () => reject(request.error);
+
+    transaction.oncomplete = () => db.close();
+    transaction.onerror = () => db.close();
+  });
+}
+
+async function simpoDeleteOfflineAudio(messageId) {
+  const db = await simpoOpenAudioDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      SIMPO_AUDIO_STORE_NAME,
+      "readwrite"
+    );
+
+    transaction.objectStore(SIMPO_AUDIO_STORE_NAME).delete(messageId);
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error);
+    };
+  });
+}
+
+/* ---------------------------------------------------------
    DEFAULT GROUPS
    --------------------------------------------------------- */
 
