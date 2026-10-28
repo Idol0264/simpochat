@@ -3952,7 +3952,7 @@ state.messages[groupId] = [
   )
 ];
 
-    saveState();
+    await simpoRestoreOfflineVoiceMessages(groupId);
 
     return state.messages[groupId];
 
