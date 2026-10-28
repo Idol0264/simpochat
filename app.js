@@ -4940,13 +4940,17 @@ ${
         </div>
 
 
-        <div class="message-time ${message.failed ? "message-time-failed" : ""}">
-          ${
-            message.failed
-              ? `<span class="message-failed-label">Not sent</span>`
-              : formatTime(message.createdAt)
-          }
-        </div>
+<div class="message-time ${message.failed ? "message-time-failed" : ""}">
+  ${
+    message.failed
+      ? `<button
+           type="button"
+           class="message-failed-label"
+           data-retry-message="${esc(message.id)}"
+         >Not sent · Tap to resend</button>`
+      : formatTime(message.createdAt)
+  }
+</div>
 
 
         ${
