@@ -3963,9 +3963,7 @@ state.messages[groupId] = [
       error
     );
 
-    return safeArray(
-      state.messages[groupId]
-    );
+    return await simpoRestoreOfflineVoiceMessages(groupId);
 
   }
 }
@@ -4086,7 +4084,7 @@ function startGroupMessageRefresh(groupId) {
 
       }
 
-    }, 700);
+    }, 600);
 }
 
 function stopGroupMessageRefresh() {
