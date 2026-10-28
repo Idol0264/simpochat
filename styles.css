@@ -4618,6 +4618,16 @@ span:last-child {
   line-height: 1;
 }
 
+.message-time-failed {
+  color: #ff4d5e;
+  line-height: 1.3;
+}
+
+.message-failed-label {
+  color: #ff4d5e;
+  font-size: 9px;
+  font-weight: 600;
+}
 
 /* ---------------------------------------------------------
    MY MESSAGE
