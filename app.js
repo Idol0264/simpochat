@@ -6086,11 +6086,12 @@ simpoVoiceRecorder.onstop = async () => {
             Authorization: `Bearer ${sessionToken}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            action: "send_message",
-            group_id: group.id,
-            content_type: "audio",
-            audio_data_url: audioDataUrl,
+           body: JSON.stringify({
+              action: "send_message",
+              group_id: group.id,
+              client_message_id: pendingVoiceId,
+              content_type: "audio",
+              audio_data_url: audioDataUrl,
             duration_seconds: durationSeconds,
             reply_to: localVoiceMessage.replyTo
           })
