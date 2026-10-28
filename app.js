@@ -5294,6 +5294,110 @@ function attachMessageLongPress() {
 
     });
 
+  // Retry a locally saved failed text message.
+  messagesBox
+    .querySelectorAll("[data-retry-message]")
+    .forEach(button => {
+      button.addEventListener("click", async event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (button.disabled) return;
+
+        const group = getGroup(state.selectedGroup);
+        const sessionToken =
+          localStorage.getItem(SESSION_TOKEN_KEY);
+
+        if (!group || !sessionToken) return;
+
+        const messageId = button.dataset.retryMessage;
+        const messages = safeArray(state.messages[group.id]);
+        const message = messages.find(
+          item => item.id === messageId
+        );
+
+        if (!message || !message.failed || !message.text) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Sending…";
+
+        try {
+          const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${sessionToken}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              action: "send_message",
+              group_id: group.id,
+              text: message.text,
+              reply_to: message.replyTo || null
+            })
+          });
+
+          const data = await response.json();
+
+          if (
+            !response.ok ||
+            !data.allowed ||
+            !data.message
+          ) {
+            throw new Error(
+              data.message || "Unable to resend message."
+            );
+          }
+
+          const currentMessages =
+            safeArray(state.messages[group.id]);
+
+          const messageIndex = currentMessages.findIndex(
+            item => item.id === messageId
+          );
+
+          if (messageIndex !== -1) {
+            currentMessages[messageIndex] = {
+              id: data.message.id,
+              member: data.message.sender_id,
+              text: data.message.text,
+              createdAt: data.message.created_at,
+              read: true,
+              replyTo: data.message.reply_to || null,
+              expiresAt: data.message.expires_at
+            };
+          }
+
+          state.messages[group.id] = currentMessages;
+          saveState();
+          renderGroupChat();
+
+        } catch (error) {
+          console.error(
+            "SimpoChat retry failed:",
+            error
+          );
+
+          const currentMessages =
+            safeArray(state.messages[group.id]);
+
+          const failedMessage = currentMessages.find(
+            item => item.id === messageId
+          );
+
+          if (failedMessage) {
+            failedMessage.pending = false;
+            failedMessage.failed = true;
+          }
+
+          state.messages[group.id] = currentMessages;
+          saveState();
+          renderGroupChat();
+        }
+      });
+    });
+
 }
 
 
