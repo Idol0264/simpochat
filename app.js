@@ -3807,6 +3807,47 @@ async function createGroup() {
    ========================================================= */
 
 
+/* Restore locally saved voice recordings after a reload. */
+async function simpoRestoreOfflineVoiceMessages(groupId) {
+  const messages = safeArray(state.messages[groupId]);
+
+  for (const message of messages) {
+    if (
+      message.type !== "voice" ||
+      !message.localAudioKey
+    ) {
+      continue;
+    }
+
+    try {
+      const audioBlob = await simpoGetOfflineAudio(
+        message.localAudioKey
+      );
+
+      if (audioBlob) {
+        if (
+          message.mediaUrl &&
+          message.mediaUrl.startsWith("blob:")
+        ) {
+          URL.revokeObjectURL(message.mediaUrl);
+        }
+
+        message.mediaUrl = URL.createObjectURL(audioBlob);
+      } else {
+        message.mediaUrl = "";
+      }
+    } catch (error) {
+      console.warn(
+        "Unable to restore offline voice recording:",
+        error
+      );
+    }
+  }
+
+  saveState();
+  return messages;
+}
+
 async function loadGroupMessages(groupId) {
 
   const sessionToken =
