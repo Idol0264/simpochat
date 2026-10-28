@@ -9770,3 +9770,8 @@ body:has(.modal-backdrop) .message-composer {
   text-align: center;
   font-size: 14px;
 }
+
+/* Hide only the group-chat composer while a message photo is full-screen. */
+body:has(#modal-root .camera-preview-screen) #messageForm {
+  display: none !important;
+}
