@@ -5446,7 +5446,7 @@ function attachMessageLongPress() {
     });
 
 
-  // Retry locally saved failed text or voice messages.
+// Retry locally saved failed text, voice, or photo messages.
   messagesBox
     .querySelectorAll("[data-retry-message]")
     .forEach(button => {
