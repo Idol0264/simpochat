@@ -49,6 +49,9 @@ let messageActionTimer = null;
 let activeMessageActionId = null;
 let pendingReplyMessageId = null;
 
+// Keep photo files available for retry while the app is open.
+const pendingPhotoUploads = new Map();
+
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random()
     .toString(36)
