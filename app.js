@@ -5834,13 +5834,63 @@ async function sendCameraMediaMessage() {
 
   const textInput = document.querySelector("#cameraGalleryText");
   const text = textInput ? textInput.value.trim() : "";
+  const groupId = group.id;
+  const pendingId = uid("photo-pending");
 
+  // Keep the original files available while they upload.
+  const selectedItems = cameraMediaItems.slice();
+  const localPhotos = selectedItems.map(item => ({
+    type: "image",
+    url: item.url
+  }));
+
+  const localMessage = {
+    id: pendingId,
+    member: state.currentUser.id,
+    type: "media",
+    media: localPhotos,
+    text,
+    createdAt: new Date().toISOString(),
+    read: true,
+    replyTo: pendingReplyMessageId || null,
+    pending: true,
+    failed: false
+  };
+
+  if (!state.messages[groupId]) {
+    state.messages[groupId] = [];
+  }
+
+  // 1. Show the photos in chat immediately.
+  state.messages[groupId].push(localMessage);
+  state.messages[groupId].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
+  pendingReplyMessageId = null;
+  activeMessageActionId = null;
+
+  // 2. Close the camera without waiting for uploads.
+  if (textInput) textInput.value = "";
+
+  const textWrap = document.querySelector("#cameraGalleryTextWrap");
+  if (textWrap) textWrap.hidden = true;
+
+  if (activeCameraStream) {
+    activeCameraStream.getTracks().forEach(track => track.stop());
+    activeCameraStream = null;
+  }
+
+  cameraMediaItems = [];
+  modalRoot.innerHTML = "";
+
+  saveState();
+  renderGroupChat();
+
+  // 3. Upload and save in the background.
   try {
-     
-    // Prepare and upload selected photos concurrently.
-    // The original gallery order is preserved.
     const uploadedUrls = await Promise.all(
-      cameraMediaItems.map(async item => {
+      selectedItems.map(async item => {
         if (!item.file) {
           throw new Error(
             "A selected photo could not be read. Please select it again."
@@ -5852,7 +5902,7 @@ async function sendCameraMediaMessage() {
         const prepared = await simpoChatPostRequest(
           "create_chat_photo_upload",
           {
-            group_id: group.id,
+            group_id: groupId,
             content_type: file.type,
             file_size: file.size
           }
@@ -5883,58 +5933,80 @@ async function sendCameraMediaMessage() {
     );
 
     const saved = await simpoChatPostRequest("send_message", {
-      group_id: group.id,
+      group_id: groupId,
+      client_message_id: pendingId,
       content_type: "photos",
       text,
       media_url: uploadedUrls[0] || "",
-      media_urls: uploadedUrls
+      media_urls: uploadedUrls,
+      reply_to: localMessage.replyTo
     });
 
-    if (!state.messages[group.id]) {
-      state.messages[group.id] = [];
-    }
-
     const savedMessage = saved.message || saved.data || {};
+    const messages = safeArray(state.messages[groupId]);
+    const localIndex = messages.findIndex(
+      message => message.id === pendingId
+    );
 
-    state.messages[group.id].push({
-      id: savedMessage.id || uid("message"),
-      member: state.currentUser.id,
+    const confirmedMessage = {
+      id: savedMessage.id || pendingId,
+      member: savedMessage.sender_id || state.currentUser.id,
       type: "media",
       media: uploadedUrls.map(url => ({
         type: "image",
         url
       })),
-      text,
-      createdAt: savedMessage.created_at || now(),
+      text: savedMessage.text ?? text,
+      createdAt: savedMessage.created_at || localMessage.createdAt,
       read: true,
-      replyTo: null
-    });
+      replyTo: savedMessage.reply_to || localMessage.replyTo || null,
+      expiresAt: savedMessage.expires_at,
+      pending: false,
+      failed: false
+    };
 
-    cameraMediaItems.forEach(item => {
+    // Replace the temporary message; don't add a second copy.
+    if (localIndex !== -1) {
+      messages[localIndex] = confirmedMessage;
+    } else if (
+      !messages.some(message => message.id === confirmedMessage.id)
+    ) {
+      messages.push(confirmedMessage);
+    }
+
+    state.messages[groupId] = messages;
+    saveState();
+
+    // Release temporary image URLs after the server confirms.
+    selectedItems.forEach(item => {
       if (item.url && item.url.startsWith("blob:")) {
         URL.revokeObjectURL(item.url);
       }
     });
 
-    cameraMediaItems = [];
-
-    if (textInput) textInput.value = "";
-
-    const textWrap = document.querySelector("#cameraGalleryTextWrap");
-    if (textWrap) textWrap.hidden = true;
-
-    if (activeCameraStream) {
-      activeCameraStream.getTracks().forEach(track => track.stop());
-      activeCameraStream = null;
+    if (state.selectedGroup === groupId) {
+      renderGroupChat();
     }
-
-    modalRoot.innerHTML = "";
-    saveState();
-    renderGroupChat();
 
   } catch (error) {
     console.error("SimpoChat photo send error:", error);
-    alert(error.message || "Unable to send photos. Please try again.");
+
+    const messages = safeArray(state.messages[groupId]);
+    const failedMessage = messages.find(
+      message => message.id === pendingId
+    );
+
+    if (failedMessage) {
+      failedMessage.pending = false;
+      failedMessage.failed = true;
+    }
+
+    state.messages[groupId] = messages;
+    saveState();
+
+    if (state.selectedGroup === groupId) {
+      renderGroupChat();
+    }
   }
 }
 
