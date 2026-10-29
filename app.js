@@ -5468,12 +5468,14 @@ function attachMessageLongPress() {
           item => item.id === messageId
         );
 
+        const photoUpload = pendingPhotoUploads.get(messageId);
+        const isPhoto = Boolean(photoUpload);
         const isVoice = message?.type === "voice";
 
         if (
           !message ||
           !message.failed ||
-          (!message.text && !isVoice)
+          (!message.text && !isVoice && !isPhoto)
         ) {
           return;
         }
