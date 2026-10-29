@@ -5867,6 +5867,14 @@ async function sendCameraMediaMessage() {
     pending: true,
     failed: false
   };
+   
+  // Keep the original photo files available if sending fails.
+  pendingPhotoUploads.set(pendingId, {
+    groupId,
+    selectedItems,
+    text,
+    replyTo: localMessage.replyTo
+  });
 
   if (!state.messages[groupId]) {
     state.messages[groupId] = [];
