@@ -9785,3 +9785,76 @@ body:has(.modal-backdrop) .message-composer {
 body:has(#modal-root .camera-preview-screen) #messageForm {
   display: none !important;
 }
+
+
+/* SIMPOCHAT — FIRST-TIME VOICE RECORDING NOTICE */
+
+.simpo-voice-first-tip {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100001;
+
+  width: calc(100% - 28px);
+  max-width: 420px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 15px 16px;
+  border-radius: 18px;
+
+  color: #ffffff;
+  background: linear-gradient(135deg, #392064, #171523);
+  border: 1px solid rgba(190, 155, 255, 0.55);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+
+  font-family: inherit;
+  animation: simpoVoiceTipIn 0.22s ease-out;
+}
+
+.simpo-voice-first-tip-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.simpo-voice-first-tip-copy strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.simpo-voice-first-tip-copy span {
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0.88;
+}
+
+.simpo-voice-first-tip-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 23px;
+  cursor: pointer;
+}
+
+@keyframes simpoVoiceTipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
