@@ -9858,3 +9858,9 @@ body:has(#modal-root .camera-preview-screen) #messageForm {
     transform: translate(-50%, 0);
   }
 }
+
+/* SIMPOCHAT — HIDE COMPOSER ON WELCOME SCREEN */
+
+body:has(.simpo-access-screen) .message-composer {
+  display: none !important;
+}
