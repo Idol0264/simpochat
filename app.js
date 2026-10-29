@@ -5994,6 +5994,50 @@ function cancelVoiceMessageRecording() {
   simpoVoiceRecorder.stop();
 }
 
+function showSimpoVoiceFirstTip() {
+  const tipKey = "simpo-voice-recording-tip-seen-v1";
+
+  if (localStorage.getItem(tipKey) === "1") {
+    return;
+  }
+
+  localStorage.setItem(tipKey, "1");
+
+  const existingTip = document.getElementById(
+    "simpoVoiceFirstTip"
+  );
+
+  if (existingTip) {
+    existingTip.remove();
+  }
+
+  const tip = document.createElement("div");
+
+  tip.id = "simpoVoiceFirstTip";
+  tip.className = "simpo-voice-first-tip";
+  tip.setAttribute("role", "status");
+
+  tip.innerHTML = `
+    <div class="simpo-voice-first-tip-copy">
+      <strong>Recording started</strong>
+      <span>Tap the microphone again to send.</span>
+    </div>
+
+    <button
+      type="button"
+      class="simpo-voice-first-tip-close"
+      aria-label="Dismiss notice"
+    >×</button>
+  `;
+
+  document.body.appendChild(tip);
+
+  tip.querySelector("button").addEventListener(
+    "click",
+    () => tip.remove()
+  );
+}
+
 async function createVoiceMessage() {
   const group = getGroup(state.selectedGroup);
   const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
@@ -6275,7 +6319,7 @@ simpoVoiceRecorder.onstop = async () => {
 
     simpoVoiceRecorder.start();
 
-    alert("Recording started. Tap the microphone again to send.");
+    showSimpoVoiceFirstTip();
 
   } catch (error) {
     if (stream) {
