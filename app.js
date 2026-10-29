@@ -5080,7 +5080,14 @@ ${
         </div>
 
 
-<div class="message-time ${message.failed ? "message-time-failed" : ""}">
+
+<div class="message-time ${
+  message.failed
+    ? "message-time-failed"
+    : message.pending
+      ? "message-time-pending"
+      : ""
+}">
   ${
     message.failed
       ? `<button
@@ -5088,10 +5095,11 @@ ${
            class="message-failed-label"
            data-retry-message="${esc(message.id)}"
          >Not sent · Tap to resend</button>`
-      : formatTime(message.createdAt)
+      : message.pending
+        ? "Sending…"
+        : formatTime(message.createdAt)
   }
 </div>
-
 
         ${
            actionsVisible && own
