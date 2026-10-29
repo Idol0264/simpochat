@@ -5996,6 +5996,8 @@ async function sendCameraMediaMessage() {
     state.messages[groupId] = messages;
     saveState();
 
+    pendingPhotoUploads.delete(pendingId);
+
     // Release temporary image URLs after the server confirms.
     selectedItems.forEach(item => {
       if (item.url && item.url.startsWith("blob:")) {
