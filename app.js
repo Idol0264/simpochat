@@ -5491,6 +5491,116 @@ function attachMessageLongPress() {
             reply_to: message.replyTo || null
           };
 
+          if (isPhoto) {
+            const uploadedUrls = [];
+
+            for (const item of photoUpload.selectedItems) {
+              if (!item.file) {
+                throw new Error(
+                  "A saved photo is no longer available. Please select it again."
+                );
+              }
+
+              const file = await simpoPrepareImageFile(item.file);
+
+              const prepared = await simpoChatPostRequest(
+                "create_chat_photo_upload",
+                {
+                  group_id: photoUpload.groupId,
+                  content_type: file.type,
+                  file_size: file.size
+                }
+              );
+
+              if (!prepared.signed_url || !prepared.public_url) {
+                throw new Error(
+                  "Supabase could not prepare the photo upload."
+                );
+              }
+
+              const uploadResponse = await fetch(prepared.signed_url, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": file.type
+                },
+                body: file
+              });
+
+              if (!uploadResponse.ok) {
+                throw new Error(
+                  "Photo upload failed (" + uploadResponse.status + ")."
+                );
+              }
+
+              uploadedUrls.push(prepared.public_url);
+            }
+
+            const saved = await simpoChatPostRequest("send_message", {
+              group_id: photoUpload.groupId,
+              client_message_id: message.id,
+              content_type: "photos",
+              text: photoUpload.text,
+              media_url: uploadedUrls[0] || "",
+              media_urls: uploadedUrls,
+              reply_to: photoUpload.replyTo || null
+            });
+
+            const savedMessage = saved.message || saved.data || {};
+            const currentMessages =
+              safeArray(state.messages[group.id]);
+
+            const messageIndex = currentMessages.findIndex(
+              item => item.id === messageId
+            );
+
+            const confirmedPhotoMessage = {
+              id: savedMessage.id || message.id,
+              member: savedMessage.sender_id || state.currentUser.id,
+              type: "media",
+              media: uploadedUrls.map(url => ({
+                type: "image",
+                url
+              })),
+              text: savedMessage.text ?? photoUpload.text,
+              createdAt: savedMessage.created_at || message.createdAt,
+              read: true,
+              replyTo:
+                savedMessage.reply_to || photoUpload.replyTo || null,
+              expiresAt: savedMessage.expires_at,
+              pending: false,
+              failed: false
+            };
+
+            if (messageIndex !== -1) {
+              currentMessages[messageIndex] = confirmedPhotoMessage;
+            } else if (
+              !currentMessages.some(
+                item => item.id === confirmedPhotoMessage.id
+              )
+            ) {
+              currentMessages.push(confirmedPhotoMessage);
+            }
+
+            currentMessages.sort(
+              (a, b) =>
+                new Date(a.createdAt) - new Date(b.createdAt)
+            );
+
+            state.messages[group.id] = currentMessages;
+            saveState();
+
+            pendingPhotoUploads.delete(messageId);
+
+            photoUpload.selectedItems.forEach(item => {
+              if (item.url && item.url.startsWith("blob:")) {
+                URL.revokeObjectURL(item.url);
+              }
+            });
+
+            renderGroupChat();
+            return;
+          }
+
           let audioBlob = null;
 
           if (isVoice) {
