@@ -5548,7 +5548,7 @@ function attachMessageLongPress() {
               }
 
               const uploadResponse = await fetch(prepared.signed_url, {
-                method: "POST",
+                method: "PUT",
                 headers: {
                   "Content-Type": file.type
                 },
@@ -6075,7 +6075,7 @@ async function sendCameraMediaMessage() {
         }
 
         const response = await fetch(prepared.signed_url, {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": file.type
           },
