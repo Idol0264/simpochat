@@ -5345,11 +5345,40 @@ function attachMessageLongPress() {
               }
 
               const messages = safeArray(state.messages[group.id]);
-              const messageExists = messages.some(
-                message => message.id === messageId
-              );
-
-              if (!messageExists) return;
+               const messageIndex = messages.findIndex(
+                  message => message.id === messageId
+               );
+               
+               if (messageIndex === -1) return;
+               
+               // Failed photos that have not reached Supabase
+               // must be deleted from this device only.
+               if (pendingPhotoUploads.has(messageId)) {
+                  const photoUpload = pendingPhotoUploads.get(messageId);
+                  
+                  photoUpload.selectedItems.forEach(item => {
+                     if (item.url && item.url.startsWith("blob:")) {
+                        URL.revokeObjectURL(item.url);
+                     }
+                  });
+                  
+                  pendingPhotoUploads.delete(messageId);
+                  messages.splice(messageIndex, 1);
+                  
+                  state.messages[group.id] = messages;
+                  
+                  if (pendingReplyMessageId === messageId) {
+                     pendingReplyMessageId = null;
+                  
+                  }
+                  
+                  activeMessageActionId = null;
+                  messageActionTimer = null;
+                  
+                  saveState();
+                  renderGroupChat({ autoScroll: false });
+                  return;
+               }
 
               try {
                 const response = await fetch(
