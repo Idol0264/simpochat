@@ -5336,14 +5336,6 @@ function attachMessageLongPress() {
 
               if (!group) return;
 
-              const sessionToken =
-                localStorage.getItem(SESSION_TOKEN_KEY);
-
-              if (!sessionToken) {
-                alert("Your SimpoChat session is not available. Please try again.");
-                return;
-              }
-
               const messages = safeArray(state.messages[group.id]);
                const messageIndex = messages.findIndex(
                   message => message.id === messageId
@@ -5351,25 +5343,52 @@ function attachMessageLongPress() {
                
                if (messageIndex === -1) return;
                
-               // Failed photos that have not reached Supabase
-               // must be deleted from this device only.
-               if (pendingPhotoUploads.has(messageId)) {
-                  const photoUpload = pendingPhotoUploads.get(messageId);
+               const targetMessage = messages[messageIndex];
+               
+               // Failed messages have not been saved on Supabase.
+               // Delete them locally instead.
+               if (targetMessage.failed) {
                   
-                  photoUpload.selectedItems.forEach(item => {
-                     if (item.url && item.url.startsWith("blob:")) {
-                        URL.revokeObjectURL(item.url);
+                  // Clean up a failed photo's temporary files.
+                  if (pendingPhotoUploads.has(messageId)) {
+                     const photoUpload = pendingPhotoUploads.get(messageId);
+                     
+                     photoUpload.selectedItems.forEach(item => {
+                        if (item.url && item.url.startsWith("blob:")) {
+                           URL.revokeObjectURL(item.url);
+                        }
+                     });
+                     
+                     pendingPhotoUploads.delete(messageId);
+                  }
+                  
+                  // Clean up a failed voice recording.
+                  if (targetMessage.type === "voice") {
+                     const audioKey =
+                        targetMessage.localAudioKey || targetMessage.id;
+                     
+                     try {
+                        await simpoDeleteOfflineAudio(audioKey);
+                     } catch (error) {
+                        console.warn(
+                           "Unable to remove saved voice recording:",
+                           error
+                        );
                      }
-                  });
+                     
+                     if (
+                        targetMessage.mediaUrl &&
+                        targetMessage.mediaUrl.startsWith("blob:")
+                     ) {
+                        URL.revokeObjectURL(targetMessage.mediaUrl);
+                     }
+                  }
                   
-                  pendingPhotoUploads.delete(messageId);
                   messages.splice(messageIndex, 1);
-                  
                   state.messages[group.id] = messages;
                   
                   if (pendingReplyMessageId === messageId) {
                      pendingReplyMessageId = null;
-                  
                   }
                   
                   activeMessageActionId = null;
@@ -5377,6 +5396,14 @@ function attachMessageLongPress() {
                   
                   saveState();
                   renderGroupChat({ autoScroll: false });
+                  return;
+               }
+               
+               const sessionToken =
+                  localStorage.getItem(SESSION_TOKEN_KEY);
+               
+               if (!sessionToken) {
+                  alert("Your SimpoChat session is not available. Please try again.");
                   return;
                }
 
