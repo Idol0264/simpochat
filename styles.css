@@ -9864,3 +9864,278 @@ body:has(#modal-root .camera-preview-screen) #messageForm {
 body:has(.simpo-access-screen) .message-composer {
   display: none !important;
 }
+
+/* =========================================================
+   SIMPOCHAT — LIVEKIT CALL SCREEN
+   STEP 5: FULL-SCREEN CALL LAYOUT
+   ========================================================= */
+
+body.simpo-call-active {
+  overflow: hidden !important;
+}
+
+/* Hide normal app navigation during calls */
+
+body.simpo-call-active header.app-header,
+body.simpo-call-active nav.bottom-nav,
+body.simpo-call-active .fab,
+body.simpo-call-active .temporary-chat-fab,
+body.simpo-call-active .message-composer {
+  display: none !important;
+}
+
+/* Make the call screen fill the display */
+
+body.simpo-call-active #screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9990 !important;
+
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  background: #101014 !important;
+}
+
+/* Main call layout */
+
+.simpo-live-call {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  box-sizing: border-box;
+
+  padding:
+    calc(18px + env(safe-area-inset-top, 0px))
+    14px
+    calc(18px + env(safe-area-inset-bottom, 0px));
+
+  color: #ffffff;
+  background:
+    radial-gradient(
+      circle at top,
+      #302044 0%,
+      #17151f 42%,
+      #101014 100%
+    );
+}
+
+/* Call heading */
+
+.simpo-live-call-header {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 58px;
+  padding: 4px 0 16px;
+
+  text-align: center;
+}
+
+.simpo-live-call-header div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.simpo-live-call-header strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.simpo-live-call-header small {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+}
+
+/* Participants area */
+
+.simpo-live-call-participants {
+  flex: 1;
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(140px, 1fr));
+
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+
+  gap: 12px;
+
+  padding: 10px 0 20px;
+
+  overflow-y: auto;
+}
+
+/* Individual participant */
+
+.simpo-call-tile {
+  position: relative;
+
+  width: 100%;
+  min-height: 180px;
+  max-height: 420px;
+
+  aspect-ratio: 3 / 4;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #39284e,
+      #201c2b 65%,
+      #17151e
+    );
+}
+
+/* Video and audio media */
+
+.simpo-call-media {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.simpo-call-tile video {
+  position: absolute;
+  inset: 0;
+}
+
+/* Participant name */
+
+.simpo-call-user-name {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+
+  z-index: 2;
+
+  padding: 7px 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.48);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Waiting message */
+
+.simpo-call-waiting {
+  grid-column: 1 / -1;
+
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Call controls */
+
+.simpo-live-call-controls {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  padding: 14px 0 4px;
+}
+
+.simpo-live-call-controls button {
+  min-width: 76px;
+  min-height: 52px;
+
+  padding: 0 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.simpo-live-call-controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* End call button */
+
+.simpo-live-call-controls .simpo-call-hangup {
+  min-width: 100px;
+
+  border-color: transparent;
+
+  color: #ffffff;
+  background: #dc3545;
+}
+
+.simpo-live-call-controls .simpo-call-hangup:active {
+  background: #b92535;
+}
+
+/* Small phone screens */
+
+@media (max-width: 380px) {
+  .simpo-live-call-participants {
+    grid-template-columns:
+      repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+  }
+
+  .simpo-call-tile {
+    min-height: 150px;
+  }
+
+  .simpo-live-call-controls {
+    gap: 8px;
+  }
+
+  .simpo-live-call-controls button {
+    min-width: 68px;
+    padding: 0 10px;
+  }
+}
