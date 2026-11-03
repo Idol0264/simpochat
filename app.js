@@ -52,6 +52,11 @@ let pendingReplyMessageId = null;
 // Keep photo files available for retry while the app is open.
 const pendingPhotoUploads = new Map();
 
+// SIMPOCHAT — LIVEKIT CALL STATE
+let activeLiveKitRoom = null;
+let activeCallContext = null;
+let isLeavingLiveKitCall = false;
+
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random()
     .toString(36)
