@@ -100,6 +100,54 @@ function safeArray(value) {
 }
 
 /* ---------------------------------------------------------
+   SIMPOCHAT — CALL SERVICE REQUEST
+   --------------------------------------------------------- */
+
+async function callServiceRequest(payload) {
+  const sessionToken = localStorage.getItem(
+    SESSION_TOKEN_KEY
+  );
+
+  if (!sessionToken) {
+    throw new Error(
+      "Your session has expired. Please reopen SimpoChat."
+    );
+  }
+
+  const response = await fetch(
+    "https://uaxxzgkvjzemsevuzlcw.supabase.co/functions/v1/simpochat-calls",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${sessionToken}`
+      },
+
+      body: JSON.stringify(payload)
+    }
+  );
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(
+      "The calling server returned an invalid response."
+    );
+  }
+
+  if (!response.ok || !data.allowed) {
+    throw new Error(
+      data.message || "The call request failed."
+    );
+  }
+
+  return data;
+}
+
+/* ---------------------------------------------------------
    SIMPOCHAT — OFFLINE VOICE MESSAGE STORAGE
    Keep audio files on this device until they can be sent.
    --------------------------------------------------------- */
