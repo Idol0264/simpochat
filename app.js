@@ -14838,140 +14838,82 @@ function toggleArchived(
    GROUP CALL
    --------------------------------------------------------- */
 
-function startGroupCall(
-  type
-) {
+function startGroupCall(type) {
+  const group = getGroup(state.selectedGroup);
 
-  const group =
-    getGroup(
-      state.selectedGroup
-    );
+  if (!group) return;
 
-
-  if (!group) {
+  // Creator and admins can start calls.
+  if (!isGroupAdmin(group)) {
+    alert("Only group admins can start a group call.");
     return;
   }
 
-
-  /*
-   * Only admins can create/start
-   * group calls.
-   */
-
-  if (!group.admin) {
-
-    alert(
-      "Only group admins can start a group call."
-    );
-
+  if (type !== "voice" && type !== "video") {
+    alert("Invalid call type.");
     return;
   }
 
+  const maximum = type === "voice" ? 50 : 12;
+
+  const members = safeArray(group.members).filter(
+    member =>
+      member &&
+      member.id &&
+      member.id !== state.currentUser.id
+  );
+
+  if (!members.length) {
+    alert("There are no other group members to invite.");
+    return;
+  }
 
   modalRoot.innerHTML = `
-
-    <div
-      class="modal-backdrop"
-      data-close
-    >
-
+    <div class="modal-backdrop" data-close>
       <div class="modal">
 
         <div class="modal-head">
-
           <div class="modal-title">
-            ${
-              type === "video"
-                ? "Video"
-                : "Voice"
-            }
-            Call
+            ${type === "video" ? "Video" : "Voice"} Call
           </div>
 
-          <button
-            class="close-btn"
-            data-close
-          >
-            ×
-          </button>
-
+          <button class="close-btn" data-close>×</button>
         </div>
-
 
         <div class="call-start-card">
 
           <div class="call-icon">
-
-            ${
-              type === "video"
-                ? "▣"
-                : "☎"
-            }
-
+            ${type === "video" ? "▣" : "☎"}
           </div>
 
-
           <h3>
-            Start ${
-              type === "video"
-                ? "video"
-                : "voice"
-            } call
+            Start ${type === "video" ? "video" : "voice"} call
           </h3>
-
 
           <p>
             Choose members to invite.
-            Each member can participate
-            in only one call at a time.
+            Maximum ${maximum} participants,
+            including you.
           </p>
 
-
           <div class="member-list">
-
             ${
-              group.members
-                .filter(
-                  member =>
-                    member.id !==
-                    state.currentUser.id
-                )
-                .map(
-                  member => `
+              members.map(member => `
+                <label class="member-row call-member">
+                  <input
+                    type="checkbox"
+                    value="${esc(member.id)}"
+                  >
 
-                    <label
-                      class="member-row call-member"
-                    >
+                  ${renderUserAvatar(member, "member-avatar")}
 
-                      <input
-                        type="checkbox"
-                        value="${esc(
-                          member.id
-                        )}"
-                      >
-
-                      ${renderUserAvatar(
-                         member,
-                         "member-avatar"
-                      )}
-
-                      <span class="member-copy">
-                        <strong>
-                          ${esc(
-                            member.name
-                          )}
-                        </strong>
-                      </span>
-
-                    </label>
-
-                  `
-                )
-                .join("")
+                  <span class="member-copy">
+                    <strong>${esc(member.name)}</strong>
+                  </span>
+                </label>
+              `).join("")
             }
-
           </div>
-
 
           <button
             class="primary-btn"
@@ -14981,13 +14923,9 @@ function startGroupCall(
             Start Call
           </button>
 
-
         </div>
-
       </div>
-
     </div>
-
   `;
 }
 
