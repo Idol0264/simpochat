@@ -19164,3 +19164,135 @@ window.addEventListener("focus", () => {
 window.addEventListener("pageshow", () => {
   simpoRefreshOpenGroupOnReturn();
 });
+
+/* =========================================================
+   SIMPOCHAT — LIVEKIT CALL CONTROLS
+   STEP 6: MUTE, CAMERA AND END CALL
+   ========================================================= */
+
+async function endLiveKitCall() {
+  if (isLeavingLiveKitCall) return;
+
+  isLeavingLiveKitCall = true;
+
+  const callId = activeCallContext?.id;
+  let serverError = null;
+
+  try {
+    // Tell the server that this call has ended.
+    if (callId) {
+      await callServiceRequest({
+        action: "end_call",
+        call_id: callId
+      });
+    }
+  } catch (error) {
+    serverError = error;
+    console.error("Ending call on server failed:", error);
+  }
+
+  // Disconnect this device from LiveKit.
+  if (activeLiveKitRoom) {
+    try {
+      await activeLiveKitRoom.disconnect();
+    } catch (error) {
+      console.error("LiveKit disconnect failed:", error);
+    }
+  }
+
+  activeLiveKitRoom = null;
+
+  // Remove this call from the local active-call list.
+  if (callId) {
+    state.activeCalls = safeArray(state.activeCalls)
+      .filter(call => call.id !== callId);
+
+    saveState();
+  }
+
+  activeCallContext = null;
+
+  document.body.classList.remove("simpo-call-active");
+
+  modalRoot.innerHTML = "";
+
+  isLeavingLiveKitCall = false;
+
+  render();
+
+  if (serverError) {
+    alert(
+      "You left the call on this device, but the server could not confirm that the call ended. Please check your connection."
+    );
+  }
+}
+
+
+/* Handle LiveKit call buttons */
+
+document.addEventListener("click", async event => {
+  const button = event.target.closest("[data-call-control]");
+
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (!activeLiveKitRoom || !activeCallContext) {
+    alert("The call is not connected yet.");
+    return;
+  }
+
+  if (isLeavingLiveKitCall) return;
+
+  const control = button.dataset.callControl;
+  const participant = activeLiveKitRoom.localParticipant;
+
+  button.disabled = true;
+
+  try {
+    if (control === "mute") {
+      const currentlyEnabled = participant.isMicrophoneEnabled;
+
+      await participant.setMicrophoneEnabled(
+        !currentlyEnabled
+      );
+
+      button.textContent = currentlyEnabled
+        ? "Unmute"
+        : "Mute";
+
+    } else if (control === "camera") {
+      if (activeCallContext.type !== "video") return;
+
+      const currentlyEnabled = participant.isCameraEnabled;
+
+      await participant.setCameraEnabled(
+        !currentlyEnabled
+      );
+
+      button.textContent = currentlyEnabled
+        ? "Turn camera on"
+        : "Turn camera off";
+
+    } else if (control === "hangup") {
+      button.textContent = "Leaving...";
+
+      await endLiveKitCall();
+      return;
+    }
+
+  } catch (error) {
+    console.error("Call control failed:", error);
+
+    alert(
+      error.message ||
+      "That call control could not be completed."
+    );
+
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+    }
+  }
+});
