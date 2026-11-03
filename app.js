@@ -146,6 +146,195 @@ async function callServiceRequest(payload) {
 
   return data;
 }
+/* ---------------------------------------------------------
+   SIMPOCHAT — LIVEKIT CALL SCREEN
+   --------------------------------------------------------- */
+
+function renderLiveKitCallScreen() {
+  if (!activeCallContext) return;
+
+  const { group, type } = activeCallContext;
+
+  document.body.classList.add("simpo-call-active");
+
+  screen.innerHTML = `
+    <section class="simpo-live-call">
+
+      <header class="simpo-live-call-header">
+        <div>
+          <strong>${esc(group.name || "Group call")}</strong>
+          <small>${type === "video" ? "Video call" : "Voice call"}</small>
+        </div>
+      </header>
+
+      <div
+        class="simpo-live-call-participants"
+        id="simpo-call-participants"
+      >
+        <div class="simpo-call-waiting">
+          Connecting to call...
+        </div>
+      </div>
+
+      <div class="simpo-live-call-controls">
+        <button
+          type="button"
+          data-call-control="mute"
+        >
+          Mute
+        </button>
+
+        <button
+          type="button"
+          data-call-control="camera"
+          ${type !== "video" ? "disabled" : ""}
+        >
+          Camera
+        </button>
+
+        <button
+          type="button"
+          class="simpo-call-hangup"
+          data-call-control="hangup"
+        >
+          End call
+        </button>
+      </div>
+
+    </section>
+  `;
+}
+
+
+/* ---------------------------------------------------------
+   SIMPOCHAT — LIVEKIT TRACK DISPLAY
+   --------------------------------------------------------- */
+
+function attachLiveKitTrack(track, participant) {
+  const container = document.querySelector(
+    "#simpo-call-participants"
+  );
+
+  if (!container || !track) return;
+
+  const participantId = String(participant.identity)
+    .replace(/[^a-zA-Z0-9_-]/g, "");
+
+  let tile = document.getElementById(
+    `simpo-call-user-${participantId}`
+  );
+
+  if (!tile) {
+    tile = document.createElement("div");
+    tile.className = "simpo-call-tile";
+    tile.id = `simpo-call-user-${participantId}`;
+
+    const name = document.createElement("span");
+    name.className = "simpo-call-user-name";
+    name.textContent =
+      participant.name || participant.identity;
+
+    tile.appendChild(name);
+    container.appendChild(tile);
+  }
+
+  const mediaElement = track.attach();
+
+  mediaElement.classList.add("simpo-call-media");
+  tile.appendChild(mediaElement);
+}
+
+
+/* ---------------------------------------------------------
+   SIMPOCHAT — CONNECT TO LIVEKIT
+   --------------------------------------------------------- */
+
+async function connectLiveKitCall(joinData) {
+  if (!window.LivekitClient) {
+    throw new Error(
+      "LiveKit did not load. Please refresh SimpoChat and try again."
+    );
+  }
+
+  if (!joinData || !joinData.livekit) {
+    throw new Error(
+      "The calling server did not return LiveKit connection details."
+    );
+  }
+
+  const room = new window.LivekitClient.Room({
+    adaptiveStream: true,
+    dynacast: true
+  });
+
+  activeLiveKitRoom = room;
+
+  room.on("trackSubscribed", (track, publication, participant) => {
+    attachLiveKitTrack(track, participant);
+  });
+
+  room.on("trackUnsubscribed", (track) => {
+    track.detach().forEach(element => element.remove());
+  });
+
+  room.on("participantDisconnected", participant => {
+    const participantId = String(participant.identity)
+      .replace(/[^a-zA-Z0-9_-]/g, "");
+
+    document.getElementById(
+      `simpo-call-user-${participantId}`
+    )?.remove();
+  });
+
+  room.on("disconnected", () => {
+    if (!isLeavingLiveKitCall) {
+      console.log("LiveKit connection ended.");
+    }
+  });
+
+  await room.connect(
+    joinData.livekit.url,
+    joinData.livekit.token
+  );
+
+  await room.localParticipant.setMicrophoneEnabled(true);
+
+  if (activeCallContext.type === "video") {
+    await room.localParticipant.setCameraEnabled(true);
+  }
+
+  const container = document.querySelector(
+    "#simpo-call-participants"
+  );
+
+  if (container) {
+    container.innerHTML = "";
+
+    room.remoteParticipants.forEach(participant => {
+      participant.trackPublications.forEach(publication => {
+        if (publication.track) {
+          attachLiveKitTrack(
+            publication.track,
+            participant
+          );
+        }
+      });
+    });
+
+    room.localParticipant.videoTrackPublications.forEach(
+      publication => {
+        if (publication.track) {
+          attachLiveKitTrack(
+            publication.track,
+            room.localParticipant
+          );
+        }
+      }
+    );
+  }
+
+  return room;
+}
 
 /* ---------------------------------------------------------
    SIMPOCHAT — OFFLINE VOICE MESSAGE STORAGE
