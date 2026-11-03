@@ -14934,87 +14934,140 @@ function startGroupCall(type) {
    CONFIRM CALL
    --------------------------------------------------------- */
 
-function confirmGroupCall(
-  type
-) {
+async function confirmGroupCall(type) {
+  const button = document.querySelector(
+    "[data-action='confirm-call']"
+  );
 
-  const selected =
-    [
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Starting...";
+  }
+
+  try {
+    const selected = [
       ...document.querySelectorAll(
         ".call-member input:checked"
       )
-    ]
-      .map(
-        input =>
-          input.value
+    ].map(input => input.value);
+
+    if (!selected.length) {
+      throw new Error("Select at least one member.");
+    }
+
+    const group = getGroup(state.selectedGroup);
+
+    if (!group) {
+      throw new Error("Group not found.");
+    }
+
+    if (!isGroupAdmin(group)) {
+      throw new Error(
+        "Only group admins can start a group call."
       );
+    }
 
+    const maximum = type === "voice" ? 50 : 12;
 
-  if (!selected.length) {
+    if (selected.length + 1 > maximum) {
+      throw new Error(
+        `A ${type} call allows a maximum of ${maximum} participants, including you.`
+      );
+    }
 
-    alert(
-      "Select at least one member."
+    // Confirm every selected ID belongs to this group.
+    const memberIds = new Set(
+      safeArray(group.members).map(member => member.id)
     );
 
-    return;
-  }
+    if (selected.some(id => !memberIds.has(id))) {
+      throw new Error(
+        "One or more selected members are not in this group."
+      );
+    }
 
-
-  const group =
-    getGroup(
-      state.selectedGroup
+    const sessionToken = localStorage.getItem(
+      SESSION_TOKEN_KEY
     );
 
+    if (!sessionToken) {
+      throw new Error(
+        "Your session has expired. Please reopen SimpoChat."
+      );
+    }
 
-  if (!group) {
-    return;
-  }
+    const response = await fetch(
+      "https://uaxxzgkvjzemsevuzlcw.supabase.co/functions/v1/simpochat-calls",
+      {
+        method: "POST",
 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionToken}`
+        },
 
-  state.activeCalls =
-    safeArray(
-      state.activeCalls
+        body: JSON.stringify({
+          action: "start_call",
+          group_id: group.id,
+          call_type: type,
+          invited_user_ids: selected
+        })
+      }
     );
 
+    const data = await response.json();
 
-  state.activeCalls.push({
+    if (!response.ok || !data.allowed) {
+      throw new Error(
+        data.message || "Unable to start this call."
+      );
+    }
 
-    id:
-      uid("call"),
+    const serverCall = Array.isArray(data.call)
+      ? data.call[0]
+      : data.call;
 
-    groupId:
-      group.id,
+    if (!serverCall) {
+      throw new Error(
+        "The server did not return call details."
+      );
+    }
 
-    type,
+    state.activeCalls = safeArray(state.activeCalls);
 
-    host:
-      state.currentUser.id,
-
-    members:
-      [
+    state.activeCalls.push({
+      id: serverCall.call_id || serverCall.id,
+      groupId: group.id,
+      type,
+      host: state.currentUser.id,
+      members: [
         state.currentUser.id,
         ...selected
       ],
+      createdAt: now(),
+      serverCall
+    });
 
-    createdAt:
-      now()
+    saveState();
 
-  });
+    modalRoot.innerHTML = "";
 
+    alert(
+      data.message ||
+      "Call invitations have been created."
+    );
 
-  saveState();
+  } catch (error) {
+    alert(
+      error.message ||
+      "Something went wrong while starting the call."
+    );
 
-  modalRoot.innerHTML = "";
-
-
-  alert(
-    `${
-      type === "video"
-        ? "Video"
-        : "Voice"
-    } call started.`
-  );
-
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Start Call";
+    }
+  }
 }
 
 
