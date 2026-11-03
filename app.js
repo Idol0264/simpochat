@@ -15181,6 +15181,9 @@ async function confirmGroupCall(type) {
     "[data-action='confirm-call']"
   );
 
+  let callId = null;
+  let group = null;
+
   if (button) {
     button.disabled = true;
     button.textContent = "Starting...";
@@ -15197,7 +15200,7 @@ async function confirmGroupCall(type) {
       throw new Error("Select at least one member.");
     }
 
-    const group = getGroup(state.selectedGroup);
+    group = getGroup(state.selectedGroup);
 
     if (!group) {
       throw new Error("Group not found.");
@@ -15209,6 +15212,10 @@ async function confirmGroupCall(type) {
       );
     }
 
+    if (type !== "voice" && type !== "video") {
+      throw new Error("Invalid call type.");
+    }
+
     const maximum = type === "voice" ? 50 : 12;
 
     if (selected.length + 1 > maximum) {
@@ -15217,7 +15224,6 @@ async function confirmGroupCall(type) {
       );
     }
 
-    // Confirm every selected ID belongs to this group.
     const memberIds = new Set(
       safeArray(group.members).map(member => member.id)
     );
@@ -15228,46 +15234,17 @@ async function confirmGroupCall(type) {
       );
     }
 
-    const sessionToken = localStorage.getItem(
-      SESSION_TOKEN_KEY
-    );
+    // STEP 1: Create the call on the server.
+    const startData = await callServiceRequest({
+      action: "start_call",
+      group_id: group.id,
+      call_type: type,
+      invited_user_ids: selected
+    });
 
-    if (!sessionToken) {
-      throw new Error(
-        "Your session has expired. Please reopen SimpoChat."
-      );
-    }
-
-    const response = await fetch(
-      "https://uaxxzgkvjzemsevuzlcw.supabase.co/functions/v1/simpochat-calls",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${sessionToken}`
-        },
-
-        body: JSON.stringify({
-          action: "start_call",
-          group_id: group.id,
-          call_type: type,
-          invited_user_ids: selected
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.allowed) {
-      throw new Error(
-        data.message || "Unable to start this call."
-      );
-    }
-
-    const serverCall = Array.isArray(data.call)
-      ? data.call[0]
-      : data.call;
+    const serverCall = Array.isArray(startData.call)
+      ? startData.call[0]
+      : startData.call;
 
     if (!serverCall) {
       throw new Error(
@@ -15275,10 +15252,32 @@ async function confirmGroupCall(type) {
       );
     }
 
+    callId = serverCall.call_id || serverCall.id;
+
+    if (!callId) {
+      throw new Error(
+        "The server did not return a valid call ID."
+      );
+    }
+
+    // STEP 2: Join the call and obtain LiveKit credentials.
+    const joinData = await callServiceRequest({
+      action: "join_call",
+      call_id: callId
+    });
+
+    // STEP 3: Save the active call context.
+    activeCallContext = {
+      id: callId,
+      group,
+      type,
+      isHost: true
+    };
+
     state.activeCalls = safeArray(state.activeCalls);
 
     state.activeCalls.push({
-      id: serverCall.call_id || serverCall.id,
+      id: callId,
       groupId: group.id,
       type,
       host: state.currentUser.id,
@@ -15292,23 +15291,72 @@ async function confirmGroupCall(type) {
 
     saveState();
 
+    // STEP 4: Show the call screen and connect.
     modalRoot.innerHTML = "";
 
-    alert(
-      data.message ||
-      "Call invitations have been created."
-    );
+    renderLiveKitCallScreen();
+
+    await connectLiveKitCall(joinData);
 
   } catch (error) {
+    console.error(
+      "SimpoChat call start failed:",
+      error
+    );
+
+    // If the server created a call but joining failed,
+    // end that call so it is not left active.
+    if (callId) {
+      try {
+        await callServiceRequest({
+          action: "end_call",
+          call_id: callId
+        });
+      } catch (cleanupError) {
+        console.error(
+          "Call cleanup failed:",
+          cleanupError
+        );
+      }
+    }
+
+    isLeavingLiveKitCall = true;
+
+    if (activeLiveKitRoom) {
+      try {
+        await activeLiveKitRoom.disconnect();
+      } catch (disconnectError) {
+        console.error(
+          "LiveKit disconnect failed:",
+          disconnectError
+        );
+      }
+    }
+
+    activeLiveKitRoom = null;
+    activeCallContext = null;
+
+    document.body.classList.remove(
+      "simpo-call-active"
+    );
+
+    if (callId) {
+      state.activeCalls = safeArray(
+        state.activeCalls
+      ).filter(call => call.id !== callId);
+
+      saveState();
+    }
+
+    isLeavingLiveKitCall = false;
+
+    modalRoot.innerHTML = "";
+    render();
+
     alert(
       error.message ||
       "Something went wrong while starting the call."
     );
-
-    if (button) {
-      button.disabled = false;
-      button.textContent = "Start Call";
-    }
   }
 }
 
