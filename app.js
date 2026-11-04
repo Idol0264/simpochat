@@ -19301,6 +19301,107 @@ document.addEventListener("click", async event => {
 
 
 /* =========================================================
+   SIMPOCHAT — INCOMING CALL CHECKER
+   STEP 2B: AUTOMATIC INVITATION DETECTION
+   ========================================================= */
+
+let incomingCallCheckRunning = false;
+
+async function checkForIncomingCalls() {
+  if (
+    incomingCallCheckRunning ||
+    document.visibilityState !== "visible" ||
+    activeCallContext ||
+    incomingCallActionRunning ||
+    !localStorage.getItem(SESSION_TOKEN_KEY)
+  ) {
+    return;
+  }
+
+  incomingCallCheckRunning = true;
+
+  try {
+    const result = await callServiceRequest({
+      action: "list_incoming_calls"
+    });
+
+    const calls = safeArray(result.calls);
+
+    // Keep only calls that are still ringing or active.
+    const availableCalls = calls.filter(call =>
+      call &&
+      call.id &&
+      ["ringing", "active"].includes(call.status)
+    );
+
+    // Check whether the current invitation is still valid.
+    if (activeIncomingCall) {
+      const stillInvited = availableCalls.some(
+        call => call.id === activeIncomingCall.id
+      );
+
+      if (!stillInvited) {
+        const promptStillVisible = modalRoot.querySelector(
+          "[data-incoming-call-action]"
+        );
+
+        activeIncomingCall = null;
+
+        // Clear only our own incoming-call prompt.
+        if (promptStillVisible) {
+          modalRoot.innerHTML = "";
+        }
+      }
+    }
+
+    if (!availableCalls.length) return;
+    if (activeIncomingCall) return;
+
+    // Do not overwrite another open modal.
+    if (modalRoot.children.length > 0) return;
+
+    // Show the newest invitation first.
+    availableCalls.sort((a, b) =>
+      new Date(b.invited_at || b.created_at || 0) -
+      new Date(a.invited_at || a.created_at || 0)
+    );
+
+    showIncomingCallPrompt(availableCalls[0]);
+
+  } catch (error) {
+    console.warn(
+      "Incoming call check failed:",
+      error.message
+    );
+  } finally {
+    incomingCallCheckRunning = false;
+  }
+}
+
+
+// Check every 3 seconds.
+setInterval(() => {
+  checkForIncomingCalls();
+}, 3000);
+
+
+// Check immediately when the user returns to SimpoChat.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    checkForIncomingCalls();
+  }
+});
+
+window.addEventListener("focus", () => {
+  checkForIncomingCalls();
+});
+
+window.addEventListener("pageshow", () => {
+  checkForIncomingCalls();
+});
+
+
+/* =========================================================
    SIMPOCHAT — LIVEKIT CALL CONTROLS
    STEP 6: MUTE, CAMERA AND END CALL
    ========================================================= */
