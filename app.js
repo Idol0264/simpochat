@@ -19165,6 +19165,141 @@ window.addEventListener("pageshow", () => {
   simpoRefreshOpenGroupOnReturn();
 });
 
+
+/* =========================================================
+   SIMPOCHAT — INCOMING CALL SCREEN
+   STEP 2A: ACCEPT AND DECLINE
+   ========================================================= */
+
+let activeIncomingCall = null;
+let incomingCallActionRunning = false;
+
+function showIncomingCallPrompt(call) {
+  if (!call || activeCallContext || incomingCallActionRunning) return;
+
+  activeIncomingCall = call;
+
+  const groupName = call.group?.name || "SimpoChat Group";
+  const callerName = call.host?.name || "A group member";
+  const callType = call.call_type === "video" ? "Video call" : "Voice call";
+
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal">
+
+        <div class="modal-head">
+          <div class="modal-title">Incoming ${esc(callType.toLowerCase())}</div>
+        </div>
+
+        <div style="text-align:center;padding:20px 8px;">
+          <div style="font-size:48px;margin-bottom:14px;">📞</div>
+
+          <h2 style="margin:0 0 8px;">
+            ${esc(groupName)}
+          </h2>
+
+          <p style="margin:0;color:var(--muted);">
+            ${esc(callerName)} is inviting you to a ${esc(callType.toLowerCase())}.
+          </p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button
+            type="button"
+            data-incoming-call-action="decline"
+            style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
+          >
+            Decline
+          </button>
+
+          <button
+            type="button"
+            data-incoming-call-action="accept"
+            style="flex:1;background:#249b58;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
+          >
+            Accept
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+
+/* Handle incoming-call Accept and Decline */
+
+document.addEventListener("click", async event => {
+  const button = event.target.closest("[data-incoming-call-action]");
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (!activeIncomingCall || incomingCallActionRunning) return;
+
+  incomingCallActionRunning = true;
+  button.disabled = true;
+
+  const action = button.dataset.incomingCallAction;
+  const call = activeIncomingCall;
+
+  try {
+    if (action === "decline") {
+      await callServiceRequest({
+        action: "decline_call",
+        call_id: call.id
+      });
+
+      activeIncomingCall = null;
+      modalRoot.innerHTML = "";
+      return;
+    }
+
+    if (action === "accept") {
+      button.textContent = "Connecting...";
+
+      const joinData = await callServiceRequest({
+        action: "join_call",
+        call_id: call.id
+      });
+
+      activeCallContext = {
+        id: call.id,
+        group: call.group || { name: "SimpoChat Group" },
+        type: call.call_type === "video" ? "video" : "voice",
+        isHost: false
+      };
+
+      activeIncomingCall = null;
+      modalRoot.innerHTML = "";
+
+      renderLiveKitCallScreen();
+
+      await connectLiveKitCall(joinData);
+      return;
+    }
+
+  } catch (error) {
+    console.error("Incoming call action failed:", error);
+
+    activeCallContext = null;
+
+    alert(
+      error.message ||
+      "Unable to respond to this call. Please try again."
+    );
+
+    if (call) {
+      showIncomingCallPrompt(call);
+    }
+
+  } finally {
+    incomingCallActionRunning = false;
+  }
+});
+
+
 /* =========================================================
    SIMPOCHAT — LIVEKIT CALL CONTROLS
    STEP 6: MUTE, CAMERA AND END CALL
