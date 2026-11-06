@@ -19634,6 +19634,8 @@ window.addEventListener("pageshow", () => {
 async function endLiveKitCall() {
   if (isLeavingLiveKitCall) return;
 
+  stopSimpoCallRingtone();
+
   isLeavingLiveKitCall = true;
 
   const callId = activeCallContext?.id;
