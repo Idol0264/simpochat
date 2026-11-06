@@ -15396,10 +15396,10 @@ async function confirmGroupCall(type) {
     modalRoot.innerHTML = "";
     render();
 
-    alert(
-      error.message ||
-      "Something went wrong while starting the call."
-    );
+showSimpoCallNotice(
+  error.message ||
+  "Something went wrong while starting the call."
+);
   }
 }
 
