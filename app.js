@@ -19206,6 +19206,126 @@ window.addEventListener("pageshow", () => {
 
 
 /* =========================================================
+   SIMPOCHAT — INCOMING CALL RINGTONE
+   STEP 4: AUDIO ENGINE
+   ========================================================= */
+
+let simpoCallAudioContext = null;
+let simpoCallRingOscillator = null;
+let simpoCallRingGain = null;
+let simpoCallRingTimer = null;
+
+function unlockSimpoCallAudio() {
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) return;
+
+  if (!simpoCallAudioContext) {
+    simpoCallAudioContext = new AudioContextClass();
+  }
+
+  if (simpoCallAudioContext.state === "suspended") {
+    simpoCallAudioContext.resume().catch(error => {
+      console.warn("Call audio unavailable:", error);
+    });
+  }
+}
+
+document.addEventListener(
+  "pointerdown",
+  unlockSimpoCallAudio,
+  { once: true, passive: true }
+);
+
+document.addEventListener(
+  "keydown",
+  unlockSimpoCallAudio,
+  { once: true }
+);
+
+function playSimpoCallRingBurst() {
+  if (
+    !simpoCallAudioContext ||
+    !simpoCallRingGain ||
+    simpoCallAudioContext.state !== "running"
+  ) return;
+
+  const now = simpoCallAudioContext.currentTime;
+  const gain = simpoCallRingGain.gain;
+
+  gain.cancelScheduledValues(now);
+  gain.setValueAtTime(0, now);
+  gain.setValueAtTime(0.14, now + 0.02);
+  gain.setValueAtTime(0, now + 0.30);
+  gain.setValueAtTime(0.14, now + 0.55);
+  gain.setValueAtTime(0, now + 0.85);
+}
+
+function startSimpoCallRingtone() {
+  if (simpoCallRingTimer) return;
+
+  unlockSimpoCallAudio();
+
+  if (!simpoCallAudioContext) return;
+
+  simpoCallAudioContext.resume().then(() => {
+    if (simpoCallRingTimer) return;
+
+    simpoCallRingOscillator =
+      simpoCallAudioContext.createOscillator();
+
+    simpoCallRingGain =
+      simpoCallAudioContext.createGain();
+
+    simpoCallRingOscillator.type = "sine";
+    simpoCallRingOscillator.frequency.value = 740;
+
+    simpoCallRingGain.gain.value = 0;
+
+    simpoCallRingOscillator.connect(simpoCallRingGain);
+    simpoCallRingGain.connect(
+      simpoCallAudioContext.destination
+    );
+
+    simpoCallRingOscillator.start();
+
+    playSimpoCallRingBurst();
+
+    simpoCallRingTimer = setInterval(() => {
+      playSimpoCallRingBurst();
+    }, 1900);
+
+  }).catch(error => {
+    console.warn("SimpoChat ringtone could not start:", error);
+  });
+}
+
+function stopSimpoCallRingtone() {
+  if (simpoCallRingTimer) {
+    clearInterval(simpoCallRingTimer);
+    simpoCallRingTimer = null;
+  }
+
+  if (simpoCallRingOscillator) {
+    try {
+      simpoCallRingOscillator.stop();
+      simpoCallRingOscillator.disconnect();
+    } catch (error) {
+      console.warn("Ringtone cleanup:", error);
+    }
+
+    simpoCallRingOscillator = null;
+  }
+
+  if (simpoCallRingGain) {
+    simpoCallRingGain.disconnect();
+    simpoCallRingGain = null;
+  }
+}
+
+
+/* =========================================================
    SIMPOCHAT — INCOMING CALL SCREEN
    STEP 2A: ACCEPT AND DECLINE
    ========================================================= */
