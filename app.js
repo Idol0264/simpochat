@@ -19706,7 +19706,9 @@ document.addEventListener("click", async event => {
   event.stopPropagation();
 
   if (!activeLiveKitRoom || !activeCallContext) {
-    alert("The call is not connected yet.");
+showSimpoCallNotice(
+  "The call is not connected yet."
+);
     return;
   }
 
@@ -19752,10 +19754,10 @@ document.addEventListener("click", async event => {
   } catch (error) {
     console.error("Call control failed:", error);
 
-    alert(
-      error.message ||
-      "That call control could not be completed."
-    );
+showSimpoCallNotice(
+  error.message ||
+  "That call control could not be completed."
+);
 
   } finally {
     if (button.isConnected) {
