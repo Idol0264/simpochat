@@ -19337,6 +19337,8 @@ function showIncomingCallPrompt(call) {
   if (!call || activeCallContext || incomingCallActionRunning) return;
 
   activeIncomingCall = call;
+   
+   startSimpoCallRingtone();
 
   const groupName = call.group?.name || "SimpoChat Group";
   const callerName = call.host?.name || "A group member";
