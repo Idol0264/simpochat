@@ -333,7 +333,9 @@ async function connectLiveKitCall(joinData) {
     joinData.livekit.url,
     joinData.livekit.token
   );
-
+   
+  updateCallParticipantStatus();
+   
   await room.localParticipant.setMicrophoneEnabled(true);
 
   if (activeCallContext.type === "video") {
