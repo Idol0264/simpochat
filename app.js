@@ -15133,7 +15133,7 @@ showSimpoCallNotice(
   }
 
   if (type !== "voice" && type !== "video") {
-    alert("Invalid call type.");
+showSimpoCallNotice("Invalid call type.");
     return;
   }
 
