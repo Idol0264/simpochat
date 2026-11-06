@@ -15126,7 +15126,9 @@ function startGroupCall(type) {
 
   // Creator and admins can start calls.
   if (!isGroupAdmin(group)) {
-    alert("Only group admins can start a group call.");
+showSimpoCallNotice(
+  "Only group admins can start a group call."
+);
     return;
   }
 
