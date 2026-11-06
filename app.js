@@ -307,6 +307,11 @@ async function connectLiveKitCall(joinData) {
     track.detach().forEach(element => element.remove());
   });
 
+  room.on("participantConnected", participant => {
+    updateCallParticipantStatus();
+    console.log("Member joined the call:", participant.identity);
+  });
+
   room.on("participantDisconnected", participant => {
     const participantId = String(participant.identity)
       .replace(/[^a-zA-Z0-9_-]/g, "");
@@ -314,6 +319,8 @@ async function connectLiveKitCall(joinData) {
     document.getElementById(
       `simpo-call-user-${participantId}`
     )?.remove();
+
+    updateCallParticipantStatus();
   });
 
   room.on("disconnected", () => {
