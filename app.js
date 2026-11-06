@@ -150,6 +150,26 @@ async function callServiceRequest(payload) {
    SIMPOCHAT — LIVEKIT CALL SCREEN
    --------------------------------------------------------- */
 
+function updateCallParticipantStatus() {
+  if (!activeCallContext) return;
+
+  const status = document.getElementById("simpo-call-status");
+  if (!status) return;
+
+  const room = activeLiveKitRoom;
+  const joinedCount = room
+    ? room.remoteParticipants.size + 1
+    : 1;
+
+  if (activeCallContext.isHost) {
+    status.textContent = joinedCount === 1
+      ? "Waiting for members to join…"
+      : `${joinedCount} members joined · Waiting for others…`;
+  } else {
+    status.textContent = `${joinedCount} members in the call`;
+  }
+}
+
 function renderLiveKitCallScreen() {
   if (!activeCallContext) return;
 
@@ -163,7 +183,11 @@ function renderLiveKitCallScreen() {
       <header class="simpo-live-call-header">
         <div>
           <strong>${esc(group.name || "Group call")}</strong>
-          <small>${type === "video" ? "Video call" : "Voice call"}</small>
+          <small id="simpo-call-status">
+            ${activeCallContext.isHost
+              ? "Waiting for members to join…"
+              : "Connecting to call…"}
+          </small>
         </div>
       </header>
 
@@ -172,7 +196,9 @@ function renderLiveKitCallScreen() {
         id="simpo-call-participants"
       >
         <div class="simpo-call-waiting">
-          Connecting to call...
+          ${activeCallContext.isHost
+            ? "Your call is ready. Members can join now."
+            : "Connecting to call…"}
         </div>
       </div>
 
@@ -203,6 +229,8 @@ function renderLiveKitCallScreen() {
 
     </section>
   `;
+
+  updateCallParticipantStatus();
 }
 
 
