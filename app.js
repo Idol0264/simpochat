@@ -19451,6 +19451,8 @@ document.addEventListener("click", async event => {
   const action = button.dataset.incomingCallAction;
   const call = activeIncomingCall;
 
+     stopSimpoCallRingtone();
+
   try {
     if (action === "decline") {
       button.textContent = "Declining...";
