@@ -19688,9 +19688,9 @@ async function endLiveKitCall() {
   render();
 
   if (serverError) {
-    alert(
-      "You left the call on this device, but the server could not confirm that the call ended. Please check your connection."
-    );
+showSimpoCallNotice(
+  "You left the call on this device, but the server could not confirm that the call ended. Please check your connection."
+);
   }
 }
 
