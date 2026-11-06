@@ -19266,10 +19266,56 @@ function showIncomingCallPrompt(call) {
 }
 
 
+/* =========================================================
+   SIMPOCHAT — STYLED CALL NOTICES
+   STEP 3: ACCEPT AND DECLINE FIX
+   ========================================================= */
+
+function showSimpoCallNotice(message, onClose) {
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">SimpoChat</div>
+        </div>
+
+        <div style="padding:22px 8px;text-align:center;">
+          <div style="font-size:38px;margin-bottom:12px;">📞</div>
+          <p style="color:var(--text);line-height:1.5;">
+            ${esc(message)}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          data-call-notice-dismiss
+          style="width:100%;border:0;border-radius:14px;padding:14px;background:var(--accent);color:white;font-weight:800;"
+        >
+          Okay
+        </button>
+      </div>
+    </div>
+  `;
+
+  modalRoot.querySelector(
+    "[data-call-notice-dismiss]"
+  )?.addEventListener("click", () => {
+    modalRoot.innerHTML = "";
+
+    if (typeof onClose === "function") {
+      onClose();
+    }
+  }, { once: true });
+}
+
+
 /* Handle incoming-call Accept and Decline */
 
 document.addEventListener("click", async event => {
-  const button = event.target.closest("[data-incoming-call-action]");
+  const button = event.target.closest(
+    "[data-incoming-call-action]"
+  );
+
   if (!button) return;
 
   event.preventDefault();
@@ -19285,6 +19331,8 @@ document.addEventListener("click", async event => {
 
   try {
     if (action === "decline") {
+      button.textContent = "Declining...";
+
       await callServiceRequest({
         action: "decline_call",
         call_id: call.id
@@ -19292,6 +19340,7 @@ document.addEventListener("click", async event => {
 
       activeIncomingCall = null;
       modalRoot.innerHTML = "";
+
       return;
     }
 
@@ -19305,8 +19354,12 @@ document.addEventListener("click", async event => {
 
       activeCallContext = {
         id: call.id,
-        group: call.group || { name: "SimpoChat Group" },
-        type: call.call_type === "video" ? "video" : "voice",
+        group: call.group || {
+          name: "SimpoChat Group"
+        },
+        type: call.call_type === "video"
+          ? "video"
+          : "voice",
         isHost: false
       };
 
@@ -19316,22 +19369,29 @@ document.addEventListener("click", async event => {
       renderLiveKitCallScreen();
 
       await connectLiveKitCall(joinData);
+
       return;
     }
 
   } catch (error) {
-    console.error("Incoming call action failed:", error);
-
-    activeCallContext = null;
-
-    alert(
-      error.message ||
-      "Unable to respond to this call. Please try again."
+    console.error(
+      "SimpoChat call action failed:",
+      error
     );
 
-    if (call) {
-      showIncomingCallPrompt(call);
-    }
+    activeCallContext = null;
+    activeIncomingCall = call;
+
+    // Release the action lock before reopening.
+    incomingCallActionRunning = false;
+
+    showSimpoCallNotice(
+      error.message ||
+      "Unable to respond to this call. Please try again.",
+      () => {
+        showIncomingCallPrompt(call);
+      }
+    );
 
   } finally {
     incomingCallActionRunning = false;
