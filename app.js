@@ -19338,7 +19338,7 @@ function showIncomingCallPrompt(call) {
 
   activeIncomingCall = call;
    
-   startSimpoCallRingtone();
+  startSimpoCallRingtone();
 
   const groupName = call.group?.name || "SimpoChat Group";
   const callerName = call.host?.name || "A group member";
@@ -19451,7 +19451,7 @@ document.addEventListener("click", async event => {
   const action = button.dataset.incomingCallAction;
   const call = activeIncomingCall;
 
-     stopSimpoCallRingtone();
+  stopSimpoCallRingtone();
 
   try {
     if (action === "decline") {
@@ -19567,6 +19567,8 @@ async function checkForIncomingCalls() {
         const promptStillVisible = modalRoot.querySelector(
           "[data-incoming-call-action]"
         );
+
+        stopSimpoCallRingtone();
 
         activeIncomingCall = null;
 
