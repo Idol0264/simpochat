@@ -15147,7 +15147,9 @@ showSimpoCallNotice("Invalid call type.");
   );
 
   if (!members.length) {
-    alert("There are no other group members to invite.");
+showSimpoCallNotice(
+  "There are no other group members to invite."
+);
     return;
   }
 
