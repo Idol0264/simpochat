@@ -19611,6 +19611,29 @@ document.addEventListener("click", async event => {
       return;
     }
 
+    /* HOST ENDS EVERYONE'S CALL */
+
+    if (action === "end") {
+
+      if (call.host_user_id !== state.currentUser.id) {
+        throw new Error("Only the host can end this call.");
+      }
+
+      button.textContent = "Ending call...";
+
+      await callServiceRequest({
+        action: "end_call",
+        call_id: call.id
+      });
+
+      modalRoot.innerHTML = "";
+      activeIncomingCall = null;
+
+      return;
+    }
+
+    /* MEMBER LEAVES ONLY THEIR OWN CALL */
+
     if (action === "leave") {
 
       button.textContent = "Leaving...";
@@ -19625,6 +19648,8 @@ document.addEventListener("click", async event => {
 
       return;
     }
+
+    /* REJOIN EXISTING CALL */
 
     if (action === "rejoin") {
 
@@ -19655,7 +19680,6 @@ document.addEventListener("click", async event => {
       renderLiveKitCallScreen();
 
       await connectLiveKitCall(joinData);
-
     }
 
   } catch (error) {
