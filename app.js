@@ -225,7 +225,7 @@ function renderLiveKitCallScreen() {
           class="simpo-call-hangup"
           data-call-control="hangup"
         >
-          End call
+        ${activeCallContext.isHost ? "End call for everyone" : "Leave call"}
         </button>
       </div>
 
