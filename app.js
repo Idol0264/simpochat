@@ -19526,15 +19526,167 @@ document.addEventListener("click", async event => {
   }
 });
 
+/* =========================================================
+   SIMPOCHAT — ACTIVE CALL RECOVERY
+   ========================================================= */
+
+function showActiveCallRecoveryPrompt(call) {
+  if (!call || activeCallContext || incomingCallActionRunning) return;
+
+  const groupName = call.group?.name || "SimpoChat Group";
+  const callType = call.call_type === "video" ? "Video call" : "Voice call";
+
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">You're still in a call</div>
+        </div>
+
+        <div style="text-align:center;padding:20px 8px;">
+          <div style="font-size:48px;margin-bottom:14px;">📞</div>
+
+          <h2>${esc(groupName)}</h2>
+
+          <p style="color:var(--muted);">
+            Your previous ${esc(callType.toLowerCase())} session
+            is still active. You can rejoin or leave it.
+          </p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px;">
+
+          <button
+            type="button"
+            data-active-call-action="leave"
+            style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
+          >
+            Leave call
+          </button>
+
+          <button
+            type="button"
+            data-active-call-action="rejoin"
+            style="flex:1;background:var(--accent);color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
+          >
+            Rejoin
+          </button>
+
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
+/* Handle recovery actions */
+
+document.addEventListener("click", async event => {
+  const button = event.target.closest(
+    "[data-active-call-action]"
+  );
+
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (incomingCallActionRunning) return;
+
+  incomingCallActionRunning = true;
+  button.disabled = true;
+
+  const action = button.dataset.activeCallAction;
+
+  try {
+
+    const result = await callServiceRequest({
+      action: "get_my_active_call"
+    });
+
+    const call = result.active_call;
+
+    if (!call) {
+      modalRoot.innerHTML = "";
+      return;
+    }
+
+    if (action === "leave") {
+
+      button.textContent = "Leaving...";
+
+      await callServiceRequest({
+        action: "leave_call",
+        call_id: call.id
+      });
+
+      modalRoot.innerHTML = "";
+      activeIncomingCall = null;
+
+      return;
+    }
+
+    if (action === "rejoin") {
+
+      button.textContent = "Connecting...";
+
+      const joinData = await callServiceRequest({
+        action: "join_call",
+        call_id: call.id
+      });
+
+      activeCallContext = {
+        id: call.id,
+
+        group: call.group || {
+          name: "SimpoChat Group"
+        },
+
+        type: call.call_type === "video"
+          ? "video"
+          : "voice",
+
+        isHost:
+          call.host_user_id === state.currentUser.id
+      };
+
+      modalRoot.innerHTML = "";
+
+      renderLiveKitCallScreen();
+
+      await connectLiveKitCall(joinData);
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Active call recovery failed:",
+      error
+    );
+
+    activeCallContext = null;
+    modalRoot.innerHTML = "";
+
+    showSimpoCallNotice(
+      error.message ||
+      "Unable to recover this call. Please try again."
+    );
+
+  } finally {
+    incomingCallActionRunning = false;
+  }
+});
+
 
 /* =========================================================
    SIMPOCHAT — INCOMING CALL CHECKER
-   STEP 2B: AUTOMATIC INVITATION DETECTION
    ========================================================= */
 
 let incomingCallCheckRunning = false;
 
 async function checkForIncomingCalls() {
+
   if (
     incomingCallCheckRunning ||
     document.visibilityState !== "visible" ||
@@ -19548,26 +19700,57 @@ async function checkForIncomingCalls() {
   incomingCallCheckRunning = true;
 
   try {
+
+    /*
+     * FIRST: Check whether this user already
+     * belongs to an active call.
+     */
+
+    const activeResult = await callServiceRequest({
+      action: "get_my_active_call"
+    });
+
+    if (activeResult.active_call) {
+
+      if (
+        !activeCallContext &&
+        !activeIncomingCall &&
+        modalRoot.children.length === 0
+      ) {
+        showActiveCallRecoveryPrompt(
+          activeResult.active_call
+        );
+      }
+
+      return;
+    }
+
+
+    /*
+     * SECOND: Check incoming invitations.
+     */
+
     const result = await callServiceRequest({
       action: "list_incoming_calls"
     });
 
     const calls = safeArray(result.calls);
 
-    // Keep only calls that are still ringing or active.
     const availableCalls = calls.filter(call =>
       call &&
       call.id &&
       ["ringing", "active"].includes(call.status)
     );
 
-    // Check whether the current invitation is still valid.
+
     if (activeIncomingCall) {
+
       const stillInvited = availableCalls.some(
         call => call.id === activeIncomingCall.id
       );
 
       if (!stillInvited) {
+
         const promptStillVisible = modalRoot.querySelector(
           "[data-incoming-call-action]"
         );
@@ -19576,7 +19759,6 @@ async function checkForIncomingCalls() {
 
         activeIncomingCall = null;
 
-        // Clear only our own incoming-call prompt.
         if (promptStillVisible) {
           modalRoot.innerHTML = "";
         }
@@ -19586,10 +19768,8 @@ async function checkForIncomingCalls() {
     if (!availableCalls.length) return;
     if (activeIncomingCall) return;
 
-    // Do not overwrite another open modal.
     if (modalRoot.children.length > 0) return;
 
-    // Show the newest invitation first.
     availableCalls.sort((a, b) =>
       new Date(b.invited_at || b.created_at || 0) -
       new Date(a.invited_at || a.created_at || 0)
@@ -19598,23 +19778,27 @@ async function checkForIncomingCalls() {
     showIncomingCallPrompt(availableCalls[0]);
 
   } catch (error) {
+
     console.warn(
       "Incoming call check failed:",
       error.message
     );
+
   } finally {
     incomingCallCheckRunning = false;
   }
 }
 
 
-// Check every 3 seconds.
+/* Check every 3 seconds */
+
 setInterval(() => {
   checkForIncomingCalls();
 }, 3000);
 
 
-// Check immediately when the user returns to SimpoChat.
+/* Check when the user returns */
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     checkForIncomingCalls();
@@ -19636,6 +19820,7 @@ window.addEventListener("pageshow", () => {
    ========================================================= */
 
 async function endLiveKitCall() {
+
   if (isLeavingLiveKitCall) return;
 
   stopSimpoCallRingtone();
@@ -19643,43 +19828,75 @@ async function endLiveKitCall() {
   isLeavingLiveKitCall = true;
 
   const callId = activeCallContext?.id;
+
+  const isHost = activeCallContext?.isHost === true;
+
   let serverError = null;
 
   try {
-    // Tell the server that this call has ended.
+
     if (callId) {
+
       await callServiceRequest({
-        action: "end_call",
+        action: isHost
+          ? "end_call"
+          : "leave_call",
+
         call_id: callId
       });
+
     }
+
   } catch (error) {
+
     serverError = error;
-    console.error("Ending call on server failed:", error);
+
+    console.error(
+      "Leaving call failed:",
+      error
+    );
+
   }
 
-  // Disconnect this device from LiveKit.
+
+  /* Disconnect this device */
+
   if (activeLiveKitRoom) {
+
     try {
       await activeLiveKitRoom.disconnect();
+
     } catch (error) {
-      console.error("LiveKit disconnect failed:", error);
+
+      console.error(
+        "LiveKit disconnect failed:",
+        error
+      );
+
     }
   }
 
   activeLiveKitRoom = null;
 
-  // Remove this call from the local active-call list.
+
+  /* Clear local call record */
+
   if (callId) {
-    state.activeCalls = safeArray(state.activeCalls)
-      .filter(call => call.id !== callId);
+
+    state.activeCalls = safeArray(
+      state.activeCalls
+    ).filter(call => call.id !== callId);
 
     saveState();
+
   }
+
 
   activeCallContext = null;
 
-  document.body.classList.remove("simpo-call-active");
+  document.body.classList.remove(
+    "simpo-call-active"
+  );
 
   modalRoot.innerHTML = "";
 
@@ -19687,13 +19904,16 @@ async function endLiveKitCall() {
 
   render();
 
-  if (serverError) {
-showSimpoCallNotice(
-  "You left the call on this device, but the server could not confirm that the call ended. Please check your connection."
-);
-  }
-}
 
+  if (serverError) {
+
+    showSimpoCallNotice(
+      "You left the call on this device, but the server could not confirm your departure. Please check your connection."
+    );
+
+  }
+
+}
 
 /* Handle LiveKit call buttons */
 
