@@ -19555,14 +19555,14 @@ function showActiveCallRecoveryPrompt(call) {
         </div>
 
         <div style="display:flex;gap:10px;margin-top:12px;">
-
-          <button
-            type="button"
-            data-active-call-action="leave"
-            style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
-          >
-            Leave call
-          </button>
+        
+        <button
+        type="button"
+        data-active-call-action="${call.host_user_id === state.currentUser.id ? "end" : "leave"}"
+        style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
+        >
+        ${call.host_user_id === state.currentUser.id ? "End call for everyone" : "Leave call"}
+        </button>
 
           <button
             type="button"
