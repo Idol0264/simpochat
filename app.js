@@ -19578,25 +19578,34 @@ function showActiveCallRecoveryPrompt(call) {
           </p>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:12px;">
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:18px;">
         
-        <button
-        type="button"
+        <button type="button"
         data-active-call-action="${call.host_user_id === state.currentUser.id ? "end" : "leave"}"
-        style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
-        >
-        ${call.host_user_id === state.currentUser.id ? "End call for everyone" : "Leave call"}
+        aria-label="${call.host_user_id === state.currentUser.id ? "End call for everyone" : "Leave call"}"
+        title="${call.host_user_id === state.currentUser.id ? "End call for everyone" : "Leave call"}"
+        style="width:120px;height:86px;border:0;border-radius:18px;background:#d93636;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+        <svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 15.5c4.8-4.1 11.2-4.1 16 0"/>
+        <path d="m4 15.5 2 3m14-3-2 3"/>
+        </svg>
+        <small style="font-size:10px;">${call.host_user_id === state.currentUser.id ? "End for all" : "Leave"}</small>
         </button>
-
-          <button
-            type="button"
-            data-active-call-action="rejoin"
-            style="flex:1;background:var(--accent);color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
-          >
-            Rejoin
-          </button>
-
+        
+        <button type="button"
+        data-active-call-action="rejoin"
+        aria-label="Rejoin call"
+        title="Rejoin call"
+        style="width:120px;height:86px;border:0;border-radius:18px;background:var(--accent);color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+        <svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 7v5h-5"/>
+        <path d="M20 12a8 8 0 1 1-2.3-5.7L20 9"/>
+        </svg>
+        <small style="font-size:10px;">Rejoin</small>
+        </button>
+        
         </div>
+
       </div>
     </div>
   `;
