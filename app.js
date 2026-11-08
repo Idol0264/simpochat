@@ -204,30 +204,42 @@ function renderLiveKitCallScreen() {
         </div>
       </div>
 
-      <div class="simpo-live-call-controls">
-        <button
-          type="button"
-          data-call-control="mute"
-        >
-          Mute
-        </button>
-
-        <button
-          type="button"
-          data-call-control="camera"
-          ${type !== "video" ? "disabled" : ""}
-        >
-          Camera
-        </button>
-
-        <button
-          type="button"
-          class="simpo-call-hangup"
-          data-call-control="hangup"
-        >
-        ${activeCallContext.isHost ? "End call for everyone" : "Leave call"}
-        </button>
+      <div class="simpo-live-call-controls" style="display:flex;justify-content:center;align-items:center;gap:12px;">
+      
+      <button type="button" data-call-control="mute"
+      aria-label="Mute microphone" title="Mute microphone"
+      style="width:82px;height:76px;border:1px solid var(--border);border-radius:18px;background:var(--surface);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+      <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/>
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8"/>
+      </svg>
+      <small style="font-size:10px;">Mute</small>
+      </button>
+      
+      <button type="button" data-call-control="camera"
+      ${type !== "video" ? "disabled" : ""}
+      aria-label="Camera" title="Camera"
+      style="width:82px;height:76px;border:1px solid var(--border);border-radius:18px;background:var(--surface);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+      <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+      <rect x="2" y="6" width="14" height="12" rx="2"/>
+      <path d="m16 10 6-4v12l-6-4z"/>
+      </svg>
+      <small style="font-size:10px;">Camera</small>
+      </button>
+      
+      <button type="button" class="simpo-call-hangup"
+      data-call-control="hangup"
+      aria-label="${activeCallContext.isHost ? "End call for everyone" : "Leave call"}"
+      title="${activeCallContext.isHost ? "End call for everyone" : "Leave call"}"
+      style="width:92px;height:76px;border:0;border-radius:18px;background:#d93636;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+      <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 15.5c4.8-4.1 11.2-4.1 16 0l-2.2 3.1a1.5 1.5 0 0 1-2 .4l-2-1.2a1.5 1.5 0 0 1-.7-1.2v-1.1a12 12 0 0 0-4.2 0v1.1a1.5 1.5 0 0 1-.7 1.2l-2 1.2a1.5 1.5 0 0 1-2-.4L4 15.5Z"/>
+      </svg>
+      <small style="font-size:10px;">${activeCallContext.isHost ? "End for all" : "Leave"}</small>
+      </button>
+      
       </div>
+
 
     </section>
   `;
