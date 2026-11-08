@@ -19432,13 +19432,17 @@ function showSimpoCallNotice(message, onClose) {
           </p>
         </div>
 
-        <button
-          type="button"
-          data-call-notice-dismiss
-          style="width:100%;border:0;border-radius:14px;padding:14px;background:var(--accent);color:white;font-weight:800;"
-        >
-          Okay
+        <button type="button"
+        data-call-notice-dismiss
+        aria-label="Close notice"
+        title="Close notice"
+        style="width:100%;height:72px;border:0;border-radius:16px;background:var(--accent);color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m5 12 4 4L19 6"/>
+        </svg>
+        <small style="font-size:10px;">Okay</small>
         </button>
+
       </div>
     </div>
   `;
