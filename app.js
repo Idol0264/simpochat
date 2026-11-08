@@ -19380,22 +19380,30 @@ function showIncomingCallPrompt(call) {
           </p>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:12px;">
-          <button
-            type="button"
-            data-incoming-call-action="decline"
-            style="flex:1;background:#d93636;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
-          >
-            Decline
-          </button>
-
-          <button
-            type="button"
-            data-incoming-call-action="accept"
-            style="flex:1;background:#249b58;color:white;border:0;border-radius:14px;padding:14px;font-weight:800;"
-          >
-            Accept
-          </button>
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:18px;">
+        
+        <button type="button"
+        data-incoming-call-action="decline"
+        aria-label="Decline call" title="Decline call"
+        style="width:100px;height:82px;border:0;border-radius:18px;background:#d93636;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+        <svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 15.5c4.8-4.1 11.2-4.1 16 0"/>
+        <path d="m4 15.5 2 3m14-3-2 3"/>
+        </svg>
+        <small style="font-size:10px;">Decline</small>
+        </button>
+        
+        <button type="button"
+        data-incoming-call-action="accept"
+        aria-label="Accept call" title="Accept call"
+        style="width:100px;height:82px;border:0;border-radius:18px;background:#249b58;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;">
+        <svg viewBox="0 0 24 24" width="29" height="29" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 15.5c4.8-4.1 11.2-4.1 16 0"/>
+        <path d="m4 15.5 2 3m14-3-2 3"/>
+        </svg>
+        <small style="font-size:10px;">Accept</small>
+        </button>
+        
         </div>
 
       </div>
