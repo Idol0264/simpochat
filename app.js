@@ -16,6 +16,31 @@ const PROFILE_SETUP_KEY = "simpochat-profile-setup-v1";
 const SESSION_TOKEN_KEY = "simpochat-session-token-v1";
 const SIMPOCHAT_ACCESS_URL =
   "https://uaxxzgkvjzemsevuzlcw.supabase.co/functions/v1/check-simpochat-access";
+/* SIMPOCHAT ADMIN AUTHENTICATION */
+
+const SIMPOCHAT_SUPABASE_URL =
+  "https://uaxxzgkvjzemsevuzlcw.supabase.co";
+
+const SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_eFDiUyA-VKl-evisRW_bHQ_bE29hJM1";
+
+const SIMPOCHAT_ADMIN_EMAIL =
+  "godstimewealth898@gmail.com";
+
+const simpoAdminAuth =
+  window.supabase?.createClient(
+    SIMPOCHAT_SUPABASE_URL,
+    SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        flowType: "pkce",
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        storageKey: "simpochat-admin-auth-v1"
+      }
+    }
+  );
 
 const MESSAGE_LIFETIME = 2 * 24 * 60 * 60 * 1000;
 const TWO_DAYS_MS = MESSAGE_LIFETIME;
