@@ -501,8 +501,6 @@ function defaultGroups() {
    --------------------------------------------------------- */
 
 function createDefaultState() {
-  const timestamp = now();
-
   return {
     screen: "home",
     previousScreen: "home",
@@ -525,135 +523,21 @@ function createDefaultState() {
       hue: 265
     },
 
-    groups: defaultGroups(),
+    groups: [],
 
-    /* Groups the user has starred */
-    starred: ["creators"],
-
-    /* Groups the user has archived */
+    starred: [],
     archived: [],
 
-    messages: {
-      creators: [
-        {
-          id: "m1",
-          member: "maya",
-          text: "Welcome everyone 👋",
-          createdAt: timestamp - 45 * 60000,
-          read: false
-        },
-        {
-          id: "m2",
-          member: "daniel",
-          text: "Good to be here.",
-          createdAt: timestamp - 40 * 60000,
-          read: false
-        },
-        {
-          id: "m3",
-          member: "amina",
-          text: "Let's build something great.",
-          createdAt: timestamp - 35 * 60000,
-          read: false
-        }
-      ],
-
-      business: [
-        {
-          id: "m4",
-          member: "john",
-          text: "Welcome to the network.",
-          createdAt: timestamp - 2 * 3600000,
-          read: true
-        }
-      ],
-
-      tech: [
-        {
-          id: "m5",
-          member: "tolu",
-          text: "New project discussion starts here.",
-          createdAt: timestamp - 3 * 3600000,
-          read: false
-        },
-        {
-          id: "m6",
-          member: "sam",
-          text: "I have some ideas to share.",
-          createdAt: timestamp - 2 * 3600000,
-          read: false
-        }
-      ],
-
-      design: [],
-      opportunity: []
-    },
-
-    /* Video posts */
-    posts: [
-      {
-        id: "post-1",
-        author: "Maya",
-        groupId: "creators",
-        type: "video",
-        createdAt: timestamp - 3600000,
-        views: 128,
-        reactions: 19,
-        comments: 6
-      },
-
-      {
-        id: "post-2",
-        author: "Daniel",
-        groupId: "business",
-        type: "video",
-        createdAt: timestamp - 5 * 3600000,
-        views: 83,
-        reactions: 11,
-        comments: 4
-      },
-
-      {
-        id: "post-3",
-        author: "Tolu",
-        groupId: "tech",
-        type: "video",
-        createdAt: timestamp - 9 * 3600000,
-        views: 204,
-        reactions: 31,
-        comments: 8
-      },
-
-      {
-        id: "post-4",
-        author: "Linda",
-        groupId: "design",
-        type: "video",
-        createdAt: timestamp - 15 * 3600000,
-        views: 97,
-        reactions: 14,
-        comments: 5
-      },
-
-      {
-        id: "post-5",
-        author: "Victor",
-        groupId: "opportunity",
-        type: "video",
-        createdAt: timestamp - 22 * 3600000,
-        views: 56,
-        reactions: 9,
-        comments: 2
-      }
-    ],
+    messages: {},
+    posts: [],
 
     joinRequests: {},
 
     postFilter: "all",
-
     searchQuery: ""
   };
 }
+
 
 /* ---------------------------------------------------------
    LOAD SAVED STATE
