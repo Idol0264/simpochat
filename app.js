@@ -12410,6 +12410,177 @@ ${
 }
 
 
+/* =========================================
+   SIMPOCHAT ADMIN MAGIC LINK
+   ========================================= */
+
+async function requestSimpoAdminMagicLink() {
+
+  if (!simpoAdminAuth) {
+    alert("Administrator authentication is unavailable.");
+    return;
+  }
+
+  const email =
+    String(state.currentUser?.email || "")
+      .trim()
+      .toLowerCase();
+
+  if (email !== SIMPOCHAT_ADMIN_EMAIL) {
+    alert("This profile is not authorized to request administrator access.");
+    return;
+  }
+
+  try {
+
+    const { error } =
+      await simpoAdminAuth.auth.signInWithOtp({
+
+        email: SIMPOCHAT_ADMIN_EMAIL,
+
+        options: {
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname,
+
+          shouldCreateUser: true
+        }
+
+      });
+
+    if (error) throw error;
+
+    alert(
+      "Your administrator sign-in link has been sent. Check your email."
+    );
+
+  } catch (error) {
+
+    console.error("Admin Magic Link error:", error);
+
+    alert(
+      error.message ||
+      "Unable to send your administrator sign-in link."
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   VERIFY ADMIN MAGIC LINK CALLBACK
+   ========================================= */
+
+async function handleSimpoAdminMagicLinkCallback() {
+
+  const url = new URL(window.location.href);
+
+  const code = url.searchParams.get("code");
+
+  if (!code) return;
+
+  if (!simpoAdminAuth) return;
+
+  try {
+
+    const { data, error } =
+      await simpoAdminAuth.auth.exchangeCodeForSession(code);
+
+    if (error) throw error;
+
+    const email =
+      String(data.user?.email || "")
+        .trim()
+        .toLowerCase();
+
+    if (email !== SIMPOCHAT_ADMIN_EMAIL) {
+      throw new Error(
+        "This email is not authorized for SimpoChat administration."
+      );
+    }
+
+    const sessionResult =
+      await simpoAdminAuth.auth.getSession();
+
+    const session =
+      sessionResult.data?.session;
+
+    if (!session?.access_token) {
+      throw new Error(
+        "Unable to establish your administrator session."
+      );
+    }
+
+    const response = await fetch(
+      SIMPOCHAT_ACCESS_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          "apikey":
+            SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+
+          "Authorization":
+            `Bearer ${session.access_token}`
+        },
+
+        body: JSON.stringify({
+          action: "admin_bootstrap"
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.is_admin) {
+      throw new Error(
+        result.message ||
+        "Administrator activation failed."
+      );
+    }
+
+    window.SIMPOCHAT_ADMIN = {
+      role: result.role,
+      user: result.user
+    };
+
+    alert(
+      "Administrator access verified successfully. Your role is " +
+      result.role + "."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Admin verification failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Administrator verification failed."
+    );
+
+  } finally {
+
+    url.searchParams.delete("code");
+    url.searchParams.delete("error");
+    url.searchParams.delete("error_description");
+
+    window.history.replaceState(
+      {},
+      document.title,
+      url.pathname + url.search + url.hash
+    );
+
+  }
+
+}
+
+
 /* ---------------------------------------------------------
    EDIT PROFILE
    --------------------------------------------------------- */
