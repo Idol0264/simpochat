@@ -14572,6 +14572,17 @@ async function handleAction(
     case "search":
 
 
+     case "admin-login":
+        
+        if (typeof modalRoot !== "undefined") {
+           modalRoot.innerHTML = "";
+        }
+        
+        await requestSimpoAdminMagicLink();
+        
+        break;
+        
+
     case "settings":
 
   /* Close the main menu before opening Settings. */
