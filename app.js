@@ -12972,6 +12972,12 @@ async function handleSimpoAdminMagicLinkCallback() {
       "Administrator access verified successfully. Your role is " +
       result.role + "."
     );
+     
+    state.screen = "admin-dashboard";
+    state.adminReportFilter = "all";
+
+    saveState();
+    render();
 
   } catch (error) {
 
