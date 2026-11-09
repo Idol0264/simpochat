@@ -14927,10 +14927,20 @@ async function handleAction(
 
 
     case "group-report":
-
-      openReportForm();
-
-      break;
+        
+        openReportForm("group");
+        
+        break;
+     
+     
+     case "report-member":
+        
+        openReportForm(
+           "person",
+           target.dataset.reportMemberId
+        );
+        
+        break;
 
 
     case "export-chat":
