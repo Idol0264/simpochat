@@ -1911,6 +1911,13 @@ if (temporaryChatFab) {
     return renderSettings();
   }
 
+  if (state.screen === "admin-dashboard") {
+    void renderAdminDashboard(
+      state.adminReportFilter || "all"
+    );
+    return;
+  }
+
   if (state.screen === "new-group") {
     return renderNewGroup();
   }
