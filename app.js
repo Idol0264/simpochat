@@ -12136,6 +12136,407 @@ if (
 }
 
 
+/* =========================================================
+   SIMPOCHAT ADMIN DASHBOARD
+   REPORT MANAGEMENT
+   ========================================================= */
+
+async function callSimpoAdmin(action, payload = {}) {
+
+  const { data, error } =
+    await simpoAdminAuth.auth.getSession();
+
+  if (error) throw error;
+
+  const token = data.session?.access_token;
+
+  if (!token) {
+    throw new Error(
+      "Administrator session expired. Sign in again."
+    );
+  }
+
+  const response = await fetch(
+    SIMPOCHAT_ACCESS_URL,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": `Bearer ${token}`
+      },
+
+      body: JSON.stringify({
+        action,
+        ...payload
+      })
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || !result.allowed) {
+    throw new Error(
+      result.message || "Administrator request failed."
+    );
+  }
+
+  return result;
+}
+
+
+/* LOAD ADMIN REPORTS */
+
+async function renderAdminDashboard(filter = "all") {
+
+  setHeader(
+    "SimpoChat Administration",
+    "Reports management"
+  );
+
+  screen.innerHTML = `
+
+    <div class="settings-page">
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Administration
+        </div>
+
+        <div class="section-note">
+          Manage reports submitted by SimpoChat members.
+        </div>
+
+        <div id="admin-report-stats">
+          Loading statistics...
+        </div>
+
+      </section>
+
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Reports
+        </div>
+
+        <div class="theme-options">
+
+          ${[
+            ["all", "All"],
+            ["pending", "Pending"],
+            ["under_review", "Under Review"],
+            ["resolved", "Resolved"],
+            ["dismissed", "Dismissed"]
+          ].map(([value, label]) => `
+
+            <button
+              class="theme-option ${filter === value ? "selected" : ""}"
+              data-action="admin-report-filter"
+              data-status="${value}"
+            >
+              ${label}
+            </button>
+
+          `).join("")}
+
+        </div>
+
+        <div id="admin-report-list">
+          Loading reports...
+        </div>
+
+      </section>
+
+    </div>
+
+  `;
+
+  try {
+
+    /* VERIFY ADMIN SESSION */
+
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
+
+    if (!access.is_admin || !access.role) {
+      window.SIMPOCHAT_ADMIN = null;
+
+      throw new Error(
+        "Administrator access is not active."
+      );
+    }
+
+    window.SIMPOCHAT_ADMIN = {
+      role: access.role,
+      user: access.user
+    };
+
+
+    /* FETCH REPORTS */
+
+    const result = await callSimpoAdmin(
+      "admin_list_reports"
+    );
+
+    const reports = result.reports || [];
+
+    const counts = {
+      all: reports.length,
+      pending: reports.filter(
+        r => r.status === "pending"
+      ).length,
+      under_review: reports.filter(
+        r => r.status === "under_review"
+      ).length,
+      resolved: reports.filter(
+        r => r.status === "resolved"
+      ).length,
+      dismissed: reports.filter(
+        r => r.status === "dismissed"
+      ).length
+    };
+
+
+    const stats = document.getElementById(
+      "admin-report-stats"
+    );
+
+    stats.innerHTML = `
+
+      <div class="theme-options">
+
+        <div class="theme-option">
+          Total: ${counts.all}
+        </div>
+
+        <div class="theme-option">
+          Pending: ${counts.pending}
+        </div>
+
+        <div class="theme-option">
+          Under review: ${counts.under_review}
+        </div>
+
+        <div class="theme-option">
+          Resolved: ${counts.resolved}
+        </div>
+
+        <div class="theme-option">
+          Dismissed: ${counts.dismissed}
+        </div>
+
+      </div>
+
+    `;
+
+
+    /* FILTER REPORTS */
+
+    const visibleReports =
+      filter === "all"
+        ? reports
+        : reports.filter(
+            r => r.status === filter
+          );
+
+
+    const list = document.getElementById(
+      "admin-report-list"
+    );
+
+    if (!visibleReports.length) {
+
+      list.innerHTML = `
+        <p class="section-note">
+          No reports found in this category.
+        </p>
+      `;
+
+      return;
+    }
+
+
+    /* DISPLAY REPORTS */
+
+    list.innerHTML = visibleReports.map(report => `
+
+      <article
+        class="settings-section admin-report-card"
+        data-report-id="${esc(report.id)}"
+      >
+
+        <div class="section-title">
+          ${report.report_type === "person"
+            ? "Member Report"
+            : "Group Report"}
+        </div>
+
+        <p>
+          <strong>Reported:</strong>
+          ${esc(
+            report.report_type === "person"
+              ? report.reported_user_name
+              : report.group_name
+          )}
+        </p>
+
+        <p>
+          <strong>Group:</strong>
+          ${esc(report.group_name)}
+        </p>
+
+        <p>
+          <strong>Reason:</strong>
+          ${esc(report.reason.replaceAll("_", " "))}
+        </p>
+
+        <p>
+          <strong>Reporter:</strong>
+          ${esc(report.reporter_name)}
+        </p>
+
+        <p>
+          <strong>Email:</strong>
+          ${esc(report.reporter_email || "Unavailable")}
+        </p>
+
+        <p>
+          <strong>Description:</strong>
+        </p>
+
+        <p>${esc(report.description)}</p>
+
+        ${report.evidence_url ? `
+
+          <a
+            href="${esc(report.evidence_url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Evidence
+          </a>
+
+        ` : ""}
+
+        <p>
+          <strong>Current status:</strong>
+          ${esc(report.status)}
+        </p>
+
+        <label>Update status</label>
+
+        <select class="form-input admin-status-select">
+
+          ${[
+            ["pending", "Pending"],
+            ["under_review", "Under Review"],
+            ["resolved", "Resolved"],
+            ["dismissed", "Dismissed"]
+          ].map(([value, label]) => `
+
+            <option
+              value="${value}"
+              ${report.status === value ? "selected" : ""}
+            >
+              ${label}
+            </option>
+
+          `).join("")}
+
+        </select>
+
+        <label>Administrator notes</label>
+
+        <textarea
+          class="form-input admin-report-notes"
+          rows="3"
+          maxlength="3000"
+          placeholder="Record your findings and decision..."
+        >${esc(report.admin_notes || "")}</textarea>
+
+        <button
+          class="primary-btn"
+          data-action="admin-report-save"
+          data-report-id="${esc(report.id)}"
+        >
+          Save Review
+        </button>
+
+      </article>
+
+    `).join("");
+
+
+  } catch (error) {
+
+    console.error(
+      "Admin dashboard error:",
+      error
+    );
+
+    const list = document.getElementById(
+      "admin-report-list"
+    );
+
+    if (list) {
+      list.textContent = error.message;
+    }
+
+  }
+
+}
+
+
+/* SAVE REPORT REVIEW */
+
+async function saveSimpoAdminReport(button) {
+
+  const card = button.closest(
+    ".admin-report-card"
+  );
+
+  if (!card) return;
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try {
+
+    await callSimpoAdmin(
+      "admin_update_report",
+      {
+        report_id: card.dataset.reportId,
+
+        status: card.querySelector(
+          ".admin-status-select"
+        ).value,
+
+        admin_notes: card.querySelector(
+          ".admin-report-notes"
+        ).value
+      }
+    );
+
+    await renderAdminDashboard(
+      state.adminReportFilter || "all"
+    );
+
+  } catch (error) {
+
+    alert(error.message);
+
+    button.disabled = false;
+    button.textContent = "Save Review";
+
+  }
+
+}
+
+
 /* ---------------------------------------------------------
    SETTINGS / PROFILE
    --------------------------------------------------------- */
