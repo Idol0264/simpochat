@@ -556,38 +556,75 @@ function loadState() {
     const parsed = JSON.parse(raw);
     const defaults = createDefaultState();
 
+    const demoGroupIds = new Set([
+      "creators",
+      "business",
+      "tech",
+      "design",
+      "opportunity"
+    ]);
+
+    const demoPostIds = new Set([
+      "post-1",
+      "post-2",
+      "post-3",
+      "post-4",
+      "post-5"
+    ]);
+
     const merged = {
       ...defaults,
       ...parsed
     };
 
-    merged.groups = Array.isArray(parsed.groups)
-      ? parsed.groups
-      : defaults.groups;
+    merged.groups = safeArray(parsed.groups)
+      .filter(group =>
+        group &&
+        !demoGroupIds.has(group.id)
+      );
 
-    merged.starred = safeArray(parsed.starred);
+    merged.starred = safeArray(parsed.starred)
+      .filter(id => !demoGroupIds.has(id));
 
-    merged.archived = safeArray(parsed.archived);
+    merged.archived = safeArray(parsed.archived)
+      .filter(id => !demoGroupIds.has(id));
 
     merged.selectedItems = safeArray(
       parsed.selectedItems
     );
 
-    merged.messages =
+    const savedMessages =
       parsed.messages &&
       typeof parsed.messages === "object"
         ? parsed.messages
-        : defaults.messages;
+        : {};
 
-    merged.posts = Array.isArray(parsed.posts)
-      ? parsed.posts
-      : defaults.posts;
+    merged.messages = Object.fromEntries(
+      Object.entries(savedMessages)
+        .filter(([groupId]) =>
+          !demoGroupIds.has(groupId)
+        )
+    );
 
-    merged.joinRequests =
+    merged.posts = safeArray(parsed.posts)
+      .filter(post =>
+        post &&
+        !demoPostIds.has(post.id) &&
+        !demoGroupIds.has(post.groupId)
+      );
+
+    const savedRequests =
       parsed.joinRequests &&
       typeof parsed.joinRequests === "object"
         ? parsed.joinRequests
         : {};
+
+    merged.joinRequests = Object.fromEntries(
+      Object.entries(savedRequests)
+        .filter(([groupId]) =>
+          !demoGroupIds.has(groupId)
+        )
+    );
 
     merged.currentUser = {
       ...defaults.currentUser,
@@ -605,6 +642,7 @@ function loadState() {
     return createDefaultState();
   }
 }
+
 
 /* ---------------------------------------------------------
    GLOBAL STATE
