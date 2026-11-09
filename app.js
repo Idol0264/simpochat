@@ -14992,6 +14992,38 @@ async function handleAction(
         await requestSimpoAdminMagicLink();
         
         break;
+
+
+    case "admin-dashboard":
+
+      state.screen = "admin-dashboard";
+      state.adminReportFilter = "all";
+
+      if (typeof modalRoot !== "undefined") {
+        modalRoot.innerHTML = "";
+      }
+
+      saveState();
+      render();
+
+      break;
+
+
+    case "admin-report-filter":
+
+      state.adminReportFilter =
+        actionTarget.dataset.status || "all";
+
+      render();
+
+      break;
+
+
+    case "admin-report-save":
+
+      await saveSimpoAdminReport(actionTarget);
+
+      break;
         
 
     case "settings":
