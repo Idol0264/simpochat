@@ -11642,21 +11642,35 @@ function renderSearchGroup(
         <span class="group-name">
           ${esc(group.name)}
         </span>
-
+        
         <span class="group-meta">
-
-          ${safeArray(
-            group.category
-          )
-            .map(esc)
-            .join(" · ")}
-
-          ·
-
-          ${group.members.length}
-          members
-
-        </span>
+        
+        ${safeArray(
+           group.category
+        )
+          .map(esc)
+          .join(" · ")}
+          
+          ${
+             group.isOfficial
+             ? `
+             <span style="
+             display:inline-block;
+             margin-left:6px;
+             padding:2px 7px;
+             border-radius:10px;
+             background:rgba(145,90,255,.15);
+             color:#a879ff;
+             font-size:10px;
+             font-weight:700;
+             ">
+             OFFICIAL
+             </span>
+             `
+             : ""
+          }
+          
+          </span>
 
       </span>
 
