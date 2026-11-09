@@ -14570,8 +14570,10 @@ async function handleAction(
 
 
     case "search":
-
-
+        
+        break;
+     
+     
      case "admin-login":
         
         if (typeof modalRoot !== "undefined") {
