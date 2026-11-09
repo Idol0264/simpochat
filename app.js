@@ -17113,52 +17113,221 @@ function openFilePicker() {
    REPORT FORM
    --------------------------------------------------------- */
 
-function openReportForm() {
+function openReportForm(reportType = "group", reportedUserId = "") {
+
+  const group = getGroup(state.selectedGroup);
+
+  if (!group) {
+    alert("Unable to identify this group.");
+    return;
+  }
+
+  const reportedMember =
+    reportType === "person"
+      ? getMember(group, reportedUserId)
+      : null;
+
+  if (reportType === "person" && !reportedMember) {
+    alert("Unable to identify the reported member.");
+    return;
+  }
 
   modalRoot.innerHTML = `
 
-    <div
-      class="modal-backdrop"
-      data-close
-    >
+    <div class="modal-backdrop" data-close>
 
       <div class="modal">
 
         <div class="modal-head">
 
           <div class="modal-title">
-            Report
+            Report ${reportType === "person" ? "Member" : "Group"}
           </div>
 
-          <button
-            class="close-btn"
-            data-close
+          <button class="close-btn" data-close>×</button>
+
+        </div>
+
+        <p class="form-note">
+          ${reportType === "person"
+            ? `You are reporting ${esc(reportedMember.name)}.`
+            : `You are reporting ${esc(group.name)}.`}
+        </p>
+
+        <form id="simpo-report-form">
+
+          <label>Report category</label>
+
+          <select name="reason" required class="form-input">
+            <option value="">Select a reason</option>
+            <option value="harassment">Harassment</option>
+            <option value="bullying">Bullying</option>
+            <option value="spam">Spam</option>
+            <option value="inappropriate_content">Inappropriate content</option>
+            <option value="hate_or_discrimination">Hate or discrimination</option>
+            <option value="threats_or_violence">Threats or violence</option>
+            <option value="scam_or_fraud">Scam or fraud</option>
+            <option value="impersonation">Impersonation</option>
+            <option value="other">Other</option>
+          </select>
+
+          <label>Explain what happened</label>
+
+          <textarea
+            name="description"
+            class="form-input"
+            rows="5"
+            minlength="10"
+            maxlength="3000"
+            placeholder="Describe the incident in detail..."
+            required
+          ></textarea>
+
+          <label>Evidence link (optional)</label>
+
+          <input
+            type="url"
+            name="evidence_url"
+            class="form-input"
+            placeholder="https://..."
           >
-            ×
+
+          <p class="form-note">
+            Your report will be reviewed by SimpoChat administration.
+            Submitting a report does not automatically punish anyone.
+          </p>
+
+          <button
+            type="submit"
+            class="primary-btn"
+            id="simpo-report-submit"
+          >
+            Submit Report
           </button>
 
-        </div>
+          <button
+            type="button"
+            class="secondary-btn"
+            data-close
+          >
+            Cancel
+          </button>
 
-
-        <div class="form-note">
-
-          The Tally report form will be embedded
-          here when the reporting system is connected.
-
-        </div>
-
-
-        <div class="tally-placeholder">
-
-          TALLY REPORT FORM
-
-        </div>
+        </form>
 
       </div>
 
     </div>
 
   `;
+
+  const form = modalRoot.querySelector("#simpo-report-form");
+
+  form.addEventListener("submit", async event => {
+
+    event.preventDefault();
+
+    const sessionToken =
+      localStorage.getItem(SESSION_TOKEN_KEY);
+
+    if (!sessionToken) {
+      alert("Please sign in again.");
+      return;
+    }
+
+    const formData = new FormData(form);
+
+    const submitButton =
+      modalRoot.querySelector("#simpo-report-submit");
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+
+    try {
+
+      const response = await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionToken}`
+          },
+
+          body: JSON.stringify({
+            action: "create_report",
+
+            report_type: reportType,
+
+            group_id: group.id,
+
+            reported_user_id:
+              reportType === "person"
+                ? reportedUserId
+                : null,
+
+            reason: formData.get("reason"),
+
+            description:
+              String(formData.get("description") || "").trim(),
+
+            evidence_url:
+              String(formData.get("evidence_url") || "").trim()
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.allowed) {
+        throw new Error(
+          result.message || "Unable to submit report."
+        );
+      }
+
+      modalRoot.innerHTML = `
+
+        <div class="modal-backdrop">
+
+          <div class="modal">
+
+            <div class="modal-title">
+              Report Submitted
+            </div>
+
+            <div class="empty-icon">✓</div>
+
+            <p class="form-note">
+              Thank you. Your report has been received
+              and is awaiting administrative review.
+            </p>
+
+            <button
+              class="primary-btn"
+              data-close
+            >
+              Done
+            </button>
+
+          </div>
+
+        </div>
+
+      `;
+
+    } catch (error) {
+
+      console.error("Report submission failed:", error);
+
+      alert(error.message || "Unable to submit report.");
+
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit Report";
+
+    }
+
+  });
 
 }
 
