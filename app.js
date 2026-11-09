@@ -12738,6 +12738,18 @@ ${
 
         <button
           class="menu-item"
+          data-action="admin-dashboard"
+        >
+          <div class="menu-icon">📊</div>
+
+          <div>
+            <strong>Open Admin Dashboard</strong>
+            <span>Review reports and manage SimpoChat.</span>
+          </div>
+        </button>
+
+        <button
+          class="menu-item"
           data-action="admin-login"
         >
           <div class="menu-icon">🛡️</div>
