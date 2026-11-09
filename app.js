@@ -11654,6 +11654,8 @@ function renderSearchGroup(
           .map(esc)
           .join(" · ")}
           
+          · ${Number(group.memberCount || 0)} members
+          
           ${
              group.isOfficial
              ? `
