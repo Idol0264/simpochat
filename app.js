@@ -20082,3 +20082,7 @@ showSimpoCallNotice(
     }
   }
 });
+
+/* CHECK FOR ADMIN MAGIC LINK CALLBACK */
+
+void handleSimpoAdminMagicLinkCallback();
