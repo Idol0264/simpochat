@@ -12311,6 +12311,39 @@ function renderSettings() {
 
       </section>
 
+<!-- ADMINISTRATION -->
+
+${
+  String(user.email || "").trim().toLowerCase() ===
+  SIMPOCHAT_ADMIN_EMAIL
+    ? `
+      <section class="settings-section">
+
+        <div class="section-title">
+          Administration
+        </div>
+
+        <div class="section-note">
+          Secure access for SimpoChat administration.
+        </div>
+
+        <button
+          class="menu-item"
+          data-action="admin-login"
+        >
+          <div class="menu-icon">🛡️</div>
+
+          <div>
+            <strong>Administrator Access</strong>
+            <span>Verify your administrator email.</span>
+          </div>
+        </button>
+
+      </section>
+    `
+    : ""
+}
+
 
       <!-- INFORMATION -->
 
