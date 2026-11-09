@@ -11482,6 +11482,9 @@ async function renderSearchResults() {
 
             members:
                [],
+             
+             memberCount:
+                Number(remoteGroup.member_count || 0),
 
             join_mode:
               remoteGroup.join_mode,
