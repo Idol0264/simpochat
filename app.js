@@ -7401,10 +7401,11 @@ function openTemporaryChatInvite(
 
 
           <button
-            class="secondary-btn"
-            data-close
+          class="secondary-btn"
+          data-action="report-member"
+          data-report-member-id="${esc(member.id)}"
           >
-            Cancel
+          ⚑ Report Member
           </button>
 
         </div>
