@@ -11492,6 +11492,9 @@ async function renderSearchResults() {
             creatorId:
               remoteGroup.creator_id,
 
+             isOfficial:
+                remoteGroup.is_official === true,
+             
             remote:
               true
           })
