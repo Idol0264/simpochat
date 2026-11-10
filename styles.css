@@ -10413,3 +10413,53 @@ body.simpo-call-active #screen {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================
+   SIMPOCHAT ADMIN — RIGHT SIDE MENU
+========================================= */
+
+.admin-menu-backdrop {
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+
+  padding:
+    calc(env(safe-area-inset-top) + 12px)
+    12px
+    12px !important;
+}
+
+.admin-menu-modal {
+  width: min(310px, calc(100vw - 28px));
+  max-width: 310px;
+
+  max-height: calc(100dvh - 35px);
+
+  margin: 0 !important;
+
+  overflow-y: auto;
+
+  transform-origin: top right;
+
+  animation: adminMenuDrop .25s ease-out both;
+}
+
+.admin-menu-modal .menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+@keyframes adminMenuDrop {
+
+  from {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
