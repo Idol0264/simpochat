@@ -15283,6 +15283,16 @@ async function handleAction(
       await saveSimpoAdminReport(actionTarget);
 
       break;
+
+
+    case "admin-report-filter":
+
+      state.adminReportFilter =
+        actionTarget.dataset.status || "all";
+
+      render();
+
+      break;
         
 
     case "settings":
