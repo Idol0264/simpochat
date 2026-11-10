@@ -15243,6 +15243,30 @@ async function handleAction(
 
       break;
 
+        
+    case "admin-section": {
+
+      const section =
+        actionTarget.dataset.section;
+
+      if (section === "reports") {
+
+        state.screen = "admin-reports";
+        state.adminReportFilter = "all";
+
+      } else {
+
+        state.screen = "admin-dashboard";
+        state.adminSection = section;
+
+      }
+
+      saveState();
+      render();
+
+      break;
+    }
+
 
     case "admin-report-filter":
 
