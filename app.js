@@ -12198,6 +12198,170 @@ async function callSimpoAdmin(action, payload = {}) {
 }
 
 
+/* =========================================
+   ADMIN — INDIVIDUAL SECTION SCREENS
+========================================= */
+
+async function renderAdminSection(section) {
+
+  const sections = {
+    users: {
+      title: "Users",
+      description: "Profiles, access and user management"
+    },
+    groups: {
+      title: "Groups",
+      description: "Manage all SimpoChat groups"
+    },
+    administrators: {
+      title: "Administrators",
+      description: "Admin accounts and permissions"
+    },
+    activity: {
+      title: "Activity Logs",
+      description: "Record administrative actions"
+    },
+    settings: {
+      title: "Settings",
+      description: "Platform administration settings"
+    }
+  };
+
+  const config = sections[section];
+
+  if (!config) {
+    state.screen = "admin-dashboard";
+    render();
+    return;
+  }
+
+  setHeader(
+    "SIMPOCHAT ADMIN",
+    config.title
+  );
+
+  screen.innerHTML = `
+    <div class="settings-page admin-section-page">
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          ${config.title}
+        </div>
+
+        <div class="section-note">
+          ${config.description}
+        </div>
+
+        <div id="admin-section-content">
+          Loading...
+        </div>
+
+      </section>
+
+      <button
+        class="settings-button"
+        data-action="admin-dashboard"
+      >
+        Back to Dashboard
+      </button>
+
+    </div>
+  `;
+
+  try {
+
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
+
+    if (!access.is_admin || !access.role) {
+      throw new Error(
+        "Administrator access is not active."
+      );
+    }
+
+    const container =
+      document.getElementById(
+        "admin-section-content"
+      );
+
+    if (!container) return;
+
+    if (section === "users") {
+
+      const result = await callSimpoAdmin(
+        "admin_list_users"
+      );
+
+      container.innerHTML = result.users.length
+        ? result.users.map(user => `
+            <div class="settings-section">
+              <strong>${esc(user.name || "Unnamed user")}</strong>
+              <p>${esc(user.email || "")}</p>
+              <small>
+                Access:
+                ${esc(user.access_status || "unknown")}
+              </small>
+            </div>
+          `).join("")
+        : "No users found.";
+
+      return;
+    }
+
+    if (section === "groups") {
+
+      const result = await callSimpoAdmin(
+        "admin_list_groups"
+      );
+
+      container.innerHTML = result.groups.length
+        ? result.groups.map(group => `
+            <div class="settings-section">
+              <strong>${esc(group.name || "Unnamed group")}</strong>
+              <p>
+                ${esc(group.category || "Uncategorised")}
+              </p>
+              <small>
+                Members: ${Number(group.members_count || 0)}
+                · ${group.is_official ? "Official" : "Community"}
+              </small>
+            </div>
+          `).join("")
+        : "No groups found.";
+
+      return;
+    }
+
+    const messages = {
+      administrators:
+        "Administrator account management will be connected here.",
+      activity:
+        "Administrative activity records will appear here.",
+      settings:
+        "Platform administration settings will appear here."
+    };
+
+    container.textContent =
+      messages[section] ||
+      "This section is being prepared.";
+
+  } catch (error) {
+
+    const container =
+      document.getElementById(
+        "admin-section-content"
+      );
+
+    if (container) {
+      container.textContent =
+        error.message || "Unable to load this section.";
+    }
+
+  }
+}
+
 /* LOAD ADMIN REPORTS */
 
 async function renderAdminReports(filter = "all") {
