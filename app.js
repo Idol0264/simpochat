@@ -1923,6 +1923,17 @@ if (state.screen === "admin-reports") {
   return;
 }
 
+if (
+  state.screen.startsWith("admin-") &&
+  state.screen !== "admin-dashboard" &&
+  state.screen !== "admin-reports"
+) {
+  void renderAdminSection(
+    state.screen.replace("admin-", "")
+  );
+  return;
+}
+
   if (state.screen === "new-group") {
     return renderNewGroup();
   }
