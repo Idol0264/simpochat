@@ -12195,7 +12195,7 @@ async function callSimpoAdmin(action, payload = {}) {
 
 /* LOAD ADMIN REPORTS */
 
-async function renderAdminDashboard(filter = "all") {
+async function renderAdminReports(filter = "all") {
 
   setHeader(
     "SimpoChat Administration",
