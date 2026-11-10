@@ -10139,3 +10139,186 @@ body.simpo-call-active #screen {
     padding: 0 10px;
   }
 }
+
+
+/* =====================================================
+   SIMPOCHAT ADMINISTRATION — REPORT DASHBOARD
+   ===================================================== */
+
+.admin-dashboard {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 0 35px;
+  box-sizing: border-box;
+}
+
+.admin-dashboard .settings-section {
+  margin-bottom: 15px;
+}
+
+.admin-dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* REPORT STATISTICS */
+
+#admin-report-stats {
+  margin: 16px 0;
+}
+
+#admin-report-stats .theme-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+#admin-report-stats .theme-option {
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 750;
+  border-radius: 13px;
+}
+
+/* REPORT FILTERS */
+
+.admin-dashboard .theme-options {
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.admin-dashboard .theme-option {
+  font-size: 11px;
+}
+
+/* REPORT LIST */
+
+#admin-report-list {
+  display: grid;
+  gap: 13px;
+  margin-top: 15px;
+}
+
+.admin-report-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+}
+
+.admin-report-card .section-title {
+  font-size: 16px;
+  margin-bottom: 13px;
+}
+
+.admin-report-card p {
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  margin: 9px 0;
+}
+
+.admin-report-card p strong {
+  font-weight: 800;
+}
+
+.admin-report-card a {
+  display: inline-block;
+  margin: 8px 0;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+/* REPORT STATUS */
+
+.admin-report-card label {
+  display: block;
+  margin: 15px 0 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-status-select,
+.admin-report-notes {
+  width: 100%;
+  min-height: 43px;
+  padding: 11px;
+  border-radius: 11px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.admin-report-notes {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.admin-report-card button {
+  width: 100%;
+  margin-top: 13px;
+}
+
+.admin-report-card button:disabled {
+  opacity: .6;
+}
+
+/* LOADING AND EMPTY STATES */
+
+.admin-dashboard #admin-report-list:empty {
+  display: none;
+}
+
+.admin-dashboard .admin-loading,
+.admin-dashboard .admin-empty {
+  padding: 25px 15px;
+  text-align: center;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-dashboard .admin-error {
+  padding: 15px;
+  border-radius: 12px;
+  color: #dc4444;
+  background: rgba(220, 68, 68, .08);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* MOBILE */
+
+@media (max-width: 420px) {
+
+  .admin-dashboard {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .admin-report-card {
+    padding: 13px;
+  }
+
+  #admin-report-stats .theme-option {
+    font-size: 11px;
+  }
+
+}
