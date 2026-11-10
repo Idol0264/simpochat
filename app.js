@@ -19483,6 +19483,16 @@ else {
 
 function openMainMenu() {
 
+  const isAdminPage =
+    state.screen === "admin-dashboard" ||
+    state.screen === "admin-reports" ||
+    state.screen.startsWith("admin-");
+
+  if (isAdminPage) {
+    openAdminMenu();
+    return;
+  }
+
   modalRoot.innerHTML = `
 
     <div
@@ -19511,113 +19521,155 @@ function openMainMenu() {
 
         </div>
 
+        <div class="menu-list">
+
+          <button class="menu-item"
+            data-action="new-group">
+            <div class="menu-icon">+</div>
+            <div>
+              <strong>New group</strong>
+              <span>Create a new group</span>
+            </div>
+          </button>
+
+          <button class="menu-item"
+            data-action="starred">
+            <div class="menu-icon">☆</div>
+            <div>
+              <strong>Starred</strong>
+              <span>Favourite groups</span>
+            </div>
+          </button>
+
+          <button class="menu-item"
+            data-action="read-all">
+            <div class="menu-icon">✓</div>
+            <div>
+              <strong>Read all</strong>
+              <span>Mark all unseen messages as read</span>
+            </div>
+          </button>
+
+          <button class="menu-item"
+            data-action="settings">
+            <div class="menu-icon">⚙</div>
+            <div>
+              <strong>Settings</strong>
+              <span>Profile and appearance</span>
+            </div>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================
+   SIMPOCHAT ADMIN — INDEPENDENT MENU
+========================================= */
+
+function openAdminMenu() {
+
+  modalRoot.innerHTML = `
+
+    <div class="modal-backdrop admin-menu-backdrop"
+      data-close>
+
+      <div class="modal admin-menu-modal"
+        data-stop-close>
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Administration
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+        </div>
 
         <div class="menu-list">
 
-
-          <!-- New Group -->
-
-          <button
-            class="menu-item"
-            data-action="new-group"
-          >
-
-            <div class="menu-icon">
-              +
-            </div>
-
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="dashboard">
+            <div class="menu-icon">📊</div>
             <div>
-
-              <strong>
-                New group
-              </strong>
-
-              <span>
-                Create a new group
-              </span>
-
+              <strong>Dashboard</strong>
+              <span>Platform overview and statistics</span>
             </div>
-
           </button>
 
-
-          <!-- Starred -->
-
-          <button
-            class="menu-item"
-            data-action="starred"
-          >
-
-            <div class="menu-icon">
-              ☆
-            </div>
-
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="users">
+            <div class="menu-icon">👥</div>
             <div>
-
-              <strong>
-                Starred
-              </strong>
-
-              <span>
-                Favourite groups
-              </span>
-
+              <strong>Users</strong>
+              <span>Profiles, access and user management</span>
             </div>
-
           </button>
 
-
-          <!-- Read All -->
-
-          <button
-            class="menu-item"
-            data-action="read-all"
-          >
-
-            <div class="menu-icon">
-              ✓
-            </div>
-
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="groups">
+            <div class="menu-icon">💬</div>
             <div>
-
-              <strong>
-                Read all
-              </strong>
-
-              <span>
-                Mark all unseen messages as read
-              </span>
-
+              <strong>Groups</strong>
+              <span>Manage all SimpoChat groups</span>
             </div>
-
           </button>
 
-
-          <!-- Settings -->
-
-          <button
-            class="menu-item"
-            data-action="settings"
-          >
-
-            <div class="menu-icon">
-              ⚙
-            </div>
-
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="reports">
+            <div class="menu-icon">🚩</div>
             <div>
-
-              <strong>
-                Settings
-              </strong>
-
-              <span>
-                Profile and appearance
-              </span>
-
+              <strong>Reports</strong>
+              <span>Review complaints and reported content</span>
             </div>
-
           </button>
 
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="administrators">
+            <div class="menu-icon">🛡️</div>
+            <div>
+              <strong>Administrators</strong>
+              <span>Admin accounts and permissions</span>
+            </div>
+          </button>
+
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="activity">
+            <div class="menu-icon">📋</div>
+            <div>
+              <strong>Activity Logs</strong>
+              <span>Administrative records</span>
+            </div>
+          </button>
+
+          <button class="menu-item"
+            data-action="admin-section"
+            data-section="settings">
+            <div class="menu-icon">⚙️</div>
+            <div>
+              <strong>Settings</strong>
+              <span>Platform administration settings</span>
+            </div>
+          </button>
 
         </div>
 
