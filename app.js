@@ -15407,22 +15407,43 @@ async function handleAction(
 
       break;
 
-        
+
     case "admin-section": {
 
       const section =
         actionTarget.dataset.section;
 
-      if (section === "reports") {
+      const allowedSections = [
+        "dashboard",
+        "users",
+        "groups",
+        "reports",
+        "administrators",
+        "activity",
+        "settings"
+      ];
+
+      if (!allowedSections.includes(section)) {
+        break;
+      }
+
+      if (section === "dashboard") {
+
+        state.screen = "admin-dashboard";
+
+      } else if (section === "reports") {
 
         state.screen = "admin-reports";
         state.adminReportFilter = "all";
 
       } else {
 
-        state.screen = "admin-dashboard";
-        state.adminSection = section;
+        state.screen = "admin-" + section;
 
+      }
+
+      if (typeof modalRoot !== "undefined") {
+        modalRoot.innerHTML = "";
       }
 
       saveState();
