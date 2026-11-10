@@ -12544,6 +12544,218 @@ async function saveSimpoAdminReport(button) {
 }
 
 
+/* =========================================================
+   SIMPOCHAT ADMIN — MAIN DASHBOARD
+   ========================================================= */
+
+async function renderAdminDashboard() {
+
+  setHeader(
+    "SIMPOCHAT ADMIN",
+    "Platform administration"
+  );
+
+  screen.innerHTML = `
+
+    <div class="settings-page admin-dashboard">
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Platform Overview
+        </div>
+
+        <div class="section-note">
+          Monitor SimpoChat platform activity and membership.
+        </div>
+
+        <div id="admin-overview-stats">
+          Loading platform statistics...
+        </div>
+
+      </section>
+
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Administration
+        </div>
+
+        <div class="section-note">
+          Select an area to manage.
+        </div>
+
+        <div class="admin-navigation">
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="dashboard">
+
+            <span class="admin-nav-icon">📊</span>
+            <strong>Dashboard</strong>
+            <small>Platform overview and statistics</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="users">
+
+            <span class="admin-nav-icon">👥</span>
+            <strong>Users</strong>
+            <small>Profiles, access and user management</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="groups">
+
+            <span class="admin-nav-icon">💬</span>
+            <strong>Groups</strong>
+            <small>Create official groups and manage all groups</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="reports">
+
+            <span class="admin-nav-icon">🚩</span>
+            <strong>Reports</strong>
+            <small>Review complaints and reported content</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="administrators">
+
+            <span class="admin-nav-icon">🛡️</span>
+            <strong>Administrators</strong>
+            <small>Admin accounts and permissions</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="activity">
+
+            <span class="admin-nav-icon">📋</span>
+            <strong>Activity Logs</strong>
+            <small>Record administrative actions</small>
+
+          </button>
+
+
+          <button class="admin-nav-card"
+            data-action="admin-section"
+            data-section="settings">
+
+            <span class="admin-nav-icon">⚙️</span>
+            <strong>Settings</strong>
+            <small>Platform-wide administrative settings</small>
+
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  `;
+
+
+  try {
+
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
+
+    if (!access.is_admin || !access.role) {
+      throw new Error(
+        "Administrator access is not active."
+      );
+    }
+
+    window.SIMPOCHAT_ADMIN = {
+      role: access.role,
+      user: access.user
+    };
+
+
+    const result = await callSimpoAdmin(
+      "admin_overview"
+    );
+
+    const o = result.overview || {};
+
+    const stats = document.getElementById(
+      "admin-overview-stats"
+    );
+
+    if (!stats) return;
+
+    const cards = [
+      ["Users", o.users_total, "👥"],
+      ["Allowed", o.users_allowed, "✅"],
+      ["Blocked", o.users_blocked, "🚫"],
+      ["Groups", o.groups_total, "💬"],
+      ["Official Groups", o.official_groups, "⭐"],
+      ["Reports", o.reports_total, "🚩"],
+      ["Pending Reports", o.reports_pending, "⏳"],
+      ["Administrators", o.active_administrators, "🛡️"]
+    ];
+
+    stats.innerHTML = `
+
+      <div class="admin-overview-grid">
+
+        ${cards.map(([label, value, icon]) => `
+
+          <div class="admin-stat-card">
+
+            <span>${icon}</span>
+
+            <strong>${Number(value || 0).toLocaleString()}</strong>
+
+            <small>${label}</small>
+
+          </div>
+
+        `).join("")}
+
+      </div>
+
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Admin overview error:",
+      error
+    );
+
+    const stats = document.getElementById(
+      "admin-overview-stats"
+    );
+
+    if (stats) {
+      stats.textContent = error.message;
+    }
+
+  }
+
+}
+
+
 /* ---------------------------------------------------------
    SETTINGS / PROFILE
    --------------------------------------------------------- */
