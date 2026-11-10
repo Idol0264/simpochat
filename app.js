@@ -12532,10 +12532,10 @@ async function saveSimpoAdminReport(button) {
         ).value
       }
     );
-
-    await renderAdminDashboard(
-      state.adminReportFilter || "all"
-    );
+     
+     await renderAdminReports(
+        state.adminReportFilter || "all"
+     );
 
   } catch (error) {
 
@@ -15281,16 +15281,6 @@ async function handleAction(
     case "admin-report-save":
 
       await saveSimpoAdminReport(actionTarget);
-
-      break;
-
-
-    case "admin-report-filter":
-
-      state.adminReportFilter =
-        actionTarget.dataset.status || "all";
-
-      render();
 
       break;
         
