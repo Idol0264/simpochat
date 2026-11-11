@@ -10658,3 +10658,105 @@ body.admin-mode .fab {
 .admin-group-id {
   font-size: 10px !important;
 }
+
+
+/* =========================================
+   ADMIN USERS & GROUPS — FIXED MANAGEMENT HEAD
+========================================= */
+
+.admin-management-page {
+  height: calc(100dvh - 190px);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-management-page > .settings-section {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-management-page > .settings-section > .section-title,
+.admin-management-page > .settings-section > .section-note {
+  display: none;
+}
+
+.admin-management-page #admin-section-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-management-head {
+  flex: 0 0 auto;
+  padding: 10px 0 8px;
+  background: var(--bg);
+  position: relative;
+  z-index: 5;
+}
+
+.admin-management-title {
+  margin-bottom: 8px;
+}
+
+.admin-management-title .section-title {
+  margin-bottom: 5px;
+}
+
+.admin-management-title .section-note {
+  margin-bottom: 0;
+}
+
+.admin-management-head .admin-user-stats {
+  margin: 10px 0;
+}
+
+.admin-management-head .admin-user-toolbar {
+  margin: 10px 0 5px;
+}
+
+.admin-management-results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 2px 20px;
+}
+
+.admin-management-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-management-results::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 10px;
+}
+
+.admin-management-page > .settings-button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 420px) {
+  .admin-management-page {
+    height: calc(100dvh - 175px);
+  }
+
+  .admin-management-head .admin-user-stats {
+    gap: 6px;
+  }
+
+  .admin-management-head .admin-user-stat {
+    padding: 12px 5px;
+  }
+
+  .admin-management-head .admin-user-stat strong {
+    font-size: 20px;
+  }
+}
