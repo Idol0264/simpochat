@@ -12468,6 +12468,15 @@ async function renderAdminSection(section) {
       );
     }
 
+    if (
+      section === "settings" &&
+      access.role !== "super_admin"
+    ) {
+      throw new Error(
+        "Only the super administrator can access Admin Settings."
+      );
+    }
+
     const container =
       document.getElementById(
         "admin-section-content"
