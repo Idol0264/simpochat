@@ -12869,100 +12869,173 @@ async function renderAdminSection(section) {
         "admin_list_administrators"
       );
 
-      const administrators = safeArray(result.administrators);
+      const administrators = safeArray(
+        result.administrators
+      );
 
       container.innerHTML = `
         <div class="admin-management-head">
           <div class="admin-management-title">
-            <div class="section-title">Administrators</div>
+            <div class="section-title">
+              Administrators Directory
+            </div>
+
             <div class="section-note">
-              Manage administrator access and individual permissions
+              View all active and inactive administrator accounts and their assigned duties.
             </div>
           </div>
         </div>
 
-        <div class="admin-management-results" id="adminAdministratorList">
-          ${administrators.length ? administrators.map(admin => {
-            const profile = admin.profile || {};
-            const isSuperAdmin = admin.role === "super_admin";
-            const enabled = isSuperAdmin || admin.can_create_verified_business_accounts === true;
+        <div class="admin-management-filters">
+          <input
+            type="search"
+            id="adminAdministratorSearch"
+            placeholder="Search by name, email or role..."
+            autocomplete="off"
+          >
+        </div>
 
-            return `
-              <article class="admin-user-card admin-permission-card">
-                <div class="admin-user-avatar">🛡️</div>
+        <div class="admin-management-results"
+          id="adminAdministratorList">
 
-                <div class="admin-user-info">
-                  <strong>${esc(profile.name || "Administrator")}</strong>
-                  <p>${esc(profile.email || "Email unavailable")}</p>
-                  <small>Role: ${esc(String(admin.role || "admin").replaceAll("_", " "))}</small>
+          ${
+            administrators.length
+              ? administrators.map(admin => {
 
-                  <span class="admin-user-status ${admin.status === "active" ? "allowed" : "blocked"}">
-                    ${esc(admin.status || "unknown")}
-                  </span>
+                  const profile = admin.profile || {};
 
-                  <label class="admin-permission-row">
-                    <input
-                      type="checkbox"
-                      class="admin-verified-business-permission"
-                      data-user-id="${esc(admin.user_id)}"
-                      ${enabled ? "checked" : ""}
-                      ${isSuperAdmin ? "disabled" : ""}
+                  const duties = [
+                    [
+                      "Block / Unblock Users",
+                      admin.can_block_users
+                    ],
+                    [
+                      "Create Official Groups",
+                      admin.can_create_official_groups
+                    ],
+                    [
+                      "Create / Verify Business Accounts",
+                      admin.can_create_verified_business_accounts
+                    ],
+                    [
+                      "Review Reports",
+                      admin.can_review_reports
+                    ]
+                  ];
+
+                  const isSuperAdmin =
+                    admin.role === "super_admin";
+
+                  const assignedDuties = isSuperAdmin
+                    ? duties.map(duty => duty[0])
+                    : duties
+                        .filter(duty => duty[1] === true)
+                        .map(duty => duty[0]);
+
+                  const searchText = [
+                    profile.name || "",
+                    profile.email || "",
+                    admin.role || "",
+                    admin.status || ""
+                  ].join(" ").toLowerCase();
+
+                  return `
+                    <article
+                      class="admin-user-card admin-permission-card"
+                      data-admin-search="${esc(searchText)}"
                     >
 
-                    <span>
-                      <strong>Create Verified Business Accounts</strong>
-                      <small>
-                        Allows this Admin to create and verify business accounts
-                      </small>
-                    </span>
-                  </label>
+                      <div class="admin-user-avatar">
+                        🛡️
+                      </div>
 
-                  ${isSuperAdmin ? `<small>Super Admins always have this permission.</small>` : ""}
+                      <div class="admin-user-info">
+
+                        <strong>
+                          ${esc(profile.name || "Administrator")}
+                        </strong>
+
+                        <p>
+                          ${esc(profile.email || "Email unavailable")}
+                        </p>
+
+                        <small>
+                          Role:
+                          ${esc(
+                            String(admin.role || "admin")
+                              .replaceAll("_", " ")
+                          )}
+                        </small>
+
+                        <span class="admin-user-status ${
+                          admin.status === "active"
+                            ? "allowed"
+                            : "blocked"
+                        }">
+                          ${esc(admin.status || "unknown")}
+                        </span>
+
+                        <div class="admin-permission-list">
+
+                          <strong>Assigned Duties</strong>
+
+                          ${
+                            assignedDuties.length
+                              ? assignedDuties.map(duty => `
+                                  <div class="admin-permission-row">
+                                    <span>✓</span>
+                                    <span>${esc(duty)}</span>
+                                  </div>
+                                `).join("")
+                              : `
+                                  <small>
+                                    No additional duties assigned.
+                                  </small>
+                                `
+                          }
+
+                        </div>
+
+                      </div>
+
+                    </article>
+                  `;
+
+                }).join("")
+              : `
+                <div class="section-note">
+                  No administrators found.
                 </div>
-              </article>
-            `;
-          }).join("") : `
-            <div class="section-note">No administrators found.</div>
-          `}
+              `
+          }
+
         </div>
       `;
 
-      container
-        .querySelectorAll(".admin-verified-business-permission")
-        .forEach(checkbox => {
+      const searchInput = container.querySelector(
+        "#adminAdministratorSearch"
+      );
 
-          checkbox.addEventListener("change", async () => {
+      const adminCards = container.querySelectorAll(
+        "[data-admin-search]"
+      );
 
-            const previousValue = !checkbox.checked;
-            checkbox.disabled = true;
+      searchInput?.addEventListener("input", () => {
 
-            try {
+        const query = searchInput.value
+          .trim()
+          .toLowerCase();
 
-              await callSimpoAdmin(
-                "admin_set_verified_business_permission",
-                {
-                  user_id: checkbox.dataset.userId,
-                  enabled: checkbox.checked
-                }
-              );
+        adminCards.forEach(card => {
 
-            } catch (error) {
+          const matches =
+            card.dataset.adminSearch.includes(query);
 
-              checkbox.checked = previousValue;
-
-              alert(
-                error.message || "Unable to update this permission."
-              );
-
-            } finally {
-
-              checkbox.disabled = false;
-
-            }
-
-          });
+          card.style.display = matches ? "" : "none";
 
         });
+
+      });
 
       return;
     }
