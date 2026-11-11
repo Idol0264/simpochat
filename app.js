@@ -12385,6 +12385,229 @@ async function callSimpoAdmin(action, payload = {}) {
    ADMIN — INDIVIDUAL SECTION SCREENS
 ========================================= */
 
+async function renderAdminAdministratorWorkspace(
+  userId,
+  container
+) {
+
+  if (!userId || !container) return;
+
+  container.innerHTML = `
+    <div class="admin-loading">
+      Loading administrator workspace...
+    </div>
+  `;
+
+  try {
+
+    const result = await callSimpoAdmin(
+      "admin_get_administrator_workspace",
+      {
+        user_id: userId
+      }
+    );
+
+    const workspace = result.workspace || {};
+    const profile = workspace.profile || {};
+
+    const duties = [
+      [
+        "Block / Unblock Users",
+        workspace.can_block_users
+      ],
+      [
+        "Create Official Groups",
+        workspace.can_create_official_groups
+      ],
+      [
+        "Create / Verify Business Accounts",
+        workspace.can_create_verified_business_accounts
+      ],
+      [
+        "Review Reports",
+        workspace.can_review_reports
+      ]
+    ];
+
+    const assignedDuties = duties.filter(
+      duty => duty[1] === true
+    );
+
+    const occupation = Array.isArray(profile.occupation)
+      ? profile.occupation.join(", ")
+      : profile.occupation || "Not provided";
+
+    container.innerHTML = `
+
+      <div class="admin-management-head">
+
+        <div class="admin-management-title">
+
+          <div class="section-title">
+            Administrator Workspace
+          </div>
+
+          <div class="section-note">
+            Administrator account information and assigned responsibilities.
+          </div>
+
+        </div>
+
+      </div>
+
+      ${
+        workspace.read_only
+          ? `
+            <div class="admin-empty">
+              You are inspecting this administrator's workspace.
+              This workspace is read-only.
+            </div>
+          `
+          : ""
+      }
+
+      <div class="admin-management-results">
+
+        <article class="admin-user-card">
+
+          <div class="admin-user-avatar">
+            🛡️
+          </div>
+
+          <div class="admin-user-info">
+
+            <strong>
+              ${esc(profile.name || "Administrator")}
+            </strong>
+
+            <p>
+              ${esc(profile.email || "Email unavailable")}
+            </p>
+
+            <small>
+              Role:
+              ${esc(
+                String(workspace.role || "admin")
+                  .replaceAll("_", " ")
+              )}
+            </small>
+
+            <span class="admin-user-status ${
+              workspace.status === "active"
+                ? "allowed"
+                : "blocked"
+            }">
+              ${esc(workspace.status || "unknown")}
+            </span>
+
+          </div>
+
+        </article>
+
+        <div class="settings-section">
+
+          <div class="section-title">
+            Profile Information
+          </div>
+
+          <p>
+            <strong>Name:</strong>
+            ${esc(profile.name || "Not provided")}
+          </p>
+
+          <p>
+            <strong>Email:</strong>
+            ${esc(profile.email || "Not provided")}
+          </p>
+
+          <p>
+            <strong>Occupation:</strong>
+            ${esc(occupation)}
+          </p>
+
+          <p>
+            <strong>Administrator since:</strong>
+            ${workspace.created_at
+              ? esc(new Date(workspace.created_at).toLocaleDateString())
+              : "Unavailable"}
+          </p>
+
+        </div>
+
+        <div class="settings-section">
+
+          <div class="section-title">
+            Assigned Duties
+          </div>
+
+          ${
+            assignedDuties.length
+              ? assignedDuties.map(duty => `
+                  <div class="admin-permission-row">
+                    <span>✓</span>
+                    <span>${esc(duty[0])}</span>
+                  </div>
+                `).join("")
+              : `
+                <p class="section-note">
+                  No duties are currently assigned.
+                </p>
+              `
+          }
+
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="settings-button"
+        id="adminWorkspaceBack"
+      >
+        Back to Administrators
+      </button>
+
+    `;
+
+    container.querySelector(
+      "#adminWorkspaceBack"
+    )?.addEventListener("click", () => {
+
+      renderAdminSection("administrators");
+
+    });
+
+  } catch (error) {
+
+    container.innerHTML = `
+      <div class="admin-error">
+        ${esc(
+          error.message ||
+          "Unable to load this administrator workspace."
+        )}
+      </div>
+
+      <button
+        type="button"
+        class="settings-button"
+        id="adminWorkspaceBack"
+      >
+        Back to Administrators
+      </button>
+    `;
+
+    container.querySelector(
+      "#adminWorkspaceBack"
+    )?.addEventListener("click", () => {
+
+      renderAdminSection("administrators");
+
+    });
+
+  }
+
+}
+
 async function renderAdminSection(section) {
 
   const sections = {
