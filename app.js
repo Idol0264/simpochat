@@ -12683,21 +12683,34 @@ async function renderAdminSection(section) {
       
       </div>
       
-      <div class="admin-user-toolbar">
-      
-      <input
-      id="adminGroupSearch"
-      type="search"
-      placeholder="Search group name..."
-      autocomplete="off"
-      >
-      
-      <select id="adminGroupFilter">
-      <option value="all">All groups</option>
-      <option value="official">Official groups</option>
-      <option value="community">Community groups</option>
-      </select>
-      
+      <div class="admin-user-toolbar admin-group-toolbar">
+
+        <input
+          id="adminGroupSearch"
+          type="search"
+          placeholder="Search group name..."
+          autocomplete="off"
+        >
+
+        ${
+          access.can_create_official_groups
+            ? `
+              <button
+                class="settings-button admin-create-official-button"
+                data-action="admin-create-official-group"
+              >
+                + Official Group
+              </button>
+            `
+            : ""
+        }
+
+        <select id="adminGroupFilter">
+          <option value="all">All groups</option>
+          <option value="official">Official groups</option>
+          <option value="community">Community groups</option>
+        </select>
+
       </div>
       
       </div>
