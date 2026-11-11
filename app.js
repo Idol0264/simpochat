@@ -13244,6 +13244,23 @@ async function renderAdminSection(section) {
         </div>
       `;
 
+      const workspaceButtons = container.querySelectorAll(
+        "[data-admin-open-workspace]"
+      );
+
+      workspaceButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          renderAdminAdministratorWorkspace(
+            button.dataset.adminUserId,
+            container
+          );
+
+        });
+
+      });
+
       const searchInput = container.querySelector(
         "#adminAdministratorSearch"
       );
