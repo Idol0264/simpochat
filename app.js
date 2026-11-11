@@ -12622,26 +12622,189 @@ async function renderAdminSection(section) {
       return;
     }
 
+
     if (section === "groups") {
 
       const result = await callSimpoAdmin(
         "admin_list_groups"
       );
 
-      container.innerHTML = result.groups.length
-        ? result.groups.map(group => `
-            <div class="settings-section">
-              <strong>${esc(group.name || "Unnamed group")}</strong>
-              <p>
-                ${esc(group.category || "Uncategorised")}
-              </p>
-              <small>
-                Members: ${Number(group.members_count || 0)}
-                · ${group.is_official ? "Official" : "Community"}
-              </small>
+      const groups = safeArray(result.groups);
+
+      const officialCount = groups.filter(
+        group => group.is_official
+      ).length;
+
+      const communityCount =
+        groups.length - officialCount;
+
+      container.innerHTML = `
+
+        <div class="admin-user-stats">
+
+          <div class="admin-user-stat">
+            <strong>${groups.length}</strong>
+            <small>Total groups</small>
+          </div>
+
+          <div class="admin-user-stat">
+            <strong>${officialCount}</strong>
+            <small>Official</small>
+          </div>
+
+          <div class="admin-user-stat">
+            <strong>${communityCount}</strong>
+            <small>Community</small>
+          </div>
+
+        </div>
+
+        <div class="admin-user-toolbar">
+
+          <input
+            id="adminGroupSearch"
+            type="search"
+            placeholder="Search group name..."
+          >
+
+          <select id="adminGroupFilter">
+            <option value="all">All groups</option>
+            <option value="official">Official groups</option>
+            <option value="community">Community groups</option>
+          </select>
+
+        </div>
+
+        <div id="adminGroupList"></div>
+
+      `;
+
+      const searchInput =
+        document.getElementById("adminGroupSearch");
+
+      const filterInput =
+        document.getElementById("adminGroupFilter");
+
+      const groupList =
+        document.getElementById("adminGroupList");
+
+      function displayGroups() {
+
+        const query = String(
+          searchInput.value || ""
+        ).trim().toLowerCase();
+
+        const filter = filterInput.value;
+
+        const filtered = groups.filter(group => {
+
+          const name = String(
+            group.name || ""
+          ).toLowerCase();
+
+          const matchesSearch =
+            name.includes(query);
+
+          const matchesFilter =
+            filter === "all" ||
+            (filter === "official" && group.is_official) ||
+            (filter === "community" && !group.is_official);
+
+          return matchesSearch && matchesFilter;
+
+        });
+
+        groupList.innerHTML = filtered.length
+
+          ? filtered.map(group => {
+
+              const categories = Array.isArray(group.category)
+                ? group.category.join(", ")
+                : String(group.category || "Uncategorised");
+
+              return `
+
+                <div class="admin-group-card">
+
+                  <div class="admin-group-top">
+
+                    <div class="admin-group-icon">
+                      ${esc(group.icon || "💬")}
+                    </div>
+
+                    <div class="admin-group-info">
+
+                      <strong>
+                        ${esc(group.name || "Unnamed group")}
+                      </strong>
+
+                      <span class="admin-group-type ${
+                        group.is_official
+                          ? "official"
+                          : "community"
+                      }">
+                        ${group.is_official
+                          ? "Official"
+                          : "Community"}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                  <div class="admin-group-details">
+
+                    <p>
+                      Category: ${esc(categories)}
+                    </p>
+
+                    <p>
+                      Members: ${Number(group.members_count || 0)}
+                    </p>
+
+                    <p>
+                      Join mode: ${esc(group.join_mode || "open")}
+                    </p>
+
+                    <p>
+                      Created: ${
+                        group.created_at
+                          ? esc(new Date(group.created_at).toLocaleDateString())
+                          : "Unknown"
+                      }
+                    </p>
+
+                    <p class="admin-group-id">
+                      Group ID: ${esc(group.id || "")}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              `;
+
+            }).join("")
+
+          : `
+            <div class="section-note">
+              No matching groups found.
             </div>
-          `).join("")
-        : "No groups found.";
+          `;
+
+      }
+
+      searchInput.addEventListener(
+        "input",
+        displayGroups
+      );
+
+      filterInput.addEventListener(
+        "change",
+        displayGroups
+      );
+
+      displayGroups();
 
       return;
     }
