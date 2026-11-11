@@ -1929,6 +1929,11 @@ if (state.screen === "admin-reports") {
   return;
 }
 
+if (state.screen === "admin-search") {
+  void renderAdminSearch();
+  return;
+}
+
 if (
   state.screen.startsWith("admin-") &&
   state.screen !== "admin-dashboard" &&
