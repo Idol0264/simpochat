@@ -12424,7 +12424,11 @@ async function renderAdminSection(section) {
   );
 
   screen.innerHTML = `
-    <div class="settings-page admin-section-page">
+    <div class="settings-page admin-section-page ${
+      section === "users" || section === "groups"
+        ? "admin-management-page"
+        : ""
+    }">
 
       <section class="settings-section">
 
