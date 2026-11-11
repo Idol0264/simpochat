@@ -12863,6 +12863,110 @@ async function renderAdminSection(section) {
       return;
     }
 
+    if (section === "administrators") {
+
+      const result = await callSimpoAdmin(
+        "admin_list_administrators"
+      );
+
+      const administrators = safeArray(result.administrators);
+
+      container.innerHTML = `
+        <div class="admin-management-head">
+          <div class="admin-management-title">
+            <div class="section-title">Administrators</div>
+            <div class="section-note">
+              Manage administrator access and individual permissions
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-management-results" id="adminAdministratorList">
+          ${administrators.length ? administrators.map(admin => {
+            const profile = admin.profile || {};
+            const isSuperAdmin = admin.role === "super_admin";
+            const enabled = isSuperAdmin || admin.can_create_verified_business_accounts === true;
+
+            return `
+              <article class="admin-user-card admin-permission-card">
+                <div class="admin-user-avatar">🛡️</div>
+
+                <div class="admin-user-info">
+                  <strong>${esc(profile.name || "Administrator")}</strong>
+                  <p>${esc(profile.email || "Email unavailable")}</p>
+                  <small>Role: ${esc(String(admin.role || "admin").replaceAll("_", " "))}</small>
+
+                  <span class="admin-user-status ${admin.status === "active" ? "allowed" : "blocked"}">
+                    ${esc(admin.status || "unknown")}
+                  </span>
+
+                  <label class="admin-permission-row">
+                    <input
+                      type="checkbox"
+                      class="admin-verified-business-permission"
+                      data-user-id="${esc(admin.user_id)}"
+                      ${enabled ? "checked" : ""}
+                      ${isSuperAdmin ? "disabled" : ""}
+                    >
+
+                    <span>
+                      <strong>Create Verified Business Accounts</strong>
+                      <small>
+                        Allows this Admin to create and verify business accounts
+                      </small>
+                    </span>
+                  </label>
+
+                  ${isSuperAdmin ? `<small>Super Admins always have this permission.</small>` : ""}
+                </div>
+              </article>
+            `;
+          }).join("") : `
+            <div class="section-note">No administrators found.</div>
+          `}
+        </div>
+      `;
+
+      container
+        .querySelectorAll(".admin-verified-business-permission")
+        .forEach(checkbox => {
+
+          checkbox.addEventListener("change", async () => {
+
+            const previousValue = !checkbox.checked;
+            checkbox.disabled = true;
+
+            try {
+
+              await callSimpoAdmin(
+                "admin_set_verified_business_permission",
+                {
+                  user_id: checkbox.dataset.userId,
+                  enabled: checkbox.checked
+                }
+              );
+
+            } catch (error) {
+
+              checkbox.checked = previousValue;
+
+              alert(
+                error.message || "Unable to update this permission."
+              );
+
+            } finally {
+
+              checkbox.disabled = false;
+
+            }
+
+          });
+
+        });
+
+      return;
+    }
+     
     const messages = {
       administrators:
         "Administrator account management will be connected here.",
