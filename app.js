@@ -12467,15 +12467,15 @@ async function renderAdminSection(section) {
         "Administrator access is not active."
       );
     }
-
-    if (
-      (section === "settings" || section === "administrators") &&
-      access.role !== "super_admin"
-    ) {
-      throw new Error(
-        "Only super administrators can manage administrator accounts and settings."
-      );
-    }
+     
+     if (
+        section === "settings" &&
+        access.role !== "super_admin"
+     ) {
+        throw new Error(
+           "Only the Super Admin can access administrator settings."
+        );
+     }
 
     window.SIMPOCHAT_ADMIN = {
       role: access.role,
