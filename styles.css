@@ -10785,3 +10785,45 @@ body.admin-mode .fab {
   padding: 0 12px;
   font-size: 13px;
 }
+
+/* ADMIN — VERIFIED BUSINESS ACCOUNT PERMISSION */
+
+.admin-permission-card {
+  align-items: flex-start;
+}
+
+.admin-permission-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  cursor: pointer;
+}
+
+.admin-permission-row input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  flex: 0 0 auto;
+  accent-color: #8b5cf6;
+}
+
+.admin-permission-row span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-permission-row strong {
+  font-size: 12px;
+}
+
+.admin-permission-row small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
