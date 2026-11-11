@@ -12477,6 +12477,11 @@ async function renderAdminSection(section) {
       );
     }
 
+    window.SIMPOCHAT_ADMIN = {
+      role: access.role,
+      user: access.user
+    };
+
     const container =
       document.getElementById(
         "admin-section-content"
