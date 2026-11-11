@@ -10583,3 +10583,78 @@ body.admin-mode .fab {
   background: #fde8e8;
   color: #b42318;
 }
+
+/* =========================================
+   ADMIN GROUP MANAGEMENT
+========================================= */
+
+.admin-group-card {
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.admin-group-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-group-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: var(--surface-strong);
+  font-size: 23px;
+}
+
+.admin-group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.admin-group-info strong {
+  overflow-wrap: anywhere;
+}
+
+.admin-group-type {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-group-type.official {
+  background: #e9e5ff;
+  color: #6345c8;
+}
+
+.admin-group-type.community {
+  background: #e4f5e9;
+  color: #18743b;
+}
+
+.admin-group-details {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-group-details p {
+  margin: 7px 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.admin-group-id {
+  font-size: 10px !important;
+}
