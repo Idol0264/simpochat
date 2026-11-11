@@ -12477,18 +12477,147 @@ async function renderAdminSection(section) {
         "admin_list_users"
       );
 
-      container.innerHTML = result.users.length
-        ? result.users.map(user => `
-            <div class="settings-section">
-              <strong>${esc(user.name || "Unnamed user")}</strong>
-              <p>${esc(user.email || "")}</p>
-              <small>
-                Access:
-                ${esc(user.access_status || "unknown")}
-              </small>
+      const users = safeArray(result.users);
+
+      const allowedCount = users.filter(
+        user => user.access_status === "allowed"
+      ).length;
+
+      const blockedCount = users.filter(
+        user => user.access_status === "blocked"
+      ).length;
+
+      container.innerHTML = `
+        <div class="admin-user-stats">
+
+          <div class="admin-user-stat">
+            <strong>${users.length}</strong>
+            <small>Total users</small>
+          </div>
+
+          <div class="admin-user-stat">
+            <strong>${allowedCount}</strong>
+            <small>Allowed</small>
+          </div>
+
+          <div class="admin-user-stat">
+            <strong>${blockedCount}</strong>
+            <small>Blocked</small>
+          </div>
+
+        </div>
+
+        <div class="admin-user-toolbar">
+
+          <input
+            id="adminUserSearch"
+            type="search"
+            placeholder="Search name or email..."
+            autocomplete="off"
+          >
+
+          <select id="adminUserFilter">
+            <option value="all">All users</option>
+            <option value="allowed">Allowed</option>
+            <option value="blocked">Blocked</option>
+          </select>
+
+        </div>
+
+        <div id="adminUserList"></div>
+      `;
+
+      const searchInput =
+        document.getElementById("adminUserSearch");
+
+      const filterInput =
+        document.getElementById("adminUserFilter");
+
+      const userList =
+        document.getElementById("adminUserList");
+
+      function displayUsers() {
+
+        const query = String(
+          searchInput.value || ""
+        ).trim().toLowerCase();
+
+        const filter = filterInput.value;
+
+        const filtered = users.filter(user => {
+
+          const matchesSearch =
+            String(user.name || "").toLowerCase().includes(query) ||
+            String(user.email || "").toLowerCase().includes(query);
+
+          const matchesStatus =
+            filter === "all" ||
+            user.access_status === filter;
+
+          return matchesSearch && matchesStatus;
+        });
+
+        userList.innerHTML = filtered.length
+          ? filtered.map(user => {
+
+              const status =
+                user.access_status === "blocked"
+                  ? "Blocked"
+                  : "Allowed";
+
+              const date = user.created_at
+                ? new Date(user.created_at).toLocaleDateString()
+                : "Unknown";
+
+              return `
+                <div class="admin-user-card">
+
+                  <div class="admin-user-avatar">
+                    👤
+                  </div>
+
+                  <div class="admin-user-info">
+
+                    <strong>
+                      ${esc(user.name || "Unnamed user")}
+                    </strong>
+
+                    <p>
+                      ${esc(user.email || "")}
+                    </p>
+
+                    <small>
+                      Joined: ${esc(date)}
+                    </small>
+
+                    <span class="admin-user-status ${status.toLowerCase()}">
+                      ${status}
+                    </span>
+
+                  </div>
+
+                </div>
+              `;
+
+            }).join("")
+          : `
+            <div class="section-note">
+              No matching users found.
             </div>
-          `).join("")
-        : "No users found.";
+          `;
+      }
+
+      searchInput.addEventListener(
+        "input",
+        displayUsers
+      );
+
+      filterInput.addEventListener(
+        "change",
+        displayUsers
+      );
+
+      displayUsers();
 
       return;
     }
