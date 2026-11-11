@@ -10463,3 +10463,17 @@ body.simpo-call-active #screen {
   }
 
 }
+
+/* =========================================
+   ADMIN HEADER — HIDE ORDINARY CONTROLS
+========================================= */
+
+body.admin-mode
+.header-actions [data-action="open-posts"] {
+  display: none !important;
+}
+
+/* Hide floating purple + button */
+body.admin-mode .fab {
+  display: none !important;
+}
