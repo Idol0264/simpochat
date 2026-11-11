@@ -12481,7 +12481,7 @@ async function renderAdminSection(section) {
       role: access.role,
       user: access.user
     };
-
+     
     const container =
       document.getElementById(
         "admin-section-content"
