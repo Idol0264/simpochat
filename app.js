@@ -13198,6 +13198,15 @@ async function renderAdminSection(section) {
                           ${esc(admin.status || "unknown")}
                         </span>
 
+                        <button
+                          type="button"
+                          class="settings-button"
+                          data-admin-open-workspace
+                          data-admin-user-id="${esc(admin.user_id || "")}"
+                        >
+                          View Workspace
+                        </button>
+
                         <div class="admin-permission-list">
 
                           <strong>Assigned Duties</strong>
