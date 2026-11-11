@@ -13495,7 +13495,7 @@ async function renderAdminDashboard() {
     if (access.role !== "super_admin") {
       document
         .querySelectorAll(
-          '.admin-nav-card[data-section="settings"]'
+          '.admin-nav-card[data-section="settings"], .admin-nav-card[data-section="administrators"]'
         )
         .forEach(card => card.remove());
     }
