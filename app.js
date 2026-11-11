@@ -1690,22 +1690,28 @@ function setHeader(
   subtitle = ""
 ) {
   const brand =
-    document.querySelector(
-      ".brand-name"
-    );
+    document.querySelector(".brand-name");
 
   const subtitleElement =
     $("#screenSubtitle");
+
+  const isAdminScreen =
+    String(state.screen || "").startsWith("admin-");
+
+  document.body.classList.toggle(
+    "admin-mode",
+    isAdminScreen
+  );
 
   if (brand) {
     brand.textContent = title;
   }
 
   if (subtitleElement) {
-    subtitleElement.textContent =
-      subtitle;
+    subtitleElement.textContent = subtitle;
   }
 }
+
 
 /* ---------------------------------------------------------
    SCREEN NAVIGATION
