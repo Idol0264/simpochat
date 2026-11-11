@@ -10477,3 +10477,109 @@ body.admin-mode
 body.admin-mode .fab {
   display: none !important;
 }
+
+/* =========================================
+   ADMIN USERS MANAGEMENT
+========================================= */
+
+.admin-user-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 18px 0;
+}
+
+.admin-user-stat {
+  padding: 15px 8px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-user-stat strong {
+  font-size: 23px;
+}
+
+.admin-user-stat small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.admin-user-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.admin-user-toolbar input,
+.admin-user-toolbar select {
+  width: 100%;
+  min-height: 47px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.admin-user-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 12px;
+  margin: 9px 0;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+
+.admin-user-avatar {
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  font-size: 22px;
+}
+
+.admin-user-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-user-info p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+
+.admin-user-info small {
+  color: var(--muted);
+}
+
+.admin-user-status {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-user-status.allowed {
+  background: #e4f5e9;
+  color: #18743b;
+}
+
+.admin-user-status.blocked {
+  background: #fde8e8;
+  color: #b42318;
+}
