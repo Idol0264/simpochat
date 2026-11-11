@@ -15328,16 +15328,23 @@ async function handleAction(
       break;
 
 
-    case "open-search":
 
-      state.screen =
-        "search";
+     case "open-search":
+        
+        if (
+           String(state.screen || "").startsWith("admin-")
+        ) {
+           state.adminSearchQuery = "";
+           state.screen = "admin-search";
+        } else {
+           state.screen = "search";
+        }
+        
+        saveState();
+        render();
+        
+        break;
 
-      saveState();
-
-      render();
-
-      break;
 
 
     case "open-menu":
