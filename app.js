@@ -16024,6 +16024,36 @@ async function handleAction(
         break;
       }
 
+      /* SUPER ADMIN ONLY SETTINGS */
+      if (section === "settings") {
+        try {
+          const access = await callSimpoAdmin(
+            "admin_status"
+          );
+
+          if (
+            !access.is_admin ||
+            access.role !== "super_admin"
+          ) {
+            alert(
+              "Only the super administrator can access Admin Settings."
+            );
+
+            state.screen = "admin-dashboard";
+            saveState();
+            render();
+            break;
+          }
+
+        } catch (error) {
+          alert(
+            error.message ||
+            "Unable to verify administrator permissions."
+          );
+          break;
+        }
+      }
+
       if (section === "dashboard") {
 
         state.screen = "admin-dashboard";
