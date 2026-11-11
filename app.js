@@ -15930,6 +15930,81 @@ async function handleAction(
       break;
 
 
+    case "admin-create-official-group": {
+
+      try {
+
+        const access = await callSimpoAdmin(
+          "admin_status"
+        );
+
+        if (!access.can_create_official_groups) {
+          alert("You do not have permission to create official groups.");
+          break;
+        }
+
+        const name = prompt("Enter the official group name:");
+
+        if (!name || !name.trim()) {
+          break;
+        }
+
+        const icon =
+          prompt("Enter a group emoji or icon:", "💬") || "💬";
+
+        const categoryText =
+          prompt("Enter group categories separated by commas:", "");
+
+        const category = categoryText
+          ? categoryText.split(",").map(item => item.trim()).filter(Boolean)
+          : [];
+
+        const join_mode = confirm(
+          "Should members be able to join directly?\n\nOK = Open joining\nCancel = Approval required"
+        ) ? "open" : "approval";
+
+        const approval_mode = confirm(
+          "Should any group admin approve join requests?\n\nOK = Any admin\nCancel = Creator only"
+        ) ? "admins" : "creator";
+
+        const result = await callSimpoAdmin(
+          "admin_create_official_group",
+          {
+            name: name.trim(),
+            icon,
+            category,
+            join_mode,
+            approval_mode
+          }
+        );
+
+        if (!result.group) {
+          throw new Error("The official group was not returned.");
+        }
+
+        alert("Official group created successfully.");
+
+        state.screen = "admin-groups";
+        saveState();
+        render();
+
+      } catch (error) {
+
+        console.error(
+          "Official group creation failed:",
+          error
+        );
+
+        alert(
+          error.message || "Unable to create official group."
+        );
+
+      }
+
+      break;
+    }
+
+        
     case "admin-section": {
 
       const section =
