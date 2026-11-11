@@ -20511,6 +20511,16 @@ function openAdminMenu() {
     </div>
 
   `;
+
+  if (
+    window.SIMPOCHAT_ADMIN?.role !== "super_admin"
+  ) {
+    modalRoot
+      .querySelector(
+        '[data-section="settings"]'
+      )
+      ?.remove();
+  }
 }
 
 
