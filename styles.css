@@ -10760,3 +10760,28 @@ body.admin-mode .fab {
     font-size: 20px;
   }
 }
+/* ADMIN — OFFICIAL GROUP CREATION BUTTON */
+
+.admin-group-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-group-toolbar input {
+  min-width: 0;
+}
+
+.admin-group-toolbar select {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.admin-create-official-button {
+  white-space: nowrap;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 12px;
+  font-size: 13px;
+}
