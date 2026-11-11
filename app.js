@@ -13388,6 +13388,13 @@ async function renderAdminDashboard() {
       user: access.user
     };
 
+    if (access.role !== "super_admin") {
+      document
+        .querySelectorAll(
+          '.admin-nav-card[data-section="settings"]'
+        )
+        .forEach(card => card.remove());
+    }
 
     const result = await callSimpoAdmin(
       "admin_overview"
