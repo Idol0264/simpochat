@@ -11362,6 +11362,167 @@ async function createVideoPost() {
 }
       
 
+/* =========================================
+   ADMIN — PRIVATE ADMIN SEARCH
+========================================= */
+
+async function renderAdminSearch() {
+
+  setHeader(
+    "SIMPOCHAT ADMIN",
+    "Search administration"
+  );
+
+  screen.innerHTML = `
+    <div class="settings-page admin-search-page">
+
+      <section class="settings-section">
+
+        <div class="section-title">
+          Admin Search
+        </div>
+
+        <div class="section-note">
+          Search users, groups and reports.
+        </div>
+
+        <input
+          id="adminSearchInput"
+          class="form-input"
+          type="search"
+          placeholder="Search administration..."
+          autocomplete="off"
+          value="${esc(state.adminSearchQuery || "")}"
+        >
+
+        <div id="adminSearchResults">
+          Loading admin records...
+        </div>
+
+      </section>
+
+    </div>
+  `;
+
+  const input = $("#adminSearchInput");
+  const results = $("#adminSearchResults");
+
+  if (!input || !results) return;
+
+  let records = [];
+
+  function showResults() {
+
+    const query = String(
+      input.value || ""
+    ).trim().toLowerCase();
+
+    state.adminSearchQuery = input.value;
+
+    if (!query) {
+      results.innerHTML =
+        `<p class="section-note">
+          Enter a name, email, group or report keyword.
+        </p>`;
+      return;
+    }
+
+    const matches = records.filter(item =>
+      item.searchText.includes(query)
+    );
+
+    results.innerHTML = matches.length
+      ? matches.slice(0, 40).map(item => `
+          <button
+            class="admin-search-result"
+            data-action="admin-section"
+            data-section="${item.section}"
+          >
+            <strong>${esc(item.title)}</strong>
+            <small>
+              ${esc(item.type)} · ${esc(item.detail)}
+            </small>
+          </button>
+        `).join("")
+      : `<p class="section-note">
+          No matching admin records found.
+        </p>`;
+  }
+
+  input.addEventListener("input", showResults);
+
+  try {
+
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
+
+    if (!access.is_admin || !access.role) {
+      throw new Error("Administrator access is not active.");
+    }
+
+    const responses = await Promise.allSettled([
+      callSimpoAdmin("admin_list_users"),
+      callSimpoAdmin("admin_list_groups"),
+      callSimpoAdmin("admin_list_reports")
+    ]);
+
+    if (state.screen !== "admin-search") return;
+
+    const users =
+      responses[0].status === "fulfilled"
+        ? safeArray(responses[0].value.users)
+        : [];
+
+    const groups =
+      responses[1].status === "fulfilled"
+        ? safeArray(responses[1].value.groups)
+        : [];
+
+    const reports =
+      responses[2].status === "fulfilled"
+        ? safeArray(responses[2].value.reports)
+        : [];
+
+    records = [
+      ...users.map(user => ({
+        section: "users",
+        type: "User",
+        title: user.name || "Unnamed user",
+        detail: user.email || user.access_status || "",
+        searchText: JSON.stringify(user).toLowerCase()
+      })),
+
+      ...groups.map(group => ({
+        section: "groups",
+        type: "Group",
+        title: group.name || "Unnamed group",
+        detail: group.category || "",
+        searchText: JSON.stringify(group).toLowerCase()
+      })),
+
+      ...reports.map(report => ({
+        section: "reports",
+        type: "Report",
+        title:
+          report.title ||
+          report.reason ||
+          `Report ${report.id || ""}`,
+        detail: report.status || "Submitted",
+        searchText: JSON.stringify(report).toLowerCase()
+      }))
+    ];
+
+    showResults();
+
+  } catch (error) {
+
+    results.textContent =
+      error.message || "Admin search failed.";
+
+  }
+}
+
 
 /* ---------------------------------------------------------
    SEARCH
