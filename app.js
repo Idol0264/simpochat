@@ -12492,43 +12492,54 @@ async function renderAdminSection(section) {
       ).length;
 
       container.innerHTML = `
-        <div class="admin-user-stats">
-
-          <div class="admin-user-stat">
-            <strong>${users.length}</strong>
-            <small>Total users</small>
-          </div>
-
-          <div class="admin-user-stat">
-            <strong>${allowedCount}</strong>
-            <small>Allowed</small>
-          </div>
-
-          <div class="admin-user-stat">
-            <strong>${blockedCount}</strong>
-            <small>Blocked</small>
-          </div>
-
-        </div>
-
-        <div class="admin-user-toolbar">
-
-          <input
-            id="adminUserSearch"
-            type="search"
-            placeholder="Search name or email..."
-            autocomplete="off"
-          >
-
-          <select id="adminUserFilter">
-            <option value="all">All users</option>
-            <option value="allowed">Allowed</option>
-            <option value="blocked">Blocked</option>
-          </select>
-
-        </div>
-
-        <div id="adminUserList"></div>
+      <div class="admin-management-head">
+      
+      <div class="admin-management-title">
+      <div class="section-title">Users</div>
+      <div class="section-note">
+      Profiles, access and user management
+      </div>
+      </div>
+      
+      <div class="admin-user-stats">
+      
+      <div class="admin-user-stat">
+      <strong>${users.length}</strong>
+      <small>Total users</small>
+      </div>
+      
+      <div class="admin-user-stat">
+      <strong>${allowedCount}</strong>
+      <small>Allowed</small>
+      </div>
+      
+      <div class="admin-user-stat">
+      <strong>${blockedCount}</strong>
+      <small>Blocked</small>
+      </div>
+      
+      </div>
+      
+      <div class="admin-user-toolbar">
+      
+      <input
+      id="adminUserSearch"
+      type="search"
+      placeholder="Search name or email..."
+      autocomplete="off"
+      >
+      
+      <select id="adminUserFilter">
+      <option value="all">All users</option>
+      <option value="allowed">Allowed</option>
+      <option value="blocked">Blocked</option>
+      </select>
+      
+      </div>
+      
+      </div>
+      
+      <div class="admin-management-results" id="adminUserList"></div>
       `;
 
       const searchInput =
