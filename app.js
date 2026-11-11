@@ -12469,11 +12469,11 @@ async function renderAdminSection(section) {
     }
 
     if (
-      section === "settings" &&
+      (section === "settings" || section === "administrators") &&
       access.role !== "super_admin"
     ) {
       throw new Error(
-        "Only the super administrator can access Admin Settings."
+        "Only super administrators can manage administrator accounts and settings."
       );
     }
 
