@@ -13494,10 +13494,10 @@ async function renderAdminDashboard() {
 
     if (access.role !== "super_admin") {
       document
-        .querySelectorAll(
-          '.admin-nav-card[data-section="settings"], .admin-nav-card[data-section="administrators"]'
-        )
-        .forEach(card => card.remove());
+         .querySelectorAll(
+            '.admin-nav-card[data-section="settings"]'
+         )
+         .forEach(card => card.remove());
     }
 
     const result = await callSimpoAdmin(
