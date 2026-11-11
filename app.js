@@ -12654,44 +12654,56 @@ async function renderAdminSection(section) {
         groups.length - officialCount;
 
       container.innerHTML = `
-
-        <div class="admin-user-stats">
-
-          <div class="admin-user-stat">
-            <strong>${groups.length}</strong>
-            <small>Total groups</small>
-          </div>
-
-          <div class="admin-user-stat">
-            <strong>${officialCount}</strong>
-            <small>Official</small>
-          </div>
-
-          <div class="admin-user-stat">
-            <strong>${communityCount}</strong>
-            <small>Community</small>
-          </div>
-
-        </div>
-
-        <div class="admin-user-toolbar">
-
-          <input
-            id="adminGroupSearch"
-            type="search"
-            placeholder="Search group name..."
-          >
-
-          <select id="adminGroupFilter">
-            <option value="all">All groups</option>
-            <option value="official">Official groups</option>
-            <option value="community">Community groups</option>
-          </select>
-
-        </div>
-
-        <div id="adminGroupList"></div>
-
+      
+      <div class="admin-management-head">
+      
+      <div class="admin-management-title">
+      <div class="section-title">Groups</div>
+      <div class="section-note">
+      Manage all SimpoChat groups
+      </div>
+      </div>
+      
+      <div class="admin-user-stats">
+      
+      <div class="admin-user-stat">
+      <strong>${groups.length}</strong>
+      <small>Total groups</small>
+      </div>
+      
+      <div class="admin-user-stat">
+      <strong>${officialCount}</strong>
+      <small>Official</small>
+      </div>
+      
+      <div class="admin-user-stat">
+      <strong>${communityCount}</strong>
+      <small>Community</small>
+      </div>
+      
+      </div>
+      
+      <div class="admin-user-toolbar">
+      
+      <input
+      id="adminGroupSearch"
+      type="search"
+      placeholder="Search group name..."
+      autocomplete="off"
+      >
+      
+      <select id="adminGroupFilter">
+      <option value="all">All groups</option>
+      <option value="official">Official groups</option>
+      <option value="community">Community groups</option>
+      </select>
+      
+      </div>
+      
+      </div>
+      
+      <div class="admin-management-results" id="adminGroupList"></div>
+      
       `;
 
       const searchInput =
