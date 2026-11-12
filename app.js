@@ -14422,7 +14422,7 @@ async function refreshSimpoAdminAccessControls() {
 
     container.innerHTML = `
       <button class="menu-item" data-action="admin-dashboard">
-        <div class="menu-icon">🛡️</div>
+        <div class="menu-icon">📊</div>
         <div>
           <strong>Access Dashboard</strong>
           <span>Open your administrator dashboard.</span>
