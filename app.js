@@ -14271,20 +14271,15 @@ function renderSettings() {
     Administration
   </div>
 
-  <div class="section-note">
-    Administrator access is available to members who have been appointed by the Super Admin.
+  <div id="simpoAdminAccessActions">
+    <button class="menu-item" data-action="admin-login">
+      <div class="menu-icon">🛡️</div>
+      <div>
+        <strong>Administrator Access</strong>
+        <span>Verify your email to continue.</span>
+      </div>
+    </button>
   </div>
-
-  <button
-    class="menu-item"
-    data-action="admin-login"
-  >
-    <div class="menu-icon">🛡️</div>
-    <div>
-      <strong>Administrator Access</strong>
-      <span>Verify your email or open your administrator dashboard.</span>
-    </div>
-  </button>
 
 </section>
 
