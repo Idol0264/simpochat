@@ -821,6 +821,10 @@ body::after {
 
   line-height: 1.5;
 }
+/* Lower the Groups / Archived / Starred empty content by 0.5 cm */
+.groups-empty {
+  transform: translateY(19px);
+}
 
 /* ------------------------------
    Selection toolbar
