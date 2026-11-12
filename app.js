@@ -13284,6 +13284,48 @@ async function renderAdminSection(section) {
           </div>
         </div>
 
+<div class="admin-user-card" style="margin-bottom:18px;">
+  <strong>Add Administrator</strong>
+  <p class="section-note">
+    Enter an existing SimpoChat member's email and choose their permissions.
+  </p>
+
+  <form id="adminAddAdministratorForm">
+    <input
+      type="email"
+      id="adminNewAdministratorEmail"
+      placeholder="Member email address"
+      required
+    >
+
+    <div class="admin-permission-list" style="margin-top:12px;">
+      <label class="admin-permission-row">
+        <input type="checkbox" name="adminNewPermission" value="can_block_users">
+        Block / Unblock Users
+      </label>
+
+      <label class="admin-permission-row">
+        <input type="checkbox" name="adminNewPermission" value="can_create_official_groups">
+        Create Official Groups
+      </label>
+
+      <label class="admin-permission-row">
+        <input type="checkbox" name="adminNewPermission" value="can_create_verified_business_accounts">
+        Create / Verify Business Accounts
+      </label>
+
+      <label class="admin-permission-row">
+        <input type="checkbox" name="adminNewPermission" value="can_review_reports">
+        Review Reports
+      </label>
+    </div>
+
+    <button type="submit" class="settings-button" style="margin-top:14px;">
+      Add Administrator
+    </button>
+  </form>
+</div>
+
         <div class="admin-management-results">
           ${
             administrators.length
