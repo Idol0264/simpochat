@@ -10630,22 +10630,42 @@ function openCreatePost() {
 
           <!-- POST TARGET -->
 
-          <div class="field">
+          <div class="field post-target-field">
 
-            <label>
-              Post to
-            </label>
+            <div class="post-target-heading">
 
+              <label for="postTargetSearch">
+                Post to
+              </label>
+
+              <button
+                type="button"
+                class="post-target-search-button"
+                id="postTargetSearchToggle"
+                aria-label="Search joined groups"
+                aria-expanded="false"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                  <path d="m16 16 5 5"></path>
+                </svg>
+              </button>
+
+            </div>
+
+            <input
+              type="search"
+              id="postTargetSearch"
+              class="post-target-search"
+              placeholder="Search your joined groups..."
+              autocomplete="off"
+              aria-label="Search joined groups"
+              hidden
+            >
 
             <div class="post-target-list">
 
-
-              <label
-                class="
-                  post-target-option
-                  all-groups-option
-                "
-              >
+              <label class="post-target-option all-groups-option">
 
                 <input
                   type="checkbox"
@@ -10653,35 +10673,24 @@ function openCreatePost() {
                   checked
                 >
 
-                <span>
-                  All groups
-                </span>
+                <span>All groups</span>
 
               </label>
-
 
               ${
                 groups
                   .map(
                     group => `
 
-                      <label
-                        class="post-target-option"
-                      >
+                      <label class="post-target-option">
 
                         <input
                           type="checkbox"
                           class="post-group-checkbox"
-                          value="${esc(
-                            group.id
-                          )}"
+                          value="${esc(group.id)}"
                         >
 
-                        <span>
-                          ${esc(
-                            group.name
-                          )}
-                        </span>
+                        <span>${esc(group.name)}</span>
 
                       </label>
 
