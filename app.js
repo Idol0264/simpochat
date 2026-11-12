@@ -2039,16 +2039,6 @@ function renderGroupCollection(
           ${title}
         </div>
 
-        <div class="section-note">
-
-          ${
-            type === "starred"
-              ? "Groups you've marked as interesting"
-              : "Groups you've archived"
-          }
-
-        </div>
-
       </div>
 
     </div>
