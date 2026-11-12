@@ -14362,50 +14362,63 @@ async function requestSimpoAdminMagicLink() {
     return;
   }
 
-  const email =
-    String(state.currentUser?.email || "")
-      .trim()
-      .toLowerCase();
+  const email = String(state.currentUser?.email || "").trim().toLowerCase();
 
-  if (email !== SIMPOCHAT_ADMIN_EMAIL) {
-    alert("This profile is not authorized to request administrator access.");
+  if (!email) {
+    alert("Your SimpoChat email address could not be found.");
     return;
   }
 
   try {
+    const sessionResult = await simpoAdminAuth.auth.getSession();
+    if (sessionResult.error) throw sessionResult.error;
 
-    const { error } =
-      await simpoAdminAuth.auth.signInWithOtp({
+    const existingSession = sessionResult.data?.session;
+    const existingEmail = String(existingSession?.user?.email || "").trim().toLowerCase();
 
-        email: SIMPOCHAT_ADMIN_EMAIL,
-
-        options: {
-          emailRedirectTo:
-            window.location.origin +
-            window.location.pathname,
-
-          shouldCreateUser: true
-        }
-
+    if (existingSession && existingEmail === email) {
+      const statusResponse = await fetch(SIMPOCHAT_ACCESS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": "Bearer " + existingSession.access_token
+        },
+        body: JSON.stringify({ action: "admin_status" })
       });
+
+      const status = await statusResponse.json();
+
+      if (!statusResponse.ok || !status.is_admin) {
+        throw new Error(status.message || "Your administrator appointment is not active. Contact the Super Admin.");
+      }
+
+      window.SIMPOCHAT_ADMIN = { role: status.role, user: status.user };
+      state.screen = "admin-dashboard";
+      state.adminReportFilter = "all";
+      saveState();
+      render();
+      return;
+    }
+
+    if (existingSession) await simpoAdminAuth.auth.signOut();
+
+    const { error } = await simpoAdminAuth.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin + window.location.pathname,
+        shouldCreateUser: true
+      }
+    });
 
     if (error) throw error;
 
-    alert(
-      "Your administrator sign-in link has been sent. Check your email."
-    );
+    alert("Your first-time administrator verification link has been sent to " + email + ". Open it on this same device to activate access.");
 
   } catch (error) {
-
     console.error("Admin Magic Link error:", error);
-
-    alert(
-      error.message ||
-      "Unable to send your administrator sign-in link."
-    );
-
+    alert(error.message || "Unable to verify administrator access.");
   }
-
 }
 
 
@@ -14416,71 +14429,60 @@ async function requestSimpoAdminMagicLink() {
 async function handleSimpoAdminMagicLinkCallback() {
 
   const url = new URL(window.location.href);
-
   const code = url.searchParams.get("code");
 
-  if (!code) return;
-
-  if (!simpoAdminAuth) return;
+  if (!code || !simpoAdminAuth) return;
 
   try {
-
-    const { data, error } =
-      await simpoAdminAuth.auth.exchangeCodeForSession(code);
-
+    const { data, error } = await simpoAdminAuth.auth.exchangeCodeForSession(code);
     if (error) throw error;
 
-    const email =
-      String(data.user?.email || "")
-        .trim()
-        .toLowerCase();
+    const email = String(data.user?.email || "").trim().toLowerCase();
+    const memberEmail = String(state.currentUser?.email || "").trim().toLowerCase();
 
-    if (email !== SIMPOCHAT_ADMIN_EMAIL) {
-      throw new Error(
-        "This email is not authorized for SimpoChat administration."
-      );
+    if (!email || email !== memberEmail) {
+      throw new Error("The verified email does not match your current SimpoChat account.");
     }
 
-    const sessionResult =
-      await simpoAdminAuth.auth.getSession();
-
-    const session =
-      sessionResult.data?.session;
+    const sessionResult = await simpoAdminAuth.auth.getSession();
+    const session = sessionResult.data?.session;
 
     if (!session?.access_token) {
-      throw new Error(
-        "Unable to establish your administrator session."
-      );
+      throw new Error("Unable to establish your administrator session.");
     }
 
-    const response = await fetch(
-      SIMPOCHAT_ACCESS_URL,
-      {
+    const sendAdminAction = async action => {
+      const response = await fetch(SIMPOCHAT_ACCESS_URL, {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
-
-          "apikey":
-            SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
-
-          "Authorization":
-            `Bearer ${session.access_token}`
+          "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": "Bearer " + session.access_token
         },
+        body: JSON.stringify({ action })
+      });
 
-        body: JSON.stringify({
-          action: "admin_bootstrap"
-        })
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Administrator verification failed.");
       }
-    );
 
-    const result = await response.json();
+      return result;
+    };
 
-    if (!response.ok || !result.is_admin) {
-      throw new Error(
-        result.message ||
-        "Administrator activation failed."
-      );
+    let result = await sendAdminAction("admin_status");
+
+    if (!result.is_admin) {
+      if (email !== SIMPOCHAT_ADMIN_EMAIL) {
+        throw new Error("Your email is verified, but you have not been appointed as an administrator by the Super Admin.");
+      }
+
+      result = await sendAdminAction("admin_bootstrap");
+    }
+
+    if (!result.is_admin || !result.role) {
+      throw new Error("Your administrator appointment could not be confirmed.");
     }
 
     window.SIMPOCHAT_ADMIN = {
@@ -14488,31 +14490,18 @@ async function handleSimpoAdminMagicLinkCallback() {
       user: result.user
     };
 
-    alert(
-      "Administrator access verified successfully. Your role is " +
-      result.role + "."
-    );
-     
+    alert("Administrator email verified successfully. Your role is " + result.role + ".");
+
     state.screen = "admin-dashboard";
     state.adminReportFilter = "all";
-
     saveState();
     render();
 
   } catch (error) {
-
-    console.error(
-      "Admin verification failed:",
-      error
-    );
-
-    alert(
-      error.message ||
-      "Administrator verification failed."
-    );
+    console.error("Admin verification failed:", error);
+    alert(error.message || "Administrator verification failed.");
 
   } finally {
-
     url.searchParams.delete("code");
     url.searchParams.delete("error");
     url.searchParams.delete("error_description");
@@ -14522,9 +14511,7 @@ async function handleSimpoAdminMagicLinkCallback() {
       document.title,
       url.pathname + url.search + url.hash
     );
-
   }
-
 }
 
 
