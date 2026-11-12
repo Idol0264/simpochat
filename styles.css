@@ -11112,3 +11112,17 @@ body.admin-mode .fab {
     transition: none !important;
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — SUBTLE DIVIDERS BETWEEN COMMENTS
+   ========================================================= */
+
+#simpoPostCommentsPanel .simpo-comment-row {
+  padding-bottom: 15px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+#simpoPostCommentsPanel .simpo-comment-row:last-child {
+  border-bottom: 0;
+}
