@@ -11172,3 +11172,90 @@ body.admin-mode .fab {
     height: 70dvh !important;
   }
 }
+
+/* =====================================================
+   SIMPOCHAT — REACTIONS PANEL THEME SUPPORT
+   ===================================================== */
+
+#simpoPostReactionsPanel {
+  color: var(--text) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-sheet {
+  background: var(--surface-strong) !important;
+  border-color: var(--line) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-header {
+  border-bottom-color: var(--line) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-header h2 {
+  color: var(--text) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-close {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--line-strong) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-close:active {
+  background: var(--surface-soft) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-loading,
+#simpoPostReactionsPanel .simpo-reactions-empty {
+  color: var(--muted) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-empty h3 {
+  color: var(--text) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-empty-icon {
+  background: var(--surface) !important;
+  border-color: var(--line) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-spinner {
+  border-color: var(--line-strong) !important;
+  border-top-color: var(--accent) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reactions-composer {
+  background: var(--surface-strong) !important;
+  border-top-color: var(--line) !important;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-trigger {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--line-strong) !important;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-trigger span {
+  color: var(--muted) !important;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-picker {
+  background: var(--surface-strong) !important;
+  border-color: var(--line-strong) !important;
+}
+
+#simpoPostReactionsPanel .simpo-emoji-picker button {
+  background: var(--surface) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reaction-row {
+  border-bottom-color: var(--line) !important;
+}
+
+#simpoPostReactionsPanel .simpo-reaction-user {
+  color: var(--text) !important;
+}
+
+/* Preserve avatar and emoji appearance */
+#simpoPostReactionsPanel .simpo-reaction-avatar {
+  color: #ffffff !important;
+}
