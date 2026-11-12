@@ -1978,30 +1978,14 @@ function renderHome() {
 
   setHeader(
     "SimpoChat",
-    "Your groups"
+    "Groups you belong to"
   );
 
   const groups =
     visibleGroups();
 
   screen.innerHTML = `
-
-    <div class="section-head">
-
-      <div>
-
-        <div class="section-title">
-          Groups
-        </div>
-
-        <div class="section-note">
-          Groups you belong to
-        </div>
-
-      </div>
-
-    </div>
-
+  
     ${
       groups.length
         ? `
