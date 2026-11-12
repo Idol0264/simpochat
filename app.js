@@ -14071,13 +14071,16 @@ async function renderAdminDashboard() {
       error
     );
 
-    const stats = document.getElementById(
-      "admin-overview-stats"
-    );
+    window.SIMPOCHAT_ADMIN = null;
 
-    if (stats) {
-      stats.textContent = error.message;
-    }
+    state.screen = "settings";
+    saveState();
+    render();
+
+    alert(
+      error.message ||
+      "Administrator access is no longer active."
+    );
 
   }
 
