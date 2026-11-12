@@ -14441,27 +14441,41 @@ async function refreshSimpoAdminAccessControls() {
    SIMPOCHAT ADMIN MAGIC LINK
    ========================================= */
 
+let simpoAdminEmailRequestRunning = false;
+
 async function requestSimpoAdminMagicLink() {
+  if (simpoAdminEmailRequestRunning) return;
 
   if (!simpoAdminAuth) {
     alert("Administrator authentication is unavailable.");
     return;
   }
 
-  const email = String(state.currentUser?.email || "").trim().toLowerCase();
+  const email = String(state.currentUser?.email || "")
+    .trim()
+    .toLowerCase();
 
   if (!email) {
     alert("Your SimpoChat email address could not be found.");
     return;
   }
 
+  simpoAdminEmailRequestRunning = true;
+
   try {
     const sessionResult = await simpoAdminAuth.auth.getSession();
-    if (sessionResult.error) throw sessionResult.error;
+
+    if (sessionResult.error) {
+      throw sessionResult.error;
+    }
 
     const existingSession = sessionResult.data?.session;
-    const existingEmail = String(existingSession?.user?.email || "").trim().toLowerCase();
 
+    const existingEmail = String(
+      existingSession?.user?.email || ""
+    ).trim().toLowerCase();
+
+    // Existing verified session: open dashboard without another email.
     if (existingSession && existingEmail === email) {
       const statusResponse = await fetch(SIMPOCHAT_ACCESS_URL, {
         method: "POST",
@@ -14470,40 +14484,94 @@ async function requestSimpoAdminMagicLink() {
           "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
           "Authorization": "Bearer " + existingSession.access_token
         },
-        body: JSON.stringify({ action: "admin_status" })
+        body: JSON.stringify({
+          action: "admin_status"
+        })
       });
 
       const status = await statusResponse.json();
 
       if (!statusResponse.ok || !status.is_admin) {
-        throw new Error(status.message || "Your administrator appointment is not active. Contact the Super Admin.");
+        throw new Error(
+          status.message ||
+          "Your administrator appointment is not active. Contact the Super Admin."
+        );
       }
 
-      window.SIMPOCHAT_ADMIN = { role: status.role, user: status.user };
+      window.SIMPOCHAT_ADMIN = {
+        role: status.role,
+        user: status.user
+      };
+
       state.screen = "admin-dashboard";
       state.adminReportFilter = "all";
+
       saveState();
       render();
+
       return;
     }
 
-    if (existingSession) await simpoAdminAuth.auth.signOut();
+    if (existingSession) {
+      await simpoAdminAuth.auth.signOut();
+    }
 
-    const { error } = await simpoAdminAuth.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin + window.location.pathname,
-        shouldCreateUser: true
-      }
-    });
+    // Wait 60 seconds between email requests on this device.
+    const cooldownKey =
+      "simpochat_admin_email_requested_" + email;
+
+    const lastRequest = Number(
+      localStorage.getItem(cooldownKey) || 0
+    );
+
+    const remaining =
+      60000 - (Date.now() - lastRequest);
+
+    if (remaining > 0) {
+      alert(
+        "A verification request was recently made. Please wait " +
+        Math.ceil(remaining / 1000) +
+        " seconds before trying again."
+      );
+
+      return;
+    }
+
+    const { error } =
+      await simpoAdminAuth.auth.signInWithOtp({
+        email,
+
+        options: {
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname,
+
+          shouldCreateUser: true
+        }
+      });
 
     if (error) throw error;
 
-    alert("Your first-time administrator verification link has been sent to " + email + ". Open it on this same device to activate access.");
+    localStorage.setItem(
+      cooldownKey,
+      String(Date.now())
+    );
+
+    alert(
+      "Your administrator verification link has been sent. " +
+      "Open the email on this same device to activate access."
+    );
 
   } catch (error) {
     console.error("Admin Magic Link error:", error);
-    alert(error.message || "Unable to verify administrator access.");
+
+    alert(
+      error.message ||
+      "Unable to verify administrator access."
+    );
+
+  } finally {
+    simpoAdminEmailRequestRunning = false;
   }
 }
 
