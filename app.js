@@ -14262,48 +14262,28 @@ function renderSettings() {
 
 <!-- ADMINISTRATION -->
 
-${
-  String(user.email || "").trim().toLowerCase() ===
-  SIMPOCHAT_ADMIN_EMAIL
-    ? `
-      <section class="settings-section">
+<section class="settings-section">
 
-        <div class="section-title">
-          Administration
-        </div>
+  <div class="section-title">
+    Administration
+  </div>
 
-        <div class="section-note">
-          Secure access for SimpoChat administration.
-        </div>
+  <div class="section-note">
+    Administrator access is available to members who have been appointed by the Super Admin.
+  </div>
 
-        <button
-          class="menu-item"
-          data-action="admin-dashboard"
-        >
-          <div class="menu-icon">📊</div>
+  <button
+    class="menu-item"
+    data-action="admin-login"
+  >
+    <div class="menu-icon">🛡️</div>
+    <div>
+      <strong>Administrator Access</strong>
+      <span>Verify your email or open your administrator dashboard.</span>
+    </div>
+  </button>
 
-          <div>
-            <strong>Open Admin Dashboard</strong>
-            <span>Review reports and manage SimpoChat.</span>
-          </div>
-        </button>
-
-        <button
-          class="menu-item"
-          data-action="admin-login"
-        >
-          <div class="menu-icon">🛡️</div>
-
-          <div>
-            <strong>Administrator Access</strong>
-            <span>Verify your administrator email.</span>
-          </div>
-        </button>
-
-      </section>
-    `
-    : ""
-}
+</section>
 
 
       <!-- INFORMATION -->
