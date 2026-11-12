@@ -12511,29 +12511,6 @@ async function renderAdminAdministratorWorkspace(
 
         </div>
 
-        <div class="settings-section">
-
-          <div class="section-title">
-            Assigned Duties
-          </div>
-
-          ${
-            assignedDuties.length
-              ? assignedDuties.map(duty => `
-                  <div class="admin-permission-row">
-                    <span>✓</span>
-                    <span>${esc(duty[0])}</span>
-                  </div>
-                `).join("")
-              : `
-                <p class="section-note">
-                  No duties are currently assigned.
-                </p>
-              `
-          }
-
-        </div>
-
       </div>
 
       <button
