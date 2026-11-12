@@ -12425,7 +12425,7 @@ async function renderAdminAdministratorWorkspace(
           </div>
 
           <div class="section-note">
-            Administrator account information and assigned responsibilities.
+            Administrator account information.
           </div>
 
         </div>
