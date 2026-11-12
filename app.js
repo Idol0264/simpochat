@@ -14346,6 +14346,9 @@ function renderSettings() {
       );
 
     });
+   
+  void refreshSimpoAdminAccessControls();
+
 }
 
 
