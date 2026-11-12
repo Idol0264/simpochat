@@ -12410,29 +12410,6 @@ async function renderAdminAdministratorWorkspace(
     const workspace = result.workspace || {};
     const profile = workspace.profile || {};
 
-    const duties = [
-      [
-        "Block / Unblock Users",
-        workspace.can_block_users
-      ],
-      [
-        "Create Official Groups",
-        workspace.can_create_official_groups
-      ],
-      [
-        "Create / Verify Business Accounts",
-        workspace.can_create_verified_business_accounts
-      ],
-      [
-        "Review Reports",
-        workspace.can_review_reports
-      ]
-    ];
-
-    const assignedDuties = duties.filter(
-      duty => duty[1] === true
-    );
-
     const occupation = Array.isArray(profile.occupation)
       ? profile.occupation.join(", ")
       : profile.occupation || "Not provided";
