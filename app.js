@@ -13399,6 +13399,50 @@ async function renderAdminSection(section) {
         </div>
       `;
 
+const addAdministratorForm = container.querySelector(
+  "#adminAddAdministratorForm"
+);
+
+addAdministratorForm?.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const email = container.querySelector(
+    "#adminNewAdministratorEmail"
+  )?.value.trim().toLowerCase();
+
+  const submitButton = addAdministratorForm.querySelector(
+    'button[type="submit"]'
+  );
+
+  const permissions = Array.from(
+    addAdministratorForm.querySelectorAll(
+      'input[name="adminNewPermission"]:checked'
+    )
+  ).map(input => input.value);
+
+  if (!email) return;
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Adding...";
+
+  try {
+    await callSimpoAdmin("admin_add_administrator", {
+      email,
+      permissions
+    });
+
+    alert("Administrator added successfully.");
+
+    await renderAdminSection("settings");
+
+  } catch (error) {
+    alert(error.message || "Unable to add administrator.");
+
+    submitButton.disabled = false;
+    submitButton.textContent = "Add Administrator";
+  }
+});
+
       container.querySelectorAll(
         "[data-admin-permission]"
       ).forEach(button => {
