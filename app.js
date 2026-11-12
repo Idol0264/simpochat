@@ -4956,7 +4956,7 @@ function renderMessage(
                   aria-label="Reply to message"
                   title="Reply"
                 >
-                  ↥
+                  ↥ Reply
                 </button>
               </div>
             `
@@ -5220,7 +5220,7 @@ ${
            aria-label="Delete message"
            title="Delete"
            >
-           ↧
+           ↧ Delete
            </button>
            </div>
            `
