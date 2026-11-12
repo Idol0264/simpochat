@@ -7536,32 +7536,6 @@ async function renderTemporaryChatInbox() {
 
     <div class="temporary-chat-inbox">
 
-      <!-- BACK -->
-
-      <div class="temporary-chat-topbar">
-
-        <button
-          class="icon-btn"
-          data-action="back"
-          aria-label="Back"
-          title="Back"
-        >
-          ‹
-        </button>
-
-        <div>
-          <strong>
-            Temporary Chat
-          </strong>
-
-          <span>
-            Chats disappear when they end
-          </span>
-        </div>
-
-      </div>
-
-
       <!-- TWO MENUS -->
 
       <div
