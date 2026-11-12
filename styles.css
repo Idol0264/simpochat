@@ -11126,3 +11126,49 @@ body.admin-mode .fab {
 #simpoPostCommentsPanel .simpo-comment-row:last-child {
   border-bottom: 0;
 }
+
+/* =====================================================
+   SIMPOCHAT — COMMENTS / REACTIONS HEIGHT & COMPOSER FIX
+   ===================================================== */
+
+/* Match comments sheet height to reactions sheet */
+#simpoPostCommentsPanel .simpo-comments-sheet {
+  height: min(70dvh, 700px) !important;
+  min-height: 0 !important;
+  max-height: 70dvh !important;
+}
+
+/* Keep comments input inside the bottom of its sheet */
+#simpoPostCommentsPanel .simpo-comments-composer {
+  position: relative !important;
+
+  left: auto !important;
+  bottom: auto !important;
+
+  transform: none !important;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+
+  z-index: 2;
+
+  padding-bottom:
+    max(16px, env(safe-area-inset-bottom));
+}
+
+/* Let comments occupy the remaining available height */
+#simpoPostCommentsPanel .simpo-comments-list {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+/* Keep the same height on smaller phones */
+@media (max-width: 380px) {
+  #simpoPostCommentsPanel .simpo-comments-sheet {
+    height: 70dvh !important;
+  }
+}
