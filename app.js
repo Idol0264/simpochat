@@ -2092,7 +2092,7 @@ function emptyGroups(type) {
 
   return `
 
-    <div class="empty">
+    <div class="empty groups-empty">
 
       <div class="empty-icon">
         ${icon}
