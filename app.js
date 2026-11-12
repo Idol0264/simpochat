@@ -13288,7 +13288,164 @@ async function renderAdminSection(section) {
 
       return;
     }
-     
+
+    if (section === "settings") {
+
+      const result = await callSimpoAdmin(
+        "admin_list_administrators"
+      );
+
+      const administrators = safeArray(
+        result.administrators
+      );
+
+      const permissions = [
+        {
+          key: "can_block_users",
+          label: "Block / Unblock Users"
+        },
+        {
+          key: "can_create_official_groups",
+          label: "Create Official Groups"
+        },
+        {
+          key: "can_create_verified_business_accounts",
+          label: "Create / Verify Business Accounts"
+        },
+        {
+          key: "can_review_reports",
+          label: "Review Reports"
+        }
+      ];
+
+      container.innerHTML = `
+        <div class="admin-management-head">
+          <div class="admin-management-title">
+            <div class="section-title">
+              Administrator Permissions
+            </div>
+            <div class="section-note">
+              Grant or revoke responsibilities assigned to administrators.
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-management-results">
+          ${
+            administrators.length
+              ? administrators.map(admin => {
+                  const profile = admin.profile || {};
+                  const isSuperAdmin =
+                    admin.role === "super_admin";
+
+                  return `
+                    <article class="admin-user-card">
+                      <div class="admin-user-avatar">
+                        🛡️
+                      </div>
+
+                      <div class="admin-user-info">
+                        <strong>
+                          ${esc(profile.name || "Administrator")}
+                        </strong>
+
+                        <p>
+                          ${esc(profile.email || "Email unavailable")}
+                        </p>
+
+                        <small>
+                          ${esc(
+                            String(admin.role || "admin")
+                              .replaceAll("_", " ")
+                          )}
+                        </small>
+
+                        <div class="admin-permission-list">
+                          <strong>Assigned Duties</strong>
+
+                          ${permissions.map(permission => {
+                            const enabled =
+                              isSuperAdmin ||
+                              admin[permission.key] === true;
+
+                            return `
+                              <div class="admin-permission-row">
+                                <span>
+                                  ${esc(permission.label)}
+                                </span>
+
+                                ${
+                                  isSuperAdmin
+                                    ? `<strong>Always active</strong>`
+                                    : `
+                                      <button
+                                        type="button"
+                                        class="settings-button"
+                                        data-admin-permission
+                                        data-admin-user-id="${esc(admin.user_id)}"
+                                        data-permission="${permission.key}"
+                                        data-enabled="${enabled ? "false" : "true"}"
+                                      >
+                                        ${enabled ? "Revoke" : "Grant"}
+                                      </button>
+                                    `
+                                }
+                              </div>
+                            `;
+                          }).join("")}
+                        </div>
+                      </div>
+                    </article>
+                  `;
+                }).join("")
+              : `<div class="section-note">No administrators found.</div>`
+          }
+        </div>
+      `;
+
+      container.querySelectorAll(
+        "[data-admin-permission]"
+      ).forEach(button => {
+
+        button.addEventListener("click", async () => {
+
+          const userId = button.dataset.adminUserId;
+          const permission = button.dataset.permission;
+          const enabled = button.dataset.enabled === "true";
+
+          button.disabled = true;
+
+          try {
+
+            await callSimpoAdmin(
+              "admin_set_permission",
+              {
+                user_id: userId,
+                permission,
+                enabled
+              }
+            );
+
+            await renderAdminSection("settings");
+
+          } catch (error) {
+
+            alert(
+              error.message ||
+              "Unable to update administrator permission."
+            );
+
+            button.disabled = false;
+
+          }
+
+        });
+
+      });
+
+      return;
+    }
+
     const messages = {
       administrators:
         "Administrator account management will be connected here.",
