@@ -10850,6 +10850,90 @@ function openCreatePost() {
       )
     ];
 
+  /*
+   * POST TARGET GROUP SEARCH
+   */
+
+  const postTargetSearchToggle = $(
+    "#postTargetSearchToggle"
+  );
+
+  const postTargetSearch = $(
+    "#postTargetSearch"
+  );
+
+  const postTargetList = $(
+    ".post-target-list"
+  );
+
+  if (
+    postTargetSearchToggle &&
+    postTargetSearch &&
+    postTargetList
+  ) {
+
+    postTargetSearchToggle.addEventListener(
+      "click",
+      () => {
+
+        const opening = postTargetSearch.hidden;
+
+        postTargetSearch.hidden = !opening;
+
+        postTargetSearchToggle.setAttribute(
+          "aria-expanded",
+          String(opening)
+        );
+
+        if (opening) {
+          postTargetSearch.focus();
+        } else {
+          postTargetSearch.value = "";
+
+          groupCheckboxes.forEach(checkbox => {
+            checkbox.closest(
+              ".post-target-option"
+            ).hidden = false;
+          });
+
+          postTargetList.scrollTop = 0;
+        }
+
+      }
+    );
+
+    postTargetSearch.addEventListener(
+      "input",
+      () => {
+
+        const searchTerm =
+          postTargetSearch.value
+            .trim()
+            .toLowerCase();
+
+        groupCheckboxes.forEach(checkbox => {
+
+          const option = checkbox.closest(
+            ".post-target-option"
+          );
+
+          const groupName =
+            option.querySelector("span")
+              ?.textContent
+              .trim()
+              .toLowerCase() || "";
+
+          option.hidden =
+            !groupName.includes(searchTerm);
+
+        });
+
+        postTargetList.scrollTop = 0;
+
+      }
+    );
+
+  }
 
   if (allGroups) {
 
