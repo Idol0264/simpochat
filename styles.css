@@ -7385,35 +7385,30 @@ span:last-child {
   margin-top: 5px;
 }
 
-
 .message-action-btn {
-  width: 30px;
-  height: 30px;
+  width: auto;
+  min-width: 65px;
+  height: 34px;
 
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 
-  padding: 0;
+  padding: 0 9px;
 
   color: var(--text);
+  background: var(--surface-strong);
 
-  background:
-    var(--surface-strong);
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
 
-  border:
-    1px solid
-    var(--line-strong);
+  box-shadow: 0 7px 18px rgba(0,0,0,.14);
 
-  border-radius: 50%;
-
-  box-shadow:
-    0 7px 18px
-    rgba(0,0,0,.14);
-
-  font-size: 16px;
-  font-weight: 850;
-
+  font-size: 12px;
+  font-weight: 750;
   line-height: 1;
+  white-space: nowrap;
 
   pointer-events: auto;
 
@@ -7422,7 +7417,6 @@ span:last-child {
     background .15s ease,
     color .15s ease;
 }
-
 
 .message-action-btn:active {
   transform: scale(.86);
