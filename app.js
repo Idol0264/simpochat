@@ -14351,6 +14351,91 @@ function renderSettings() {
 
 }
 
+async function refreshSimpoAdminAccessControls() {
+  const container = document.getElementById("simpoAdminAccessActions");
+  if (!container) return;
+
+  const showAdministratorAccess = (message = "Verify your email to continue to the administrator dashboard.") => {
+    if (!container.isConnected) return;
+    container.innerHTML = `
+      <button class="menu-item" data-action="admin-login">
+        <div class="menu-icon">🛡️</div>
+        <div>
+          <strong>Administrator Access</strong>
+          <span>${esc(message)}</span>
+        </div>
+      </button>
+    `;
+  };
+
+  if (!simpoAdminAuth) {
+    showAdministratorAccess("Administrator email verification is unavailable.");
+    return;
+  }
+
+  try {
+    const { data, error } = await simpoAdminAuth.auth.getSession();
+    if (error) throw error;
+
+    const session = data?.session;
+    const sessionEmail = String(session?.user?.email || "").trim().toLowerCase();
+    const memberEmail = String(state.currentUser?.email || "").trim().toLowerCase();
+
+    if (
+      !session?.access_token ||
+      !session?.user?.email_confirmed_at ||
+      !sessionEmail ||
+      sessionEmail !== memberEmail
+    ) {
+      showAdministratorAccess();
+      return;
+    }
+
+    const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": "Bearer " + session.access_token
+      },
+      body: JSON.stringify({ action: "admin_status" })
+    });
+
+    const status = await response.json();
+    if (!response.ok) {
+      throw new Error(status.message || "Unable to check administrator access.");
+    }
+
+    if (!status.is_admin || !status.role) {
+      container.innerHTML = `
+        <div class="section-note">
+          Your email is verified, but administrator access has not been appointed to this account.
+        </div>
+      `;
+      return;
+    }
+
+    window.SIMPOCHAT_ADMIN = {
+      role: status.role,
+      user: status.user
+    };
+
+    container.innerHTML = `
+      <button class="menu-item" data-action="admin-dashboard">
+        <div class="menu-icon">🛡️</div>
+        <div>
+          <strong>Access Dashboard</strong>
+          <span>Open your administrator dashboard.</span>
+        </div>
+      </button>
+    `;
+
+  } catch (error) {
+    console.warn("Could not refresh administrator access buttons:", error);
+    showAdministratorAccess("Tap to verify your administrator email.");
+  }
+}
+
 
 /* =========================================
    SIMPOCHAT ADMIN MAGIC LINK
