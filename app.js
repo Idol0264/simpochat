@@ -2031,18 +2031,6 @@ function renderGroupCollection(
 
   screen.innerHTML = `
 
-    <div class="section-head">
-
-      <div>
-
-        <div class="section-title">
-          ${title}
-        </div>
-
-      </div>
-
-    </div>
-
     ${
       groups.length
         ? `
