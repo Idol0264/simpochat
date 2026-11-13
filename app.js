@@ -9648,10 +9648,6 @@ document.addEventListener(
 
     if (action === "retry") {
 
-      if (pendingPostWorkerActive) {
-        return;
-      }
-
       await simpoProcessPendingPost(postId);
 
       return;
