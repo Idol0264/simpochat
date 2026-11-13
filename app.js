@@ -1351,6 +1351,14 @@ async function syncCurrentUserProfile() {
       serverUser.email ||
       state.currentUser.email;
 
+    state.currentUser.locationName =
+      serverUser.location_name || "";
+
+    state.currentUser.timezone =
+      serverUser.timezone || "";
+
+    state.currentUser.locationUpdatedAt =
+      serverUser.location_updated_at || "";
 
     state.currentUser.avatarImage =
       serverUser.avatar_url ||
