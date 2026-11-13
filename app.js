@@ -244,6 +244,8 @@ let pendingPostQueueReady = false;
 
 let pendingPostWorkerActive = false;
 
+let pendingPostWorkerQueue = Promise.resolve();
+
 
 async function simpoLoadPendingPostQueue() {
 
