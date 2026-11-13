@@ -10208,6 +10208,13 @@ let postDraftMedia = [];
 
 function getTodayPostCount() {
 
+  const currentUserId =
+    state.currentUser?.id;
+
+  if (!currentUserId) {
+    return 0;
+  }
+
   const start = new Date();
 
   start.setHours(
@@ -10220,6 +10227,15 @@ function getTodayPostCount() {
   const startTime =
     start.getTime();
 
+  const endTime =
+    startTime +
+    24 * 60 * 60 * 1000;
+
+  /*
+   * Count only posts created by
+   * the currently signed-in user.
+   */
+
   return safeArray(
     state.posts
   ).filter(post => {
@@ -10229,16 +10245,21 @@ function getTodayPostCount() {
         post.createdAt || 0
       );
 
+    const authorId =
+      String(
+        post.authorId || ""
+      );
+
     return (
+      authorId === String(currentUserId) &&
       createdAt >= startTime &&
-      createdAt <
-        startTime +
-        24 * 60 * 60 * 1000
+      createdAt < endTime
     );
 
   }).length;
 
 }
+
 
 function postBelongsToGroup(post, groupId) {
 
