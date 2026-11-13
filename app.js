@@ -11762,392 +11762,244 @@ function openCreatePost() {
 
 async function createVideoPost() {
 
-  if (
-    !postDraftMedia.length
-  ) {
-
-    alert(
-      "Select at least one video or photo."
-    );
-
+  if (!postDraftMedia.length) {
+    alert("Select at least one video or photo.");
     return;
   }
 
+  const remaining = getRemainingDailyPosts();
+  const resultingPosts = getDraftPostCount();
 
-  const remaining =
-    getRemainingDailyPosts();
-
-
-  /*
-   * Determine the number of
-   * actual posts this batch creates.
-   */
-
-  const resultingPosts =
-    getDraftPostCount();
-
-
-  if (
-    resultingPosts >
-    remaining
-  ) {
-
+  if (resultingPosts > remaining) {
     alert(
       `This selection creates ${resultingPosts} posts, but you only have ${remaining} post${remaining === 1 ? "" : "s"} remaining today.`
     );
-
     return;
   }
 
+  /* RESOLVE TARGET GROUPS */
 
-  /*
-   * Resolve target groups.
-   */
+  const allGroupsCheckbox = $("#postAllGroups");
 
-  const allGroupsCheckbox =
-    $("#postAllGroups");
-
-
-  const selectedGroupIds =
-    [
-      ...document.querySelectorAll(
-        ".post-group-checkbox:checked"
-      )
-    ]
-      .map(
-        checkbox =>
-          checkbox.value
-      )
-      .filter(Boolean);
-
+  const selectedGroupIds = [
+    ...document.querySelectorAll(
+      ".post-group-checkbox:checked"
+    )
+  ]
+    .map(checkbox => checkbox.value)
+    .filter(Boolean);
 
   let groupIds = [];
 
-
-  if (
-    allGroupsCheckbox?.checked
-  ) {
-
-    groupIds =
-      state.groups
-        .filter(
-          group =>
-            !isArchived(
-              group.id
-            )
-        )
-        .map(
-          group =>
-            group.id
-        );
-
+  if (allGroupsCheckbox?.checked) {
+    groupIds = state.groups
+      .filter(group => !isArchived(group.id))
+      .map(group => group.id);
   } else {
-
-    groupIds =
-      selectedGroupIds;
-
+    groupIds = selectedGroupIds;
   }
 
-
   if (!groupIds.length) {
-
-    alert(
-      "Select at least one group."
-    );
-
+    alert("Select at least one group.");
     return;
   }
 
-
-  groupIds =
-    groupIds.filter(
-      id =>
-        getGroup(id)
-    );
-
+  groupIds = groupIds.filter(id => getGroup(id));
 
   if (!groupIds.length) {
-
-    alert(
-      "The selected groups are no longer available."
-    );
-
+    alert("The selected groups are no longer available.");
     return;
   }
 
+  /* VALIDATE VIDEOS */
 
-  /*
-   * Validate every video.
-   */
+  const invalidVideo = postDraftMedia.find(item => {
 
-  const invalidVideo =
-    postDraftMedia.find(
-      item => {
+    if (item.kind !== "video") return false;
 
-        if (
-          item.kind !==
-          "video"
-        ) {
+    const length = Number(item.length || 0);
 
-          return false;
-
-        }
-
-
-        const length =
-          Number(
-            item.length || 0
-          );
-
-
-        return (
-          !Number.isFinite(
-            length
-          ) ||
-          length <= 0 ||
-          length >
-            MAX_VIDEO_SECONDS
-        );
-
-      }
+    return (
+      !Number.isFinite(length) ||
+      length <= 0 ||
+      length > MAX_VIDEO_SECONDS
     );
 
+  });
 
   if (invalidVideo) {
-
-    alert(
-      "Every video post must be 15 seconds or less."
-    );
-
+    alert("Every video post must be 15 seconds or less.");
     return;
   }
 
+  /* BUILD QUEUE RECORDS */
 
-  const createdAt =
-    now();
+  const createdAt = now();
+  const queuedPosts = [];
 
+  const videoItems = postDraftMedia.filter(
+    item => item.kind === "video"
+  );
 
-    /*
-   * UPLOAD AND SAVE VIDEO POSTS
-   *
-   * Every selected video becomes
-   * its own Supabase post.
-   */
+  for (const item of videoItems) {
+
+    queuedPosts.push({
+
+      id: uid("pending-post"),
+
+      type: "video",
+
+      groupIds: [...groupIds],
+
+      files: [{
+        file: item.file,
+        start: Number(item.start || 0),
+        duration: Number(item.duration || 0),
+        length: Number(item.length || 0),
+        end: Number(item.end || 0)
+      }],
+
+      status: "queued",
+
+      error: "",
+
+      createdAt,
+
+      previewUrl: ""
+
+    });
+
+  }
+
+  /* PHOTOS: ONE POST PER BATCH OF FIVE */
+
+  const photos = postDraftMedia.filter(
+    item => item.kind === "image"
+  );
+
+  for (
+    let photoStart = 0;
+    photoStart < photos.length;
+    photoStart += MAX_PHOTOS_PER_POST
+  ) {
+
+    const photoBatch = photos.slice(
+      photoStart,
+      photoStart + MAX_PHOTOS_PER_POST
+    );
+
+    queuedPosts.push({
+
+      id: uid("pending-post"),
+
+      type: "photos",
+
+      groupIds: [...groupIds],
+
+      files: photoBatch.map(item => ({
+        file: item.file
+      })),
+
+      status: "queued",
+
+      error: "",
+
+      createdAt,
+
+      previewUrl: ""
+
+    });
+
+  }
+
+  /* SAVE EVERYTHING BEFORE CLOSING THE COMPOSER */
+
+  const savedQueueIds = [];
 
   try {
 
-    const videoItems =
-      postDraftMedia.filter(
-        item => item.kind === "video"
-      );
+    for (const post of queuedPosts) {
 
-    for (const item of videoItems) {
+      await simpoSaveQueuedPost(post);
 
-      const start =
-        Number(item.start || 0);
-
-      const originalDuration =
-        Number(item.duration || 0);
-
-      const length =
-        Math.min(
-          MAX_VIDEO_SECONDS,
-          Number(item.length || 0)
-        );
-
-      const end =
-        Math.min(
-          originalDuration || length,
-          start + length
-        );
-
-      const duration =
-        end - start;
-
-      // Physically trim the video before uploading.
-
-      const trimmedFile =
-        await trimSimpoChatVideoFile(
-          item.file,
-          start,
-          duration
-        );
-
-      const mediaUrl =
-        await uploadSimpoChatPostMedia(
-          trimmedFile,
-          groupIds
-        );
-
-      await saveSimpoChatPostToSupabase({
-
-        group_ids: [...groupIds],
-
-        content_type: "video",
-
-        text: "",
-
-        media_url: mediaUrl,
-
-        media_urls: [],
-
-        duration: duration,
-
-        metadata: {
-          originalDuration: originalDuration,
-          trimStart: start,
-          trimEnd: end,
-          fileName: item.file.name
-        }
-
-      });
+      savedQueueIds.push(post.id);
 
     }
-
-
-    /*
-     * UPLOAD AND SAVE PHOTO COLLECTIONS
-     * IN GROUPS OF FIVE.
-     */
-
-    const photos =
-      postDraftMedia.filter(
-        item => item.kind === "image"
-      );
-
-    if (photos.length) {
-
-      for (
-        let photoStart = 0;
-        photoStart < photos.length;
-        photoStart += MAX_PHOTOS_PER_POST
-      ) {
-
-        const photoBatch =
-          photos.slice(
-            photoStart,
-            photoStart + MAX_PHOTOS_PER_POST
-          );
-
-        const uploadedPhotoResults =
-          await Promise.all(
-            photoBatch.map(
-              async item => ({
-
-                mediaUrl:
-                  await uploadSimpoChatPostMedia(
-                    item.file,
-                    groupIds
-                  ),
-
-                fileName:
-                  item.file.name
-
-              })
-            )
-          );
-
-        const uploadedPhotoUrls =
-          uploadedPhotoResults.map(
-            item => item.mediaUrl
-          );
-
-        const uploadedPhotoNames =
-          uploadedPhotoResults.map(
-            item => item.fileName
-          );
-
-        await saveSimpoChatPostToSupabase({
-
-          group_ids: [...groupIds],
-
-          content_type: "photos",
-
-          text: "",
-
-          media_url:
-            uploadedPhotoUrls[0] || "",
-
-          media_urls:
-            uploadedPhotoUrls,
-
-          duration:
-            photoBatch.length * PHOTO_SECONDS,
-
-          metadata: {
-
-            fileNames:
-              uploadedPhotoNames,
-
-            photoDuration:
-              PHOTO_SECONDS
-
-          }
-
-        });
-
-      }
-
-    }
-
-
-    /*
-     * Refresh the posts from Supabase.
-     */
-
-    await syncPostsFromSupabase(true);
 
   } catch (error) {
 
     console.error(
-      "SimpoChat post upload failed:",
+      "Could not save posts to the background queue:",
       error
     );
 
+    for (const id of savedQueueIds) {
+
+      try {
+        await simpoDeleteQueuedPost(id);
+      } catch (cleanupError) {
+        console.error(cleanupError);
+      }
+
+    }
+
     alert(
-      "Your post could not be fully saved. " +
-      (error.message || "Please try again.")
+      "Your media could not be saved for background uploading. Please try again."
     );
 
     return;
+  }
+
+  /* CREATE PREVIEWS AND ADD TO THE LIVE QUEUE */
+
+  for (const post of queuedPosts) {
+
+    const firstFile = post.files?.[0]?.file;
+
+    if (firstFile) {
+      post.previewUrl = createPostObjectUrl(firstFile);
+    }
+
+    pendingPostUploads.push(post);
 
   }
 
+  /* RELEASE THE ORIGINAL DRAFT PREVIEWS */
 
-  /*
-   * Do not release the object URLs
-   * here because the current-session
-   * post viewer still needs them.
-   *
-   * They will be cleaned up when
-   * the browser session ends or when
-   * Supabase media replaces them.
-   */
+  postDraftMedia.forEach(item => {
+    releasePostObjectUrl(item.url);
+  });
 
   postDraftMedia = [];
 
+  /* CLOSE COMPOSER IMMEDIATELY */
 
   modalRoot.innerHTML = "";
 
+  state.postFilter = "all";
+  state.screen = "posts";
 
-  state.postFilter =
-  "all";
-   
-   state.screen =
-      "posts";
-   
-   saveState();
-   
-   render();
-   
-   setTimeout(() => {
-      
-      updatePostDailyLimitNote();
-   
-   }, 0);
+  saveState();
+  render();
+
+  setTimeout(() => {
+    updatePostDailyLimitNote();
+  }, 0);
+
+  /* START UPLOADING WITHOUT HOLDING THE SCREEN OPEN */
+
+  void (async () => {
+
+    for (const post of queuedPosts) {
+
+      await simpoProcessPendingPost(post.id);
+
+    }
+
+  })();
 
 }
-      
+
 
 /* =========================================
    ADMIN — PRIVATE ADMIN SEARCH
