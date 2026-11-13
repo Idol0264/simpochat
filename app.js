@@ -8786,6 +8786,250 @@ async function saveSimpoChatPostToSupabase(postData) {
 }
 
 
+/* =========================================================
+   SIMPOCHAT — PROCESS ONE BACKGROUND POST
+   ========================================================= */
+
+async function simpoProcessPendingPost(postId) {
+
+  const post = simpoFindPendingPost(postId);
+
+  if (
+    !post ||
+    post.status === "uploading" ||
+    pendingPostWorkerActive
+  ) {
+    return false;
+  }
+
+  pendingPostWorkerActive = true;
+
+  post.status = "uploading";
+  post.error = "";
+
+  try {
+
+    await simpoSaveQueuedPost(post);
+
+    if (state.screen === "posts") {
+      renderPosts();
+    }
+
+    let postData = null;
+
+
+    /* VIDEO POST */
+
+    if (post.type === "video") {
+
+      const item = post.files?.[0];
+
+      if (!item?.file) {
+        throw new Error("The video file is missing.");
+      }
+
+      const start = Number(item.start || 0);
+
+      const originalDuration =
+        Number(item.duration || 0);
+
+      const length = Math.min(
+        MAX_VIDEO_SECONDS,
+        Number(item.length || 0)
+      );
+
+      const end = Math.min(
+        originalDuration || length,
+        start + length
+      );
+
+      const duration = end - start;
+
+      if (duration <= 0) {
+        throw new Error("The video trim range is invalid.");
+      }
+
+      const trimmedFile =
+        await trimSimpoChatVideoFile(
+          item.file,
+          start,
+          duration
+        );
+
+      const mediaUrl =
+        await uploadSimpoChatPostMedia(
+          trimmedFile,
+          post.groupIds
+        );
+
+      postData = {
+
+        group_ids: [...post.groupIds],
+
+        content_type: "video",
+
+        text: "",
+
+        media_url: mediaUrl,
+
+        media_urls: [],
+
+        duration: duration,
+
+        metadata: {
+          originalDuration: originalDuration,
+          trimStart: start,
+          trimEnd: end,
+          fileName: item.file.name
+        }
+
+      };
+
+    }
+
+
+    /* PHOTO COLLECTION */
+
+    else if (post.type === "photos") {
+
+      const files = post.files || [];
+
+      if (!files.length || files.length > MAX_PHOTOS_PER_POST) {
+        throw new Error("The photo collection is invalid.");
+      }
+
+      const uploadedResults = await Promise.all(
+        files.map(async item => {
+
+          if (!item.file) {
+            throw new Error("A photo file is missing.");
+          }
+
+          return {
+            mediaUrl:
+              await uploadSimpoChatPostMedia(
+                item.file,
+                post.groupIds
+              ),
+
+            fileName: item.file.name
+
+          };
+
+        })
+      );
+
+      const uploadedUrls =
+        uploadedResults.map(item => item.mediaUrl);
+
+      const uploadedNames =
+        uploadedResults.map(item => item.fileName);
+
+      postData = {
+
+        group_ids: [...post.groupIds],
+
+        content_type: "photos",
+
+        text: "",
+
+        media_url: uploadedUrls[0] || "",
+
+        media_urls: uploadedUrls,
+
+        duration: files.length * PHOTO_SECONDS,
+
+        metadata: {
+
+          fileNames: uploadedNames,
+
+          photoDuration: PHOTO_SECONDS
+
+        }
+
+      };
+
+    }
+
+
+    else {
+      throw new Error("Unknown post type.");
+    }
+
+
+    /* SAVE POST TO SUPABASE */
+
+    await saveSimpoChatPostToSupabase(postData);
+
+
+    /* REMOVE COMPLETED QUEUE ITEM */
+
+    await simpoDeleteQueuedPost(post.id);
+
+    pendingPostUploads =
+      pendingPostUploads.filter(
+        item => item.id !== post.id
+      );
+
+    simpoReleasePendingPostPreview(post);
+
+
+    /* REFRESH THE POSTS PAGE */
+
+    syncPostsFromSupabase(true)
+      .then(() => {
+
+        if (state.screen === "posts") {
+          renderPosts();
+        }
+
+      })
+      .catch(error => {
+        console.error(
+          "Posted successfully, but refresh failed:",
+          error
+        );
+      });
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Background post upload failed:",
+      error
+    );
+
+    post.status = "failed";
+
+    post.error =
+      error.message ||
+      "Upload failed. Please try again.";
+
+    try {
+      await simpoSaveQueuedPost(post);
+    } catch (storageError) {
+      console.error(
+        "Could not save failed post:",
+        storageError
+      );
+    }
+
+    if (state.screen === "posts") {
+      renderPosts();
+    }
+
+    return false;
+
+  } finally {
+
+    pendingPostWorkerActive = false;
+
+  }
+
+}
+
+
 /* ---------------------------------------------------------
    POSTS PAGE
    --------------------------------------------------------- */
