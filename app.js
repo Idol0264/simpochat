@@ -8184,6 +8184,269 @@ async function syncPostsFromSupabase(force = false) {
   }
 }
 
+async function trimSimpoChatVideoFile(
+  file,
+  startSeconds,
+  durationSeconds
+) {
+
+  const start =
+    Math.max(0, Number(startSeconds) || 0);
+
+  const clipDuration =
+    Math.min(
+      MAX_VIDEO_SECONDS,
+      Math.max(0.25, Number(durationSeconds) || 0)
+    );
+
+  const end =
+    start + clipDuration;
+
+  const video =
+    document.createElement("video");
+
+  const objectUrl =
+    URL.createObjectURL(file);
+
+  let stream = null;
+  let recorder = null;
+
+  video.preload = "auto";
+  video.muted = false;
+  video.playsInline = true;
+  video.src = objectUrl;
+
+  const waitFor = (target, eventName) =>
+    new Promise((resolve, reject) => {
+
+      target.addEventListener(
+        eventName,
+        resolve,
+        { once: true }
+      );
+
+      target.addEventListener(
+        "error",
+        () => reject(
+          new Error("Unable to read this video.")
+        ),
+        { once: true }
+      );
+
+    });
+
+  try {
+
+    if (video.readyState < 1) {
+      await waitFor(video, "loadedmetadata");
+    }
+
+    const actualEnd =
+      Math.min(
+        end,
+        Number(video.duration) || end
+      );
+
+    const actualDuration =
+      actualEnd - start;
+
+    if (
+      !Number.isFinite(actualDuration) ||
+      actualDuration <= 0
+    ) {
+      throw new Error(
+        "Choose a valid video trim range."
+      );
+    }
+
+    const capture =
+      video.captureStream ||
+      video.mozCaptureStream;
+
+    if (
+      !capture ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      throw new Error(
+        "Your browser does not support video trimming. Please use the latest Chrome browser."
+      );
+    }
+
+    const supportedTypes = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+      "video/mp4"
+    ];
+
+    const mimeType =
+      supportedTypes.find(
+        type => MediaRecorder.isTypeSupported(type)
+      );
+
+    if (!mimeType) {
+      throw new Error(
+        "No supported video export format was found."
+      );
+    }
+
+    if (
+      Math.abs(video.currentTime - start) > 0.05
+    ) {
+
+      const seeked =
+        waitFor(video, "seeked");
+
+      video.currentTime = start;
+
+      await seeked;
+
+    }
+
+    stream =
+      capture.call(video);
+
+    recorder =
+      new MediaRecorder(
+        stream,
+        {
+          mimeType,
+          videoBitsPerSecond: 2500000,
+          audioBitsPerSecond: 128000
+        }
+      );
+
+    const chunks = [];
+
+    const recording =
+      new Promise((resolve, reject) => {
+
+        recorder.ondataavailable = event => {
+
+          if (
+            event.data &&
+            event.data.size
+          ) {
+            chunks.push(event.data);
+          }
+
+        };
+
+        recorder.onerror = () => {
+          reject(
+            new Error("Video export failed.")
+          );
+        };
+
+        recorder.onstop = resolve;
+
+      });
+
+    recorder.start(250);
+
+    await video.play();
+
+    await new Promise((resolve, reject) => {
+
+      const startedAt =
+        performance.now();
+
+      const check = () => {
+
+        if (
+          video.currentTime >= actualEnd ||
+          video.ended
+        ) {
+          return resolve();
+        }
+
+        if (
+          performance.now() - startedAt >
+          (actualDuration + 10) * 1000
+        ) {
+          return reject(
+            new Error("Video trimming timed out.")
+          );
+        }
+
+        requestAnimationFrame(check);
+
+      };
+
+      requestAnimationFrame(check);
+
+    });
+
+    video.pause();
+
+    if (recorder.state !== "inactive") {
+      recorder.stop();
+    }
+
+    await recording;
+
+    const outputType =
+      (recorder.mimeType || mimeType)
+        .split(";")[0];
+
+    const blob =
+      new Blob(
+        chunks,
+        { type: outputType }
+      );
+
+    if (!blob.size) {
+      throw new Error(
+        "The trimmed video is empty."
+      );
+    }
+
+    if (blob.size >= 50 * 1024 * 1024) {
+      throw new Error(
+        "The trimmed video is still 50 MB or larger. Choose a shorter clip."
+      );
+    }
+
+    const extension =
+      outputType === "video/mp4"
+        ? "mp4"
+        : "webm";
+
+    const baseName =
+      (file.name || "simpochat-video")
+        .replace(/\.[^.]+$/, "");
+
+    return new File(
+      [blob],
+      baseName + "-trimmed." + extension,
+      { type: outputType }
+    );
+
+  } finally {
+
+    if (
+      recorder &&
+      recorder.state !== "inactive"
+    ) {
+      recorder.stop();
+    }
+
+    if (stream) {
+      stream.getTracks().forEach(
+        track => track.stop()
+      );
+    }
+
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+
+    URL.revokeObjectURL(objectUrl);
+
+  }
+
+}
+
 async function uploadSimpoChatPostMedia(file, groupIds) {
   const uploadFile = file?.type?.startsWith("image/")
     ? await simpoPrepareImageFile(file)
