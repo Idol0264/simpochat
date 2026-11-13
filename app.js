@@ -318,6 +318,39 @@ async function simpoLoadPendingPostQueue() {
 
 }
 
+async function simpoRetryFailedPendingPosts() {
+
+  if (
+    !pendingPostQueueReady ||
+    !navigator.onLine
+  ) {
+    return;
+  }
+
+  const failedPostIds =
+    pendingPostUploads
+      .filter(post => post.status === "failed")
+      .map(post => post.id);
+
+  for (const postId of failedPostIds) {
+
+    if (!navigator.onLine) {
+      break;
+    }
+
+    await simpoProcessPendingPost(postId);
+
+  }
+
+}
+
+
+window.addEventListener("online", () => {
+
+  void simpoRetryFailedPendingPosts();
+
+});
+
 
 function simpoFindPendingPost(postId) {
 
