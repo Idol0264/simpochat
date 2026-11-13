@@ -11248,7 +11248,8 @@ async function createVideoPost() {
 
 
     /*
-     * UPLOAD AND SAVE ONE PHOTO COLLECTION
+     * UPLOAD AND SAVE PHOTO COLLECTIONS
+     * IN GROUPS OF FIVE.
      */
 
     const photos =
@@ -11258,45 +11259,76 @@ async function createVideoPost() {
 
     if (photos.length) {
 
-      const uploadedPhotoResults = await Promise.all(
-        photos.map(async item => ({
-          mediaUrl: await uploadSimpoChatPostMedia(
-            item.file,
-            groupIds
-          ),
-          fileName: item.file.name
-        }))
-      );
+      for (
+        let photoStart = 0;
+        photoStart < photos.length;
+        photoStart += MAX_PHOTOS_PER_POST
+      ) {
 
-      const uploadedPhotoUrls = uploadedPhotoResults.map(
-        item => item.mediaUrl
-      );
+        const photoBatch =
+          photos.slice(
+            photoStart,
+            photoStart + MAX_PHOTOS_PER_POST
+          );
 
-      const uploadedPhotoNames = uploadedPhotoResults.map(
-        item => item.fileName
-      );
+        const uploadedPhotoResults =
+          await Promise.all(
+            photoBatch.map(
+              async item => ({
 
-      await saveSimpoChatPostToSupabase({
+                mediaUrl:
+                  await uploadSimpoChatPostMedia(
+                    item.file,
+                    groupIds
+                  ),
 
-        group_ids: [...groupIds],
+                fileName:
+                  item.file.name
 
-        content_type: "photos",
+              })
+            )
+          );
 
-        text: "",
+        const uploadedPhotoUrls =
+          uploadedPhotoResults.map(
+            item => item.mediaUrl
+          );
 
-        media_url: uploadedPhotoUrls[0] || "",
+        const uploadedPhotoNames =
+          uploadedPhotoResults.map(
+            item => item.fileName
+          );
 
-        media_urls: uploadedPhotoUrls,
+        await saveSimpoChatPostToSupabase({
 
-        duration:
-          photos.length * PHOTO_SECONDS,
+          group_ids: [...groupIds],
 
-        metadata: {
-          fileNames: uploadedPhotoNames,
-          photoDuration: PHOTO_SECONDS
-        }
+          content_type: "photos",
 
-      });
+          text: "",
+
+          media_url:
+            uploadedPhotoUrls[0] || "",
+
+          media_urls:
+            uploadedPhotoUrls,
+
+          duration:
+            photoBatch.length * PHOTO_SECONDS,
+
+          metadata: {
+
+            fileNames:
+              uploadedPhotoNames,
+
+            photoDuration:
+              PHOTO_SECONDS
+
+          }
+
+        });
+
+      }
 
     }
 
