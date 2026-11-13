@@ -9266,31 +9266,22 @@ function getDraftPostCount() {
 
   const videos =
     postDraftMedia.filter(
-      item =>
-        item.kind === "video"
+      item => item.kind === "video"
     ).length;
 
   const photos =
     postDraftMedia.filter(
-      item =>
-        item.kind === "image"
+      item => item.kind === "image"
     ).length;
-
-
-  /*
-   * Every video becomes one post.
-   *
-   * All selected photos become one
-   * photo-collection post.
-   */
 
   return (
     videos +
-    (photos > 0 ? 1 : 0)
+    Math.ceil(
+      photos / MAX_PHOTOS_PER_POST
+    )
   );
 
 }
-
 
 /* ---------------------------------------------------------
    RENDER DRAFT MEDIA PREVIEW
