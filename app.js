@@ -8451,12 +8451,17 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
   const uploadFile = file?.type?.startsWith("image/")
     ? await simpoPrepareImageFile(file)
     : file;
-
+   
+  const uploadContentType =
+    String(uploadFile.type || "")
+      .split(";")[0]
+      .trim();
+   
   const prepared = await simpoChatPostRequest(
     "create_post_upload",
     {
       group_ids: groupIds,
-      content_type: uploadFile.type,
+      content_type: uploadContentType,
       file_size: uploadFile.size
     }
   );
