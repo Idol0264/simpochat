@@ -10302,23 +10302,10 @@ function handlePostMediaSelection(
     );
 
 
-  if (
-    images.length >
-    MAX_PHOTOS_PER_POST
-  ) {
+  // Accept every selected photo.
+  // The publishing process will split them into groups of five.
 
-    alert(
-      `You can select a maximum of ${MAX_PHOTOS_PER_POST} photos for one photo post.`
-    );
-
-  }
-
-
-  const acceptedImages =
-    images.slice(
-      0,
-      MAX_PHOTOS_PER_POST
-    );
+  const acceptedImages = images;
 
 
   /*
