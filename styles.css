@@ -8267,6 +8267,78 @@ body {
   pointer-events: none;
 }
 
+/* SIMPOCHAT — PENDING POST RETRY / DELETE CONTROLS */
+
+.pending-post-card {
+  position: relative;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.pending-post-card .pending-post-status {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  max-width: calc(100% - 16px);
+  padding: 5px 8px;
+  border-radius: 20px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.72);
+  font-size: 11px;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.pending-post-card.pending-post-failed {
+  outline: 1px solid rgba(255, 90, 90, 0.55);
+}
+
+.pending-post-actions {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.pending-post-actions-visible .pending-post-actions {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.pending-post-actions button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(20, 20, 25, 0.88);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pending-post-actions button:active {
+  transform: scale(0.92);
+}
+
+.pending-post-actions button svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+}
+
 .posts-page .post-card-info {
   display: block;
   min-width: 0;
