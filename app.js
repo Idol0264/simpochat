@@ -15872,7 +15872,8 @@ function renderSettings() {
 
   `;
 
-
+initializeSimpoLocationSettings();
+   
   /*
    * Theme controls
    */
