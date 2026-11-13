@@ -9118,6 +9118,34 @@ function renderPosts() {
 
     <div class="posts-page">
 
+
+${
+  !state.currentUser?.locationName ||
+  !state.currentUser?.timezone
+    ? `
+      <section class="settings-section"
+        style="margin-bottom:15px;">
+
+        <strong>Set your location to start posting</strong>
+
+        <p class="section-note">
+          Select your location to activate your personal
+          10-post daily allowance.
+        </p>
+
+        <button
+          type="button"
+          class="primary-btn"
+          data-action="settings">
+          Go to Settings
+        </button>
+
+      </section>
+    `
+    : ""
+}
+
+
       <div class="post-filter-wrap">
 
         <div class="post-filter">
