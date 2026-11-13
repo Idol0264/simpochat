@@ -9053,7 +9053,7 @@ function renderPosts() {
         );
       });
   }
-   
+
   setHeader(
     "Posts",
     "Video updates from your groups"
@@ -9076,12 +9076,39 @@ function renderPosts() {
     );
 
 
+  /* PENDING UPLOADS */
+
+  const visiblePendingPosts =
+    pendingPostQueueReady
+      ? pendingPostUploads.filter(post => {
+
+          const postGroupIds =
+            Array.isArray(post.groupIds)
+              ? post.groupIds
+              : [];
+
+          if (activeFilter === "all") {
+            return postGroupIds.some(
+              id => getGroup(id)
+            );
+          }
+
+          return postGroupIds.includes(
+            activeFilter
+          ) && Boolean(getGroup(activeFilter));
+
+        })
+      : [];
+
+
+  const hasPosts =
+    visiblePendingPosts.length > 0 ||
+    visiblePosts.length > 0;
+
+
   screen.innerHTML = `
 
     <div class="posts-page">
-
-
-      <!-- POST FILTER -->
 
       <div class="post-filter-wrap">
 
@@ -9101,7 +9128,6 @@ function renderPosts() {
             All
           </button>
 
-
           ${
             groups
               .map(
@@ -9111,8 +9137,7 @@ function renderPosts() {
                     class="
                       filter-btn
                       ${
-                        activeFilter ===
-                        group.id
+                        activeFilter === group.id
                           ? "active"
                           : ""
                       }
@@ -9134,25 +9159,29 @@ function renderPosts() {
       </div>
 
 
-      <!-- POST GRID -->
-
       ${
-        visiblePosts.length
+        hasPosts
           ? `
+
             <div class="post-grid">
 
+              ${visiblePendingPosts
+                .map(post =>
+                  renderPendingPostCard(post)
+                )
+                .join("")}
+
               ${visiblePosts
-                .map(
-                  post =>
-                    renderPostCard(
-                      post
-                    )
+                .map(post =>
+                  renderPostCard(post)
                 )
                 .join("")}
 
             </div>
+
           `
           : `
+
             <div class="empty">
 
               <div class="empty-icon">
@@ -9169,18 +9198,16 @@ function renderPosts() {
               </p>
 
             </div>
+
           `
       }
-      
 
     </div>
 
   `;
 
 
-  /*
-   * Post filter buttons
-   */
+  /* POST FILTER BUTTONS */
 
   document
     .querySelectorAll(
@@ -9203,6 +9230,116 @@ function renderPosts() {
       );
 
     });
+
+}
+
+
+/* ---------------------------------------------------------
+   PENDING POST CARD
+   --------------------------------------------------------- */
+
+function renderPendingPostCard(post) {
+
+  const postGroups =
+    (post.groupIds || [])
+      .map(id => getGroup(id))
+      .filter(Boolean);
+
+  if (!postGroups.length) {
+    return "";
+  }
+
+  const groupNames =
+    postGroups
+      .map(group => group.name)
+      .join(" · ");
+
+  const firstFile =
+    post.files?.[0]?.file;
+
+  let mediaMarkup = "";
+
+  if (post.type === "video" && post.previewUrl) {
+
+    mediaMarkup = `
+      <video
+        class="post-card-media"
+        src="${esc(post.previewUrl)}"
+        muted
+        playsinline
+        preload="metadata"
+      ></video>
+    `;
+
+  } else if (
+    post.type === "photos" &&
+    post.previewUrl
+  ) {
+
+    mediaMarkup = `
+      <img
+        class="post-card-media"
+        src="${esc(post.previewUrl)}"
+        alt="Pending photo post"
+      >
+    `;
+
+  } else {
+
+    mediaMarkup = `
+      <span class="post-video-thumb">
+        ▣
+      </span>
+    `;
+
+  }
+
+
+  const statusText =
+    post.status === "uploading"
+      ? "Uploading…"
+      : post.status === "failed"
+        ? "Couldn't send"
+        : "Waiting to upload";
+
+
+  return `
+
+    <div
+      class="post-card pending-post-card"
+      data-pending-post-id="${esc(post.id)}"
+      data-pending-status="${esc(post.status)}"
+    >
+
+      <span class="post-card-media-wrap">
+
+        ${mediaMarkup}
+
+        <span class="pending-post-status">
+          ${statusText}
+        </span>
+
+      </span>
+
+
+      <span class="post-card-info">
+
+        <span class="post-creator">
+          <span>
+            ${post.type === "video" ? "Video" : "Photos"}
+          </span>
+        </span>
+
+        <span class="post-group">
+          ${esc(groupNames)}
+        </span>
+
+      </span>
+
+    </div>
+
+  `;
+
 }
 
 
