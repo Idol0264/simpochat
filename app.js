@@ -15179,6 +15179,416 @@ async function renderAdminDashboard() {
 
 
 /* ---------------------------------------------------------
+   SIMPOCHAT LOCATION SETTINGS
+   --------------------------------------------------------- */
+
+let simpoLocationResults = [];
+let selectedSimpoLocation = null;
+let simpoLocationSearchTimer = null;
+
+
+function initializeSimpoLocationSettings() {
+
+  const user = state.currentUser || {};
+
+  const nameDisplay =
+    document.getElementById("simpoLocationName");
+
+  const timezoneDisplay =
+    document.getElementById("simpoLocationTimezone");
+
+  const lockMessage =
+    document.getElementById("simpoLocationLockMessage");
+
+  const searchInput =
+    document.getElementById("simpoLocationSearch");
+
+  const saveButton =
+    document.getElementById("simpoSaveLocation");
+
+  const suggestions =
+    document.getElementById("simpoLocationSuggestions");
+
+  if (
+    !nameDisplay ||
+    !timezoneDisplay ||
+    !lockMessage ||
+    !searchInput ||
+    !saveButton ||
+    !suggestions
+  ) {
+    return;
+  }
+
+  nameDisplay.textContent =
+    user.locationName || "None";
+
+  timezoneDisplay.textContent =
+    user.timezone || "";
+
+  selectedSimpoLocation = null;
+  simpoLocationResults = [];
+
+  saveButton.disabled = true;
+
+  const lockUntil =
+    getLocationChangeAllowedAt();
+
+  const isLocked =
+    Boolean(user.locationName) &&
+    lockUntil > Date.now();
+
+  if (isLocked) {
+
+    searchInput.disabled = true;
+
+    lockMessage.textContent =
+      "You can change your location after " +
+      new Date(lockUntil).toLocaleString(
+        undefined,
+        {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }
+      ) +
+      ". This follows your current location's local time.";
+
+  } else {
+
+    searchInput.disabled = false;
+
+    lockMessage.textContent =
+      user.locationName
+        ? "You can now change your location."
+        : "Select your location to activate posting.";
+
+  }
+
+
+  searchInput.addEventListener(
+    "input",
+    () => {
+
+      clearTimeout(simpoLocationSearchTimer);
+
+      const query =
+        searchInput.value.trim();
+
+      selectedSimpoLocation = null;
+      saveButton.disabled = true;
+      suggestions.innerHTML = "";
+
+      if (query.length < 2) {
+        return;
+      }
+
+      suggestions.innerHTML =
+        '<div class="section-note">Searching locations...</div>';
+
+      simpoLocationSearchTimer =
+        setTimeout(
+          () => searchSimpoLocations(query),
+          450
+        );
+
+    }
+  );
+
+
+  suggestions.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          "[data-simpo-location-index]"
+        );
+
+      if (!button) return;
+
+      chooseSimpoLocation(
+        Number(button.dataset.simpoLocationIndex)
+      );
+
+    }
+  );
+
+
+  saveButton.addEventListener(
+    "click",
+    saveSimpoLocation
+  );
+
+}
+
+
+async function searchSimpoLocations(query) {
+
+  const suggestions =
+    document.getElementById(
+      "simpoLocationSuggestions"
+    );
+
+  if (!suggestions) return;
+
+  try {
+
+    const url =
+      "https://photon.komoot.io/api/?limit=8&q=" +
+      encodeURIComponent(query);
+
+    const response =
+      await fetch(url);
+
+    if (!response.ok) {
+      throw new Error("Location search failed.");
+    }
+
+    const data =
+      await response.json();
+
+    simpoLocationResults =
+      (data.features || [])
+        .filter(feature =>
+          Array.isArray(feature.geometry?.coordinates) &&
+          feature.properties
+        )
+        .map(feature => {
+
+          const properties =
+            feature.properties;
+
+          const parts = [
+            properties.name,
+            properties.city,
+            properties.state,
+            properties.country
+          ].filter(Boolean);
+
+          return {
+            name: [...new Set(parts)].join(", "),
+            latitude:
+              feature.geometry.coordinates[1],
+            longitude:
+              feature.geometry.coordinates[0]
+          };
+
+        })
+        .filter(location => location.name)
+        .filter((location, index, array) =>
+          array.findIndex(item =>
+            item.name === location.name
+          ) === index
+        );
+
+    if (!simpoLocationResults.length) {
+
+      suggestions.innerHTML =
+        '<div class="section-note">No matching locations found. Try another search.</div>';
+
+      return;
+    }
+
+    suggestions.innerHTML =
+      simpoLocationResults.map(
+        (location, index) => `
+          <button
+            type="button"
+            class="menu-item"
+            data-simpo-location-index="${index}"
+            style="text-align:left;"
+          >
+            <div class="menu-icon">📍</div>
+            <div>
+              <strong>${esc(location.name)}</strong>
+              <span>Choose this location</span>
+            </div>
+          </button>
+        `
+      ).join("");
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat location search:",
+      error
+    );
+
+    suggestions.innerHTML =
+      '<div class="section-note">Unable to search locations right now. Please try again.</div>';
+
+  }
+
+}
+
+
+async function chooseSimpoLocation(index) {
+
+  const location =
+    simpoLocationResults[index];
+
+  const suggestions =
+    document.getElementById(
+      "simpoLocationSuggestions"
+    );
+
+  const saveButton =
+    document.getElementById(
+      "simpoSaveLocation"
+    );
+
+  if (!location || !suggestions || !saveButton) {
+    return;
+  }
+
+  selectedSimpoLocation = null;
+  saveButton.disabled = true;
+
+  suggestions.innerHTML =
+    '<div class="section-note">Detecting time zone...</div>';
+
+  try {
+
+    const url =
+      "https://timeapi.io/api/TimeZone/coordinate" +
+      "?latitude=" +
+      encodeURIComponent(location.latitude) +
+      "&longitude=" +
+      encodeURIComponent(location.longitude);
+
+    const response =
+      await fetch(url);
+
+    if (!response.ok) {
+      throw new Error("Time zone detection failed.");
+    }
+
+    const data =
+      await response.json();
+
+    const timezone =
+      data.timeZone ||
+      data.timeZoneId ||
+      data.timezone ||
+      "";
+
+    if (!timezone) {
+      throw new Error("No time zone was returned.");
+    }
+
+    // Confirm that the browser recognizes this time zone.
+    new Intl.DateTimeFormat(
+      "en-US",
+      { timeZone: timezone }
+    ).format(new Date());
+
+    selectedSimpoLocation = {
+      name: location.name,
+      timezone
+    };
+
+    suggestions.innerHTML = `
+      <div class="section-note">
+        Selected: <strong>${esc(location.name)}</strong>
+        <br>
+        Detected time zone: <strong>${esc(timezone)}</strong>
+      </div>
+    `;
+
+    saveButton.disabled = false;
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat time zone detection:",
+      error
+    );
+
+    selectedSimpoLocation = null;
+
+    suggestions.innerHTML =
+      '<div class="section-note">Could not detect the time zone. Please select another location or try again later.</div>';
+
+  }
+
+}
+
+
+async function saveSimpoLocation() {
+
+  if (!selectedSimpoLocation) {
+    alert("Please select a location first.");
+    return;
+  }
+
+  const saveButton =
+    document.getElementById(
+      "simpoSaveLocation"
+    );
+
+  if (!saveButton) return;
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Saving...";
+
+  try {
+
+    const result =
+      await simpoChatPostRequest(
+        "update_location",
+        {
+          location_name:
+            selectedSimpoLocation.name,
+
+          timezone:
+            selectedSimpoLocation.timezone
+        }
+      );
+
+    const savedUser =
+      result.user || {};
+
+    state.currentUser.locationName =
+      savedUser.location_name ||
+      selectedSimpoLocation.name;
+
+    state.currentUser.timezone =
+      savedUser.timezone ||
+      selectedSimpoLocation.timezone;
+
+    state.currentUser.locationUpdatedAt =
+      savedUser.location_updated_at ||
+      new Date().toISOString();
+
+    selectedSimpoLocation = null;
+
+    saveState();
+
+    alert("Your location has been saved.");
+
+    render();
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat save location:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Unable to save your location."
+    );
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Save Location";
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
    SETTINGS / PROFILE
    --------------------------------------------------------- */
 
