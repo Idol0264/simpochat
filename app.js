@@ -10211,49 +10211,36 @@ function getTodayPostCount() {
   const currentUserId =
     state.currentUser?.id;
 
-  if (!currentUserId) {
+  const timeZone =
+    state.currentUser?.timezone;
+
+  if (!currentUserId || !timeZone) {
     return 0;
   }
 
-  const start = new Date();
+  const nowMs = Date.now();
 
-  start.setHours(
-    0,
-    0,
-    0,
-    0
+  const startTime = Math.max(
+    getLocalMidnightUtc(nowMs, timeZone),
+    Date.parse(
+      state.currentUser?.locationUpdatedAt || ""
+    ) || 0
   );
-
-  const startTime =
-    start.getTime();
-
-  const endTime =
-    startTime +
-    24 * 60 * 60 * 1000;
-
-  /*
-   * Count only posts created by
-   * the currently signed-in user.
-   */
 
   return safeArray(
     state.posts
   ).filter(post => {
 
     const createdAt =
-      Number(
-        post.createdAt || 0
-      );
+      Number(post.createdAt || 0);
 
     const authorId =
-      String(
-        post.authorId || ""
-      );
+      String(post.authorId || "");
 
     return (
       authorId === String(currentUserId) &&
       createdAt >= startTime &&
-      createdAt < endTime
+      createdAt <= nowMs
     );
 
   }).length;
