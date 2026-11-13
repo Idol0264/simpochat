@@ -8398,22 +8398,7 @@ function renderPosts() {
             </div>
           `
       }
-
-
-      <!-- FLOATING VIDEO BUTTON -->
-
-      <button
-        class="floating-post-btn"
-        data-action="create-post"
-        aria-label="Create video post"
-      >
-
-        <span>
-          ▷
-        </span>
-
-      </button>
-
+      
 
     </div>
 
