@@ -8860,7 +8860,7 @@ async function saveSimpoChatPostToSupabase(postData) {
    SIMPOCHAT — PROCESS ONE BACKGROUND POST
    ========================================================= */
 
-async function simpoProcessPendingPost(postId) {
+async function simpoProcessPendingPostNow(postId) {
 
   const post = simpoFindPendingPost(postId);
 
@@ -9099,6 +9099,28 @@ async function simpoProcessPendingPost(postId) {
 
 }
 
+function simpoProcessPendingPost(postId) {
+
+  const task =
+    pendingPostWorkerQueue.then(() =>
+      simpoProcessPendingPostNow(postId)
+    );
+
+  pendingPostWorkerQueue =
+    task.catch(error => {
+
+      console.error(
+        "Pending post queue error:",
+        error
+      );
+
+      return false;
+
+    });
+
+  return task;
+
+}
 
 /* ---------------------------------------------------------
    POSTS PAGE
