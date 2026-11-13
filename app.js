@@ -236,6 +236,108 @@ async function simpoDeleteQueuedPost(postId) {
 }
 
 
+// SIMPOCHAT — PENDING POST QUEUE
+
+let pendingPostUploads = [];
+
+let pendingPostQueueReady = false;
+
+let pendingPostWorkerActive = false;
+
+
+async function simpoLoadPendingPostQueue() {
+
+  try {
+
+    const savedPosts =
+      await simpoGetQueuedPosts();
+
+    pendingPostUploads =
+      savedPosts.map(post => {
+
+        // An upload that was running when the app
+        // closed must be treated as interrupted.
+
+        if (post.status === "uploading") {
+          post.status = "failed";
+          post.error = "Upload interrupted. Tap retry to try again.";
+        }
+
+        // Recreate preview URLs from the saved files.
+        // Object URLs themselves cannot be stored in IndexedDB.
+
+        post.previewUrl = "";
+
+        const firstFile =
+          post.files?.[0]?.file;
+
+        if (firstFile) {
+          post.previewUrl =
+            URL.createObjectURL(firstFile);
+        }
+
+        return post;
+
+      });
+
+    // Save interrupted statuses.
+
+    for (const post of pendingPostUploads) {
+
+      if (post.status === "failed") {
+        await simpoSaveQueuedPost(post);
+      }
+
+    }
+
+    pendingPostQueueReady = true;
+
+    if (state.screen === "posts") {
+      renderPosts();
+    }
+
+    return pendingPostUploads;
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat pending post queue could not load:",
+      error
+    );
+
+    pendingPostQueueReady = true;
+
+    return [];
+
+  }
+
+}
+
+
+function simpoFindPendingPost(postId) {
+
+  return pendingPostUploads.find(
+    post => post.id === postId
+  ) || null;
+
+}
+
+
+function simpoReleasePendingPostPreview(post) {
+
+  if (post?.previewUrl) {
+
+    URL.revokeObjectURL(
+      post.previewUrl
+    );
+
+    post.previewUrl = "";
+
+  }
+
+}
+
+
 // SIMPOCHAT — LIVEKIT CALL STATE
 let activeLiveKitRoom = null;
 let activeCallContext = null;
