@@ -11206,9 +11206,18 @@ async function createVideoPost() {
       const duration =
         end - start;
 
+      // Physically trim the video before uploading.
+
+      const trimmedFile =
+        await trimSimpoChatVideoFile(
+          item.file,
+          start,
+          duration
+        );
+
       const mediaUrl =
         await uploadSimpoChatPostMedia(
-          item.file,
+          trimmedFile,
           groupIds
         );
 
