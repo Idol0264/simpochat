@@ -8645,7 +8645,7 @@ async function trimSimpoChatVideoFile(
         {
           mimeType,
           videoBitsPerSecond: 1500000,
-          audioBitsPerSecond: 128000
+          audioBitsPerSecond: 130000
         }
       );
 
@@ -8675,11 +8675,13 @@ async function trimSimpoChatVideoFile(
 
       });
 
-     // Begin recording before playback to capture the first frames.
+     // Start playback and recording together.
+
+     const playbackPromise = video.play();
 
      recorder.start();
 
-     await video.play();
+     await playbackPromise;
 
     await new Promise((resolve, reject) => {
 
