@@ -11165,30 +11165,6 @@ async function createVideoPost() {
   }
 
 
-  /*
-   * Validate photos.
-   */
-
-  const photoCount =
-    postDraftMedia.filter(
-      item =>
-        item.kind === "image"
-    ).length;
-
-
-  if (
-    photoCount >
-    MAX_PHOTOS_PER_POST
-  ) {
-
-    alert(
-      `A photo post can contain a maximum of ${MAX_PHOTOS_PER_POST} photos.`
-    );
-
-    return;
-  }
-
-
   const createdAt =
     now();
 
