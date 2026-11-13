@@ -15287,6 +15287,59 @@ function renderSettings() {
         </button>
 
       </section>
+      
+
+<!-- LOCATION SETTINGS -->
+
+<section class="settings-section" id="simpoLocationSection">
+
+  <div class="section-title">
+    Location
+  </div>
+
+  <div class="section-note">
+    Choose your location to activate your personal daily posting limit.
+  </div>
+
+  <div id="simpoLocationSelected"
+       style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 0;">
+
+    <strong id="simpoLocationName">None</strong>
+
+    <strong id="simpoLocationTimezone"
+            style="font-weight:700;text-align:right;">
+    </strong>
+
+  </div>
+
+  <div id="simpoLocationLockMessage"
+       class="section-note"></div>
+
+  <input
+    type="search"
+    id="simpoLocationSearch"
+    placeholder="Search city, town or country"
+    autocomplete="off"
+    style="width:100%;padding:13px;border-radius:10px;"
+  >
+
+  <div id="simpoLocationSuggestions"
+       style="display:grid;gap:6px;margin-top:10px;">
+  </div>
+
+  <button
+    type="button"
+    class="primary-btn"
+    id="simpoSaveLocation"
+    style="width:100%;margin-top:12px;"
+    disabled
+  >
+    Save Location
+  </button>
+
+</section>
+
+<!-- END LOCATION SETTINGS -->
 
 
       <!-- APPEARANCE -->
