@@ -21692,7 +21692,9 @@ const response =
   }
 
   saveState();
-
+     
+  // Restore saved and interrupted background posts.
+  void simpoLoadPendingPostQueue();
   
   try {
     await syncJoinedGroupsFromSupabase();
