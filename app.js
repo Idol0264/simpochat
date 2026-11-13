@@ -8521,6 +8521,7 @@ async function trimSimpoChatVideoFile(
   video.preload = "auto";
   video.muted = false;
   video.playsInline = true;
+  video.playbackRate = 1;
   video.src = objectUrl;
 
   const waitFor = (target, eventName) =>
@@ -8565,9 +8566,8 @@ async function trimSimpoChatVideoFile(
         "Choose a valid video trim range."
       );
     }
-     
-    // Keep the original file when no trimming is needed.
-    // This avoids unnecessary browser re-recording and audio sync issues.
+
+    // Keep short videos in their original format.
 
     const sourceDuration =
       Number(video.duration) || 0;
@@ -8589,7 +8589,7 @@ async function trimSimpoChatVideoFile(
       return file;
 
     }
-     
+
     const capture =
       video.captureStream ||
       video.mozCaptureStream;
@@ -8603,9 +8603,11 @@ async function trimSimpoChatVideoFile(
       );
     }
 
+    // Prefer the lighter VP8 encoder on mobile devices.
+
     const supportedTypes = [
-      "video/webm;codecs=vp9,opus",
       "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=vp9,opus",
       "video/webm",
       "video/mp4"
     ];
@@ -8642,8 +8644,8 @@ async function trimSimpoChatVideoFile(
         stream,
         {
           mimeType,
-          videoBitsPerSecond: 2500000,
-          audioBitsPerSecond: 128000
+          videoBitsPerSecond: 1500000,
+          audioBitsPerSecond: 96000
         }
       );
 
@@ -8673,9 +8675,11 @@ async function trimSimpoChatVideoFile(
 
       });
 
-    recorder.start(250);
+    // Start playback first, then begin recording.
 
     await video.play();
+
+    recorder.start();
 
     await new Promise((resolve, reject) => {
 
