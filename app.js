@@ -10203,6 +10203,82 @@ let postDraftMedia = [];
 
 
 /* ---------------------------------------------------------
+   MEMBER LOCATION TIME ZONE HELPERS
+   --------------------------------------------------------- */
+
+function getZonedDateParts(timestamp, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date(timestamp));
+
+  const values = {};
+
+  parts.forEach(part => {
+    if (part.type !== "literal") {
+      values[part.type] = Number(part.value);
+    }
+  });
+
+  return values;
+}
+
+function getLocalMidnightUtc(timestamp, timeZone, nextDay = false) {
+  const local = getZonedDateParts(timestamp, timeZone);
+
+  const target = Date.UTC(
+    local.year,
+    local.month - 1,
+    local.day + (nextDay ? 1 : 0),
+    0, 0, 0
+  );
+
+  let guess = target;
+
+  for (let i = 0; i < 4; i++) {
+    const actual = getZonedDateParts(guess, timeZone);
+
+    const represented = Date.UTC(
+      actual.year,
+      actual.month - 1,
+      actual.day,
+      actual.hour,
+      actual.minute,
+      actual.second
+    );
+
+    const difference = target - represented;
+
+    if (!difference) break;
+
+    guess += difference;
+  }
+
+  return guess;
+}
+
+function getLocationChangeAllowedAt() {
+  const user = state.currentUser || {};
+
+  if (!user.timezone || !user.locationUpdatedAt) {
+    return 0;
+  }
+
+  return getLocalMidnightUtc(
+    Date.parse(user.locationUpdatedAt),
+    user.timezone,
+    true
+  );
+}
+
+
+/* ---------------------------------------------------------
    TODAY'S POST COUNT
    --------------------------------------------------------- */
 
