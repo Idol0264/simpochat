@@ -293,6 +293,9 @@ async function simpoLoadPendingPostQueue() {
     }
 
     pendingPostQueueReady = true;
+    if (navigator.onLine) {
+      void simpoRetryFailedPendingPosts();
+    }
 
     if (state.screen === "posts") {
       renderPosts();
