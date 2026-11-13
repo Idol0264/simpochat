@@ -12247,6 +12247,21 @@ function openCreatePost() {
 
 async function createVideoPost() {
 
+  if (
+    !state.currentUser?.locationName ||
+    !state.currentUser?.timezone
+  ) {
+    alert(
+      "Please set your location in Settings before posting."
+    );
+
+    state.screen = "settings";
+    saveState();
+    render();
+
+    return;
+  }
+
   if (!postDraftMedia.length) {
     alert("Select at least one video or photo.");
     return;
