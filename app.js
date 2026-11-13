@@ -9254,9 +9254,6 @@ function renderPendingPostCard(post) {
       .map(group => group.name)
       .join(" · ");
 
-  const firstFile =
-    post.files?.[0]?.file;
-
   let mediaMarkup = "";
 
   if (post.type === "video" && post.previewUrl) {
@@ -9294,7 +9291,6 @@ function renderPendingPostCard(post) {
 
   }
 
-
   const statusText =
     post.status === "uploading"
       ? "Uploading…"
@@ -9302,11 +9298,15 @@ function renderPendingPostCard(post) {
         ? "Couldn't send"
         : "Waiting to upload";
 
+  const failedClass =
+    post.status === "failed"
+      ? "pending-post-failed"
+      : "";
 
   return `
 
     <div
-      class="post-card pending-post-card"
+      class="post-card pending-post-card ${failedClass}"
       data-pending-post-id="${esc(post.id)}"
       data-pending-status="${esc(post.status)}"
     >
@@ -9319,8 +9319,49 @@ function renderPendingPostCard(post) {
           ${statusText}
         </span>
 
-      </span>
+        <span class="pending-post-actions">
 
+          <button
+            type="button"
+            data-pending-action="retry"
+            data-pending-post-id="${esc(post.id)}"
+            aria-label="Retry upload"
+            title="Retry"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M20 7v5h-5M4 17v-5h5M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            data-pending-action="delete"
+            data-pending-post-id="${esc(post.id)}"
+            aria-label="Delete pending post"
+            title="Delete"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4h6v3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+        </span>
+
+      </span>
 
       <span class="post-card-info">
 
@@ -9341,6 +9382,193 @@ function renderPendingPostCard(post) {
   `;
 
 }
+
+
+/* ---------------------------------------------------------
+   SIMPOCHAT — FAILED POST LONG-PRESS ACTIONS
+   --------------------------------------------------------- */
+
+let pendingPostLongPressTimer = null;
+
+let pendingPostLongPressCard = null;
+
+
+/* Start long-press */
+
+document.addEventListener(
+  "pointerdown",
+  event => {
+
+    if (
+      event.button !== undefined &&
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    if (
+      event.target.closest(
+        "[data-pending-action]"
+      )
+    ) {
+      return;
+    }
+
+    const card =
+      event.target.closest(
+        '.pending-post-card[data-pending-status="failed"]'
+      );
+
+    if (!card) return;
+
+    clearTimeout(
+      pendingPostLongPressTimer
+    );
+
+    pendingPostLongPressCard = card;
+
+    pendingPostLongPressTimer =
+      setTimeout(() => {
+
+        if (
+          pendingPostLongPressCard === card &&
+          card.isConnected
+        ) {
+
+          card.classList.add(
+            "pending-post-actions-visible"
+          );
+
+        }
+
+      }, 550);
+
+  }
+);
+
+
+/* Cancel long-press */
+
+function simpoCancelPendingPostLongPress() {
+
+  clearTimeout(
+    pendingPostLongPressTimer
+  );
+
+  pendingPostLongPressTimer = null;
+
+  pendingPostLongPressCard = null;
+
+}
+
+
+document.addEventListener(
+  "pointerup",
+  simpoCancelPendingPostLongPress
+);
+
+document.addEventListener(
+  "pointercancel",
+  simpoCancelPendingPostLongPress
+);
+
+
+/* Prevent the browser's normal long-press menu */
+
+document.addEventListener(
+  "contextmenu",
+  event => {
+
+    if (
+      event.target.closest(
+        ".pending-post-card"
+      )
+    ) {
+      event.preventDefault();
+    }
+
+  }
+);
+
+
+/* Retry or delete one specific failed post */
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-pending-action]"
+      );
+
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const postId =
+      button.dataset.pendingPostId;
+
+    const action =
+      button.dataset.pendingAction;
+
+    const post =
+      simpoFindPendingPost(postId);
+
+    if (
+      !post ||
+      post.status !== "failed"
+    ) {
+      return;
+    }
+
+
+    /* RETRY THIS POST ONLY */
+
+    if (action === "retry") {
+
+      if (pendingPostWorkerActive) {
+        return;
+      }
+
+      await simpoProcessPendingPost(postId);
+
+      return;
+
+    }
+
+
+    /* DELETE THIS PENDING POST */
+
+    if (action === "delete") {
+
+      try {
+
+        await simpoDeleteQueuedPost(postId);
+
+        pendingPostUploads =
+          pendingPostUploads.filter(
+            item => item.id !== postId
+          );
+
+        simpoReleasePendingPostPreview(post);
+
+        renderPosts();
+
+      } catch (error) {
+
+        console.error(
+          "Could not delete pending post:",
+          error
+        );
+
+      }
+
+    }
+
+  }
+);
 
 
 /* ---------------------------------------------------------
