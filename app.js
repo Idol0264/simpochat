@@ -8527,7 +8527,31 @@ async function trimSimpoChatVideoFile(
         "Choose a valid video trim range."
       );
     }
+     
+    // Keep the original file when no trimming is needed.
+    // This avoids unnecessary browser re-recording and audio sync issues.
 
+    const sourceDuration =
+      Number(video.duration) || 0;
+
+    const isWholeShortVideo =
+      start <= 0.05 &&
+      sourceDuration > 0 &&
+      sourceDuration <= MAX_VIDEO_SECONDS &&
+      Math.abs(actualEnd - sourceDuration) <= 0.25;
+
+    if (isWholeShortVideo) {
+
+      if (file.size >= 50 * 1024 * 1024) {
+        throw new Error(
+          "The video is 50 MB or larger. Choose a shorter clip."
+        );
+      }
+
+      return file;
+
+    }
+     
     const capture =
       video.captureStream ||
       video.mozCaptureStream;
