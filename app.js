@@ -8485,9 +8485,9 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
 
   const uploadResponse = await fetch(uploadUrl, {
     method: "PUT",
-    headers: {
-      "Content-Type": uploadFile.type
-    },
+   headers: {
+      "Content-Type": uploadContentType
+   },
     body: uploadFile
   });
 
