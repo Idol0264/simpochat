@@ -77,6 +77,165 @@ let pendingReplyMessageId = null;
 // Keep photo files available for retry while the app is open.
 const pendingPhotoUploads = new Map();
 
+
+/* =========================================================
+   SIMPOCHAT — BACKGROUND POST QUEUE STORAGE
+   ========================================================= */
+
+const SIMPO_POST_QUEUE_DB =
+  "simpochat-background-posts";
+
+const SIMPO_POST_QUEUE_STORE =
+  "pending-posts";
+
+
+function simpoOpenPostQueueDB() {
+
+  return new Promise((resolve, reject) => {
+
+    const request = indexedDB.open(
+      SIMPO_POST_QUEUE_DB,
+      1
+    );
+
+    request.onupgradeneeded = () => {
+
+      const db = request.result;
+
+      if (
+        !db.objectStoreNames.contains(
+          SIMPO_POST_QUEUE_STORE
+        )
+      ) {
+
+        db.createObjectStore(
+          SIMPO_POST_QUEUE_STORE,
+          {
+            keyPath: "id"
+          }
+        );
+
+      }
+
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+
+  });
+
+}
+
+
+async function simpoSaveQueuedPost(post) {
+
+  const db = await simpoOpenPostQueueDB();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction = db.transaction(
+      SIMPO_POST_QUEUE_STORE,
+      "readwrite"
+    );
+
+    transaction
+      .objectStore(SIMPO_POST_QUEUE_STORE)
+      .put(post);
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error);
+    };
+
+    transaction.onabort = () => {
+      db.close();
+      reject(
+        transaction.error ||
+        new Error("Post queue storage failed.")
+      );
+    };
+
+  });
+
+}
+
+
+async function simpoGetQueuedPosts() {
+
+  const db = await simpoOpenPostQueueDB();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction = db.transaction(
+      SIMPO_POST_QUEUE_STORE,
+      "readonly"
+    );
+
+    const request = transaction
+      .objectStore(SIMPO_POST_QUEUE_STORE)
+      .getAll();
+
+    let posts = [];
+
+    request.onsuccess = () => {
+      posts = request.result || [];
+    };
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(posts);
+    };
+
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error);
+    };
+
+  });
+
+}
+
+
+async function simpoDeleteQueuedPost(postId) {
+
+  const db = await simpoOpenPostQueueDB();
+
+  return new Promise((resolve, reject) => {
+
+    const transaction = db.transaction(
+      SIMPO_POST_QUEUE_STORE,
+      "readwrite"
+    );
+
+    transaction
+      .objectStore(SIMPO_POST_QUEUE_STORE)
+      .delete(postId);
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(true);
+    };
+
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error);
+    };
+
+  });
+
+}
+
+
 // SIMPOCHAT — LIVEKIT CALL STATE
 let activeLiveKitRoom = null;
 let activeCallContext = null;
