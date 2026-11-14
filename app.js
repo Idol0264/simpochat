@@ -10337,18 +10337,36 @@ if (post.type === "video" && postVideo) {
     { once: true }
   );
 
+  let clipFinished = false;
+
   postVideo.addEventListener(
     "timeupdate",
     () => {
 
       if (
+        !clipFinished &&
         clipInitialized &&
         clipEnd > clipStart &&
         postVideo.currentTime >= clipEnd
       ) {
 
+        clipFinished = true;
         postVideo.pause();
-        postVideo.currentTime = clipEnd;
+
+      }
+
+    }
+  );
+
+  // Restart from the selected beginning when Play is tapped again.
+  postVideo.addEventListener(
+    "play",
+    () => {
+
+      if (clipFinished) {
+
+        clipFinished = false;
+        postVideo.currentTime = clipStart;
 
       }
 
