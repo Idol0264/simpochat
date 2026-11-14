@@ -8790,6 +8790,324 @@ async function trimSimpoChatVideoFile(
 
 }
 
+
+/* =========================================================
+   SIMPOCHAT — COMPRESS VIDEO FOR POSTS ONLY
+   ========================================================= */
+
+async function compressSimpoChatPostVideoFile(
+  file,
+  startSeconds,
+  durationSeconds
+) {
+  if (!file || !file.type.startsWith("video/")) {
+    throw new Error("A valid video file is required.");
+  }
+
+  const start = Math.max(0, Number(startSeconds) || 0);
+
+  const requestedDuration = Math.min(
+    MAX_VIDEO_SECONDS,
+    Math.max(0.25, Number(durationSeconds) || 0)
+  );
+
+  const video = document.createElement("video");
+  const objectUrl = URL.createObjectURL(file);
+
+  let sourceStream = null;
+  let outputStream = null;
+  let recorder = null;
+  let animationFrame = null;
+
+  video.preload = "auto";
+  video.muted = false;
+  video.playsInline = true;
+  video.src = objectUrl;
+
+  const waitFor = (target, eventName) =>
+    new Promise((resolve, reject) => {
+      target.addEventListener(eventName, resolve, {
+        once: true
+      });
+
+      target.addEventListener(
+        "error",
+        () => reject(
+          new Error("Unable to read this video.")
+        ),
+        { once: true }
+      );
+    });
+
+  try {
+    if (video.readyState < 1) {
+      await waitFor(video, "loadedmetadata");
+    }
+
+    const sourceDuration = Number(video.duration) || 0;
+
+    const end = Math.min(
+      sourceDuration || start + requestedDuration,
+      start + requestedDuration
+    );
+
+    const clipDuration = end - start;
+
+    if (
+      !Number.isFinite(clipDuration) ||
+      clipDuration <= 0
+    ) {
+      throw new Error("Choose a valid video clip.");
+    }
+
+    if (typeof MediaRecorder === "undefined") {
+      throw new Error(
+        "Video compression is not supported by this browser. Please use Chrome."
+      );
+    }
+
+    if (
+      typeof HTMLCanvasElement.prototype.captureStream !==
+      "function"
+    ) {
+      throw new Error(
+        "Your browser does not support video compression."
+      );
+    }
+
+    const capture =
+      video.captureStream ||
+      video.mozCaptureStream;
+
+    if (!capture) {
+      throw new Error(
+        "Your browser cannot process this video."
+      );
+    }
+
+    if (Math.abs(video.currentTime - start) > 0.05) {
+      const seeked = waitFor(video, "seeked");
+
+      video.currentTime = start;
+
+      await seeked;
+    }
+
+    if (video.readyState < 2) {
+      await waitFor(video, "loadeddata");
+    }
+
+    // Resize while preserving the original proportions.
+
+    const maxWidth = 1280;
+    const maxHeight = 720;
+
+    const scale = Math.min(
+      1,
+      maxWidth / video.videoWidth,
+      maxHeight / video.videoHeight
+    );
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = Math.max(
+      1,
+      Math.round(video.videoWidth * scale)
+    );
+
+    canvas.height = Math.max(
+      1,
+      Math.round(video.videoHeight * scale)
+    );
+
+    const context = canvas.getContext("2d", {
+      alpha: false
+    });
+
+    if (!context) {
+      throw new Error(
+        "Unable to prepare the video for compression."
+      );
+    }
+
+    context.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    // Capture the original audio separately.
+
+    sourceStream = capture.call(video);
+
+    const canvasStream = canvas.captureStream(24);
+
+    const videoTrack = canvasStream.getVideoTracks()[0];
+
+    if (!videoTrack) {
+      throw new Error(
+        "Unable to prepare the video track."
+      );
+    }
+
+    outputStream = new MediaStream([
+      videoTrack,
+      ...sourceStream.getAudioTracks()
+    ]);
+
+    // Choose a format supported by this browser.
+
+    const supportedTypes = [
+      "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=vp9,opus",
+      "video/webm",
+      "video/mp4"
+    ];
+
+    const mimeType = supportedTypes.find(type =>
+      MediaRecorder.isTypeSupported(type)
+    );
+
+    if (!mimeType) {
+      throw new Error(
+        "No supported video compression format was found."
+      );
+    }
+
+    recorder = new MediaRecorder(outputStream, {
+      mimeType,
+      videoBitsPerSecond: 1300000,
+      audioBitsPerSecond: 96000
+    });
+
+    const chunks = [];
+
+    const recording = new Promise((resolve, reject) => {
+      recorder.ondataavailable = event => {
+        if (event.data && event.data.size) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onerror = () => {
+        reject(
+          new Error("Video compression failed.")
+        );
+      };
+
+      recorder.onstop = resolve;
+    });
+
+    let finished = false;
+
+    const drawFrame = () => {
+      if (finished) return;
+
+      context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      if (
+        video.currentTime >= end ||
+        video.ended
+      ) {
+        finished = true;
+        video.pause();
+
+        if (recorder.state !== "inactive") {
+          recorder.stop();
+        }
+
+        return;
+      }
+
+      animationFrame = requestAnimationFrame(drawFrame);
+    };
+
+    recorder.start(250);
+
+    const playbackPromise = video.play();
+
+    await playbackPromise;
+
+    drawFrame();
+
+    await recording;
+
+    const outputType = (
+      recorder.mimeType || mimeType
+    ).split(";")[0];
+
+    const blob = new Blob(chunks, {
+      type: outputType
+    });
+
+    if (!blob.size) {
+      throw new Error(
+        "The compressed video is empty."
+      );
+    }
+
+    if (blob.size >= 50 * 1024 * 1024) {
+      throw new Error(
+        "The compressed video is still too large. Please choose a shorter clip."
+      );
+    }
+
+    const extension =
+      outputType === "video/mp4" ? "mp4" : "webm";
+
+    const baseName = (
+      file.name || "simpochat-video"
+    ).replace(/\.[^.]+$/, "");
+
+    return new File(
+      [blob],
+      baseName + "-compressed." + extension,
+      {
+        type: outputType,
+        lastModified: Date.now()
+      }
+    );
+
+  } finally {
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+
+    if (
+      recorder &&
+      recorder.state !== "inactive"
+    ) {
+      recorder.stop();
+    }
+
+    if (sourceStream) {
+      sourceStream.getTracks().forEach(track => {
+        track.stop();
+      });
+    }
+
+    if (outputStream) {
+      outputStream.getTracks().forEach(track => {
+        track.stop();
+      });
+    }
+
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 async function uploadSimpoChatPostMedia(file, groupIds) {
   const uploadFile = file?.type?.startsWith("image/")
     ? await simpoPrepareImageFile(file)
