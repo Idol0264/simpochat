@@ -8805,7 +8805,6 @@ async function compressSimpoChatPostVideoFile(
   }
 
   const start = Math.max(0, Number(startSeconds) || 0);
-
   const requestedDuration = Math.min(
     MAX_VIDEO_SECONDS,
     Math.max(0.25, Number(durationSeconds) || 0)
@@ -8818,6 +8817,9 @@ async function compressSimpoChatPostVideoFile(
   let outputStream = null;
   let recorder = null;
   let animationFrame = null;
+  let videoFrameCallback = null;
+  let safetyTimer = null;
+  let finished = false;
 
   video.preload = "auto";
   video.muted = false;
@@ -8826,15 +8828,10 @@ async function compressSimpoChatPostVideoFile(
 
   const waitFor = (target, eventName) =>
     new Promise((resolve, reject) => {
-      target.addEventListener(eventName, resolve, {
-        once: true
-      });
-
+      target.addEventListener(eventName, resolve, { once: true });
       target.addEventListener(
         "error",
-        () => reject(
-          new Error("Unable to read this video.")
-        ),
+        () => reject(new Error("Unable to read this video.")),
         { once: true }
       );
     });
@@ -8845,19 +8842,38 @@ async function compressSimpoChatPostVideoFile(
     }
 
     const sourceDuration = Number(video.duration) || 0;
-
     const end = Math.min(
       sourceDuration || start + requestedDuration,
       start + requestedDuration
     );
-
     const clipDuration = end - start;
 
-    if (
-      !Number.isFinite(clipDuration) ||
-      clipDuration <= 0
-    ) {
+    if (!Number.isFinite(clipDuration) || clipDuration <= 0) {
       throw new Error("Choose a valid video clip.");
+    }
+
+    const maxOutputBytes = 20 * 1024 * 1024;
+    const needsTrim =
+      start > 0.05 ||
+      (sourceDuration > 0 && clipDuration < sourceDuration - 0.05);
+
+    const originalType = String(file.type || "")
+      .split(";")[0]
+      .trim();
+
+    const canKeepOriginal = [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime"
+    ].includes(originalType);
+
+    // Do not re-encode an already-small, compatible video unnecessarily.
+    if (
+      file.size <= maxOutputBytes &&
+      !needsTrim &&
+      canKeepOriginal
+    ) {
+      return file;
     }
 
     if (typeof MediaRecorder === "undefined") {
@@ -8867,29 +8883,19 @@ async function compressSimpoChatPostVideoFile(
     }
 
     if (
-      typeof HTMLCanvasElement.prototype.captureStream !==
-      "function"
+      typeof HTMLCanvasElement.prototype.captureStream !== "function"
     ) {
-      throw new Error(
-        "Your browser does not support video compression."
-      );
+      throw new Error("Your browser does not support video compression.");
     }
 
-    const capture =
-      video.captureStream ||
-      video.mozCaptureStream;
-
+    const capture = video.captureStream || video.mozCaptureStream;
     if (!capture) {
-      throw new Error(
-        "Your browser cannot process this video."
-      );
+      throw new Error("Your browser cannot process this video.");
     }
 
     if (Math.abs(video.currentTime - start) > 0.05) {
       const seeked = waitFor(video, "seeked");
-
       video.currentTime = start;
-
       await seeked;
     }
 
@@ -8897,67 +8903,40 @@ async function compressSimpoChatPostVideoFile(
       await waitFor(video, "loadeddata");
     }
 
-    // Resize while preserving the original proportions.
+    if (!video.videoWidth || !video.videoHeight) {
+      throw new Error("The selected video has no readable picture.");
+    }
 
-    const maxWidth = 1280;
-    const maxHeight = 720;
-
+    // Resize to at most 720p without changing the original aspect ratio.
     const scale = Math.min(
       1,
-      maxWidth / video.videoWidth,
-      maxHeight / video.videoHeight
+      1280 / video.videoWidth,
+      720 / video.videoHeight
     );
 
     const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
 
-    canvas.width = Math.max(
-      1,
-      Math.round(video.videoWidth * scale)
-    );
-
-    canvas.height = Math.max(
-      1,
-      Math.round(video.videoHeight * scale)
-    );
-
-    const context = canvas.getContext("2d", {
-      alpha: false
-    });
-
+    const context = canvas.getContext("2d", { alpha: false });
     if (!context) {
-      throw new Error(
-        "Unable to prepare the video for compression."
-      );
+      throw new Error("Unable to prepare the video for compression.");
     }
 
-    context.drawImage(
-      video,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Capture the original audio separately.
-
+    // Keep the original audio; resize and re-encode only the picture.
     sourceStream = capture.call(video);
+    const audioTracks = sourceStream.getAudioTracks();
 
-    const canvasStream = canvas.captureStream(24);
-
+    const canvasStream = canvas.captureStream(30);
     const videoTrack = canvasStream.getVideoTracks()[0];
 
     if (!videoTrack) {
-      throw new Error(
-        "Unable to prepare the video track."
-      );
+      throw new Error("Unable to prepare the video track.");
     }
 
-    outputStream = new MediaStream([
-      videoTrack,
-      ...sourceStream.getAudioTracks()
-    ]);
-
-    // Choose a format supported by this browser.
+    outputStream = new MediaStream([videoTrack, ...audioTracks]);
 
     const supportedTypes = [
       "video/webm;codecs=vp8,opus",
@@ -8971,101 +8950,101 @@ async function compressSimpoChatPostVideoFile(
     );
 
     if (!mimeType) {
-      throw new Error(
-        "No supported video compression format was found."
-      );
+      throw new Error("No supported video compression format was found.");
     }
+
+    // Adapt quality to the original bitrate to avoid enlarging low-bitrate clips.
+    // A 15-second high-quality clip should generally be around 10–12 MB.
+    const sourceBitrate = file.size * 8 /
+      Math.max(sourceDuration, clipDuration);
+
+    const videoBitsPerSecond = Math.max(
+      250000,
+      Math.min(6000000, Math.floor(sourceBitrate * 0.82) - 128000)
+    );
 
     recorder = new MediaRecorder(outputStream, {
       mimeType,
-      videoBitsPerSecond: 1300000,
-      audioBitsPerSecond: 96000
+      videoBitsPerSecond,
+      audioBitsPerSecond: 128000
     });
 
     const chunks = [];
 
     const recording = new Promise((resolve, reject) => {
       recorder.ondataavailable = event => {
-        if (event.data && event.data.size) {
-          chunks.push(event.data);
-        }
+        if (event.data && event.data.size) chunks.push(event.data);
       };
 
       recorder.onerror = () => {
-        reject(
-          new Error("Video compression failed.")
-        );
+        reject(new Error("Video compression failed. Please try again."));
       };
 
       recorder.onstop = resolve;
     });
 
-    let finished = false;
-
-    const drawFrame = () => {
+    const stopRecording = () => {
       if (finished) return;
 
-      context.drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+      finished = true;
+      video.pause();
 
-      if (
-        video.currentTime >= end ||
-        video.ended
-      ) {
-        finished = true;
-        video.pause();
+      if (recorder && recorder.state !== "inactive") {
+        recorder.stop();
+      }
+    };
 
-        if (recorder.state !== "inactive") {
-          recorder.stop();
-        }
+    const drawNextFrame = () => {
+      if (finished) return;
 
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      if (video.ended || video.currentTime >= end - 0.02) {
+        stopRecording();
         return;
       }
 
-      animationFrame = requestAnimationFrame(drawFrame);
+      if (typeof video.requestVideoFrameCallback === "function") {
+        videoFrameCallback =
+          video.requestVideoFrameCallback(drawNextFrame);
+      } else {
+        animationFrame = requestAnimationFrame(() => {
+          animationFrame = null;
+          drawNextFrame();
+        });
+      }
     };
 
     recorder.start(250);
+    await video.play();
 
-    const playbackPromise = video.play();
+    // Follow decoded frames instead of repeatedly recording the same frame.
+    drawNextFrame();
 
-    await playbackPromise;
-
-    drawFrame();
+    // Safety stop if the browser stops delivering frame callbacks.
+    safetyTimer = setTimeout(
+      stopRecording,
+      Math.ceil(clipDuration * 1000) + 3000
+    );
 
     await recording;
 
-    const outputType = (
-      recorder.mimeType || mimeType
-    ).split(";")[0];
-
-    const blob = new Blob(chunks, {
-      type: outputType
-    });
+    const outputType = (recorder.mimeType || mimeType).split(";")[0];
+    const blob = new Blob(chunks, { type: outputType });
 
     if (!blob.size) {
+      throw new Error("The compressed video is empty.");
+    }
+
+    if (blob.size > maxOutputBytes) {
       throw new Error(
-        "The compressed video is empty."
+        "This video could not be reduced below 20 MB. Please choose a shorter clip."
       );
     }
 
-    if (blob.size >= 50 * 1024 * 1024) {
-      throw new Error(
-        "The compressed video is still too large. Please choose a shorter clip."
-      );
-    }
-
-    const extension =
-      outputType === "video/mp4" ? "mp4" : "webm";
-
-    const baseName = (
-      file.name || "simpochat-video"
-    ).replace(/\.[^.]+$/, "");
+    const extension = outputType === "video/mp4" ? "mp4" : "webm";
+    const baseName = (file.name || "simpochat-video")
+      .replace(/\.[^.]+$/, "");
 
     return new File(
       [blob],
@@ -9077,36 +9056,37 @@ async function compressSimpoChatPostVideoFile(
     );
 
   } finally {
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame);
-    }
+    finished = true;
+
+    if (safetyTimer) clearTimeout(safetyTimer);
+    if (animationFrame) cancelAnimationFrame(animationFrame);
 
     if (
-      recorder &&
-      recorder.state !== "inactive"
+      videoFrameCallback !== null &&
+      typeof video.cancelVideoFrameCallback === "function"
     ) {
+      video.cancelVideoFrameCallback(videoFrameCallback);
+    }
+
+    if (recorder && recorder.state !== "inactive") {
       recorder.stop();
     }
 
     if (sourceStream) {
-      sourceStream.getTracks().forEach(track => {
-        track.stop();
-      });
+      sourceStream.getTracks().forEach(track => track.stop());
     }
 
     if (outputStream) {
-      outputStream.getTracks().forEach(track => {
-        track.stop();
-      });
+      outputStream.getTracks().forEach(track => track.stop());
     }
 
     video.pause();
     video.removeAttribute("src");
     video.load();
-
     URL.revokeObjectURL(objectUrl);
   }
 }
+
 
 async function uploadSimpoChatPostMedia(file, groupIds) {
   const uploadFile = file?.type?.startsWith("image/")
