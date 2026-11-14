@@ -9279,10 +9279,11 @@ async function simpoProcessPendingPostNow(postId) {
         duration: duration,
 
         metadata: {
-          originalDuration: originalDuration,
-          trimStart: start,
-          trimEnd: end,
-          fileName: item.file.name
+           originalDuration: duration,
+           trimStart: 0,
+           trimEnd: duration,
+           fileName: item.file.name,
+           compressed: true
         }
 
       };
