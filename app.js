@@ -9249,19 +9249,20 @@ async function simpoProcessPendingPostNow(postId) {
         throw new Error("The video trim range is invalid.");
       }
 
-// Upload the original file.
-// Playback will apply the selected trim boundaries.
-if (item.file.size >= 50 * 1024 * 1024) {
-  throw new Error(
-    "The original video is 50 MB or larger. Choose a smaller video."
-  );
-}
+    // Compress the selected video clip before uploading.
+      const compressedFile =
+         await compressSimpoChatPostVideoFile(
+            item.file,
+            start,
+            duration
+         );
 
-const mediaUrl =
-  await uploadSimpoChatPostMedia(
-    item.file,
-    post.groupIds
-  );
+    // Upload the compressed clip.
+      const mediaUrl =
+         await uploadSimpoChatPostMedia(
+            compressedFile,
+            post.groupIds
+         );
 
       postData = {
 
