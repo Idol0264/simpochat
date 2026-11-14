@@ -10256,7 +10256,140 @@ function openPost(
     </div>
 
   `;
+   
+// Keep video playback inside the selected trim range.
+const postVideo =
+  modalRoot.querySelector(
+    ".post-viewer-real-media"
+  );
 
+if (post.type === "video" && postVideo) {
+
+  let clipStart = Math.max(
+    0,
+    Number(post.trimStart || 0)
+  );
+
+  let clipEnd = Number(post.trimEnd || 0);
+
+  if (
+    !Number.isFinite(clipEnd) ||
+    clipEnd <= clipStart
+  ) {
+    clipEnd =
+      clipStart + Number(post.duration || 0);
+  }
+
+  let clipInitialized = false;
+  let correctingSeek = false;
+
+  postVideo.addEventListener(
+    "loadedmetadata",
+    () => {
+
+      const mediaDuration =
+        Number(postVideo.duration || 0);
+
+      clipStart = Math.min(
+        clipStart,
+        mediaDuration
+      );
+
+      clipEnd = Math.min(
+        clipEnd,
+        mediaDuration
+      );
+
+      if (clipEnd <= clipStart) {
+        clipStart = 0;
+        clipEnd = mediaDuration;
+      }
+
+      if (clipStart > 0.05) {
+
+        postVideo.pause();
+
+        const resumeAtClipStart = () => {
+
+          if (clipInitialized) return;
+
+          clipInitialized = true;
+
+          postVideo.play().catch(() => {});
+
+        };
+
+        postVideo.addEventListener(
+          "seeked",
+          resumeAtClipStart,
+          { once: true }
+        );
+
+        postVideo.currentTime = clipStart;
+
+      } else {
+
+        clipInitialized = true;
+
+      }
+
+    },
+    { once: true }
+  );
+
+  postVideo.addEventListener(
+    "timeupdate",
+    () => {
+
+      if (
+        clipInitialized &&
+        clipEnd > clipStart &&
+        postVideo.currentTime >= clipEnd
+      ) {
+
+        postVideo.pause();
+        postVideo.currentTime = clipEnd;
+
+      }
+
+    }
+  );
+
+  postVideo.addEventListener(
+    "seeking",
+    () => {
+
+      if (
+        !clipInitialized ||
+        correctingSeek
+      ) return;
+
+      if (postVideo.currentTime < clipStart) {
+
+        correctingSeek = true;
+        postVideo.currentTime = clipStart;
+
+      } else if (
+        postVideo.currentTime > clipEnd
+      ) {
+
+        correctingSeek = true;
+        postVideo.currentTime = clipEnd;
+
+      }
+
+    }
+  );
+
+  postVideo.addEventListener(
+    "seeked",
+    () => {
+      correctingSeek = false;
+    }
+  );
+
+}
+   
   // Keep the photo-carousel dots synchronized with swiping.
   const photoCollection =
     modalRoot.querySelector(
