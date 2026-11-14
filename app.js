@@ -8436,8 +8436,14 @@ function normalizeSupabasePost(row) {
     trimStart:
       Number(metadata.trimStart || 0),
 
-    trimEnd:
-      Number(metadata.trimEnd || row.duration || 0),
+   trimEnd:
+      Number(
+         metadata.trimEnd ??
+         (
+            Number(metadata.trimStart || 0) +
+            Number(row.duration || 0)
+         )
+      ),
 
     photoDuration:
       Number(metadata.photoDuration || PHOTO_SECONDS),
