@@ -11366,3 +11366,233 @@ body.admin-mode .fab {
   height: 44px;
   flex-basis: 44px;
 }
+
+/* =========================================================
+   SIMPOCHAT — PREMIUM WELCOME SCREEN
+   ========================================================= */
+
+.simpo-access-screen {
+  min-height: 100dvh;
+  padding: 22px 18px;
+
+  background:
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(124, 58, 237, .20),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 90% 85%,
+      rgba(168, 85, 247, .16),
+      transparent 38%
+    ),
+    var(--bg, #f4f6fa);
+}
+
+.simpo-access-card {
+  position: relative;
+  overflow: hidden;
+
+  width: min(100%, 440px);
+
+  padding: 34px 25px;
+
+  border-radius: 30px;
+
+  background: var(--surface-strong);
+
+  border: 1px solid var(--line-strong);
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, .16),
+    0 0 45px rgba(124, 58, 237, .10);
+
+  animation: welcomeCardIn .55s ease;
+}
+
+.simpo-access-card::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+
+  height: 3px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #8b5cf6,
+      #c084fc,
+      transparent
+    );
+}
+
+.simpo-access-logo {
+  width: 94px;
+  height: 94px;
+
+  margin-bottom: 25px;
+
+  border-radius: 28px;
+
+  border: 1px solid rgba(168, 85, 247, .35);
+
+  box-shadow:
+    0 12px 35px rgba(124, 58, 237, .30),
+    0 0 30px rgba(168, 85, 247, .16);
+
+  animation: welcomeLogoFloat 4s ease-in-out infinite;
+}
+
+.simpo-access-card h1 {
+  color: var(--text);
+
+  font-size: clamp(25px, 7vw, 32px);
+
+  font-weight: 900;
+
+  letter-spacing: -1.2px;
+
+  line-height: 1.15;
+}
+
+.simpo-access-subtitle {
+  margin: 12px 0 30px;
+
+  color: var(--muted);
+
+  font-size: 13px;
+
+  line-height: 1.7;
+
+  opacity: 1;
+}
+
+.simpo-access-card .field {
+  margin-bottom: 19px;
+}
+
+.simpo-access-card .field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--text);
+
+  font-size: 12px;
+
+  font-weight: 750;
+}
+
+.simpo-access-card input {
+  min-height: 53px;
+
+  padding: 0 16px;
+
+  border: 1px solid var(--line-strong);
+
+  border-radius: 15px;
+
+  background: var(--surface);
+
+  color: var(--text);
+
+  font-size: 14px;
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.simpo-access-card input:focus {
+  border-color: #9565ff;
+
+  box-shadow:
+    0 0 0 4px rgba(139, 92, 246, .12);
+}
+
+.simpo-access-continue {
+  min-height: 54px;
+
+  margin-top: 12px;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      115deg,
+      #7545ff,
+      #a855f7,
+      #7545ff
+    );
+
+  background-size: 200% 100%;
+
+  box-shadow:
+    0 10px 27px rgba(124, 58, 237, .28);
+
+  font-size: 14px;
+
+  font-weight: 850;
+
+  letter-spacing: .2px;
+
+  transition:
+    transform .2s ease,
+    background-position .4s ease;
+}
+
+.simpo-access-continue:hover {
+  background-position: 100% 0;
+  transform: translateY(-2px);
+}
+
+.simpo-access-continue:active {
+  transform: scale(.97);
+}
+
+@keyframes welcomeCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcomeLogoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* DARK MODE */
+
+html[data-theme="dark"] .simpo-access-card {
+  background: rgba(22, 24, 34, .96);
+
+  border-color: rgba(168, 85, 247, .20);
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, .50),
+    0 0 45px rgba(124, 58, 237, .12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simpo-access-card,
+  .simpo-access-logo {
+    animation: none !important;
+  }
+}
