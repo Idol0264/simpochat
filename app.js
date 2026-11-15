@@ -9091,12 +9091,24 @@ async function compressSimpoChatPostVideoFile(
       recorder.stop();
     }
 
-    if (sourceStream) {
-      sourceStream.getTracks().forEach(track => track.stop());
-    }
+     if (audioSource) {
+        try {
+           audioSource.disconnect();
+        } catch (error) {}
+     }
+
+     if (audioDestination) {
+        audioDestination.stream
+           .getTracks()
+           .forEach(track => track.stop());
+     }
+
+     if (audioContext && audioContext.state !== "closed") {
+        await audioContext.close();
+     }
 
     if (outputStream) {
-      outputStream.getTracks().forEach(track => track.stop());
+       outputStream.getTracks().forEach(track => track.stop());
     }
 
     video.pause();
