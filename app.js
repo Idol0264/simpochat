@@ -9102,6 +9102,30 @@ try {
     testVideo.load();
   });
 
+  // Verify that the complete compressed video plays.
+  const playbackCheck = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(
+        "The compressed video froze or failed to finish. Please try again."
+      ));
+    }, Math.max(15000, (testVideo.duration + 5) * 1000));
+
+    testVideo.addEventListener("ended", () => {
+      clearTimeout(timeout);
+      resolve();
+    }, { once: true });
+
+    testVideo.addEventListener("error", () => {
+      clearTimeout(timeout);
+      reject(new Error(
+        "The compressed video failed during playback."
+      ));
+    }, { once: true });
+  });
+
+  await testVideo.play();
+  await playbackCheck;
+
 } finally {
   testVideo.pause();
   testVideo.removeAttribute("src");
