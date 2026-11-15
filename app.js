@@ -5293,7 +5293,6 @@ function renderMessage(
         </div>
         
         
-        
         <div
         class="message-bubble"
         data-message-id="${esc(message.id)}"
@@ -5316,26 +5315,46 @@ function renderMessage(
                  return "";
               }
               
-              return `
-              <div class="message-reply-preview">
-              
-              <strong>
-              Replying to
-              </strong>
-              
-              <span>
-              ${
-                 repliedMessage.type === "voice"
-                 ? "🎙 Voice message"
-                 : esc(
-                    repliedMessage.text
-                    || ""
-                 )
-              }
-              </span>
-              
-              </div>
-              `;
+
+               const replyImageUrl =
+                  repliedMessage.type === "media"
+                    ? (
+                        repliedMessage.media?.find(item => item?.url)?.url ||
+                        repliedMessage.mediaUrl ||
+                        ""
+                      )
+                    : "";
+
+               return `
+               <div class="message-reply-preview">
+               
+               <strong>
+               Replying to
+               </strong>
+               
+               ${
+                  replyImageUrl
+                    ? `
+                      <img
+                        class="reply-image-thumb"
+                        src="${esc(replyImageUrl)}"
+                        alt="Replied image"
+                      >
+                      <span>${esc(repliedMessage.text || "Photo")}</span>
+                    `
+                    : `
+                      <span>
+                      ${
+                         repliedMessage.type === "voice"
+                           ? "🎙 Voice message"
+                           : esc(repliedMessage.text || "")
+                      }
+                      </span>
+                    `
+               }
+               
+               </div>
+               `;
            
            })()
            
