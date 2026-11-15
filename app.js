@@ -21647,42 +21647,284 @@ const galleryText =
    FILE PICKER
    --------------------------------------------------------- */
 
+function simpoFormatDocumentSize(bytes) {
+  if (bytes < 1024 * 1024) {
+    return Math.max(1, Math.round(bytes / 1024)) + " KB";
+  }
+
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+
+async function simpoUploadAndSendDocument(messageId) {
+
+  const upload =
+    pendingDocumentUploads.get(messageId);
+
+  if (!upload) return;
+
+  const messages =
+    safeArray(state.messages[upload.groupId]);
+
+  const localMessage =
+    messages.find(message => message.id === messageId);
+
+  if (!localMessage) return;
+
+  try {
+
+    const file = upload.file;
+
+    if (!file) {
+      throw new Error("Document is unavailable.");
+    }
+
+    // 1. Request a secure upload URL.
+
+    const prepared =
+      await simpoChatPostRequest(
+        "create_chat_document_upload",
+        {
+          group_id: upload.groupId,
+          file_name: file.name,
+          file_size: file.size,
+          content_type:
+            file.type || "application/octet-stream"
+        }
+      );
+
+    if (!prepared.signed_url || !prepared.public_url) {
+      throw new Error("Unable to prepare document upload.");
+    }
+
+    // 2. Upload directly to Supabase Storage.
+
+    const response =
+      await fetch(prepared.signed_url, {
+        method: "PUT",
+
+        headers: {
+          "Content-Type":
+            file.type || "application/octet-stream"
+        },
+
+        body: file
+      });
+
+    if (!response.ok) {
+      throw new Error("Document upload failed.");
+    }
+
+    // 3. Save the document as a group message.
+
+    const documentInfo = {
+      url: prepared.public_url,
+      path: prepared.path,
+      name: file.name,
+      size: file.size,
+      mime_type:
+        file.type || "application/octet-stream"
+    };
+
+    const saved =
+      await simpoChatPostRequest(
+        "send_message",
+        {
+          group_id: upload.groupId,
+          client_message_id: messageId,
+          content_type: "document",
+          document: documentInfo,
+          reply_to: upload.replyTo || null
+        }
+      );
+
+    const remote = saved.message || {};
+
+    // 4. Replace the temporary message.
+
+    Object.assign(localMessage, {
+
+      id: remote.id || messageId,
+
+      member:
+        remote.sender_id || state.currentUser.id,
+
+      type: "document",
+
+      document: documentInfo,
+
+      createdAt:
+        remote.created_at || localMessage.createdAt,
+
+      replyTo:
+        remote.reply_to || upload.replyTo || null,
+
+      pending: false,
+
+      failed: false
+
+    });
+
+    pendingDocumentUploads.delete(messageId);
+
+    saveState();
+
+    if (
+      state.screen === "group-chat" &&
+      state.selectedGroup === upload.groupId
+    ) {
+      renderGroupChat();
+    }
+
+  } catch (error) {
+
+    console.error(
+      "SimpoChat document upload failed:",
+      error
+    );
+
+    localMessage.pending = false;
+    localMessage.failed = true;
+
+    saveState();
+
+    if (
+      state.screen === "group-chat" &&
+      state.selectedGroup === upload.groupId
+    ) {
+      renderGroupChat();
+    }
+
+  }
+
+}
+
+
+function queueDocumentFiles(files) {
+
+  const group = getGroup(state.selectedGroup);
+
+  if (!group) return;
+
+  const selectedFiles = Array.from(files || []);
+
+  if (!selectedFiles.length) return;
+
+  let replyTo = pendingReplyMessageId;
+
+  pendingReplyMessageId = null;
+
+  const queuedIds = [];
+
+  for (const file of selectedFiles) {
+
+    if (file.size > 25 * 1024 * 1024) {
+
+      alert(
+        file.name + " is larger than the 25 MB limit."
+      );
+
+      continue;
+    }
+
+    const messageId = uid("document-pending");
+
+    const localMessage = {
+
+      id: messageId,
+
+      member: state.currentUser.id,
+
+      type: "document",
+
+      document: {
+        name: file.name,
+        size: file.size,
+        mime_type: file.type || "application/octet-stream",
+        url: ""
+      },
+
+      text: "",
+
+      createdAt: new Date().toISOString(),
+
+      read: true,
+
+      replyTo,
+
+      pending: true,
+
+      failed: false
+
+    };
+
+    pendingDocumentUploads.set(messageId, {
+
+      file,
+
+      groupId: group.id,
+
+      replyTo
+
+    });
+
+    if (!state.messages[group.id]) {
+      state.messages[group.id] = [];
+    }
+
+    state.messages[group.id].push(localMessage);
+
+    queuedIds.push(messageId);
+
+    replyTo = null;
+
+  }
+
+  activeMessageActionId = null;
+
+  saveState();
+
+  // Show all selected documents immediately.
+
+  renderGroupChat();
+
+  // Upload independently in the background.
+
+  queuedIds.forEach(messageId => {
+
+    void simpoUploadAndSendDocument(messageId);
+
+  });
+
+}
+
+
 function openFilePicker() {
 
   const input =
-    document.createElement(
-      "input"
-    );
+    document.createElement("input");
 
+  input.type = "file";
 
-  input.type =
-    "file";
-   
-  // Allow all document and file formats.
+  input.multiple = true;
+
   input.accept = "*/*";
 
-  input.addEventListener(
-    "change",
-    () => {
+  input.addEventListener("change", () => {
 
-      const file =
-        input.files?.[0];
+    const files =
+      Array.from(input.files || []);
 
-
-      if (!file) {
-        return;
-      }
-
-
-      alert(
-        `${file.name} selected.`
-      );
-
+    if (files.length) {
+      queueDocumentFiles(files);
     }
-  );
 
+    input.value = "";
+
+  });
 
   input.click();
+
 }
 
 
