@@ -8890,11 +8890,6 @@ async function compressSimpoChatPostVideoFile(
       throw new Error("Your browser does not support video compression.");
     }
 
-    const capture = video.captureStream || video.mozCaptureStream;
-    if (!capture) {
-      throw new Error("Your browser cannot process this video.");
-    }
-
     if (Math.abs(video.currentTime - start) > 0.05) {
       const seeked = waitFor(video, "seeked");
       video.currentTime = start;
