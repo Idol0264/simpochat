@@ -9056,6 +9056,60 @@ async function compressSimpoChatPostVideoFile(
       );
     }
 
+
+// Verify that the compressed video can be decoded before upload.
+const testUrl = URL.createObjectURL(blob);
+const testVideo = document.createElement("video");
+
+testVideo.preload = "auto";
+testVideo.muted = true;
+testVideo.playsInline = true;
+testVideo.src = testUrl;
+
+try {
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(
+        "Compressed video validation timed out. Please try again."
+      ));
+    }, 10000);
+
+    testVideo.oncanplay = () => {
+      clearTimeout(timeout);
+
+      if (
+        !testVideo.videoWidth ||
+        !testVideo.videoHeight ||
+        !Number.isFinite(testVideo.duration) ||
+        testVideo.duration <= 0
+      ) {
+        reject(new Error(
+          "The compressed video is damaged. Please try another video."
+        ));
+        return;
+      }
+
+      resolve();
+    };
+
+    testVideo.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error(
+        "The compressed video cannot be played. Please try again."
+      ));
+    };
+
+    testVideo.load();
+  });
+
+} finally {
+  testVideo.pause();
+  testVideo.removeAttribute("src");
+  testVideo.load();
+  URL.revokeObjectURL(testUrl);
+}
+
+
     const extension = outputType === "video/mp4" ? "mp4" : "webm";
     const baseName = (file.name || "simpochat-video")
       .replace(/\.[^.]+$/, "");
