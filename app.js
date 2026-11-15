@@ -20102,11 +20102,11 @@ function openAttachmentMenu() {
             <div>
 
               <strong>
-                File
+                Document
               </strong>
 
               <span>
-                Choose a file.
+                Choose a document from your device.
               </span>
 
             </div>
