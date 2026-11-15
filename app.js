@@ -5534,10 +5534,86 @@ ${
            }
          </div>
        `;
-     })()
+      })()
 
-   : esc(message.text)
-}
+    : message.type === "document"
+      ? (() => {
+
+          const doc = message.document || {};
+
+          const fileName =
+            doc.name || "Document";
+
+          const fileSize =
+            Number(doc.size) || 0;
+
+          return `
+            <div style="
+              display:flex;
+              align-items:center;
+              gap:12px;
+              padding:12px;
+              border-radius:12px;
+              background:rgba(128,128,128,0.12);
+              max-width:280px;
+            ">
+
+              <div style="
+                font-size:30px;
+                flex-shrink:0;
+              ">📄</div>
+
+              <div style="
+                min-width:0;
+                flex:1;
+              ">
+
+                <div style="
+                  font-weight:600;
+                  overflow-wrap:anywhere;
+                ">
+                  ${esc(fileName)}
+                </div>
+
+                <div style="
+                  font-size:12px;
+                  opacity:0.7;
+                  margin-top:4px;
+                ">
+                  ${simpoFormatDocumentSize(fileSize)}
+                </div>
+
+                ${
+                  message.pending
+                    ? `<div style="font-size:12px;margin-top:5px;">Uploading…</div>`
+                    : message.failed
+                      ? `<div style="font-size:12px;margin-top:5px;">Upload failed</div>`
+                      : doc.url
+                        ? `
+                          <a
+                            href="${esc(doc.url)}"
+                            download="${esc(fileName)}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="
+                              display:inline-block;
+                              margin-top:7px;
+                              font-size:13px;
+                              font-weight:600;
+                            "
+                          >Download document ↓</a>
+                        `
+                        : `<div style="font-size:12px;margin-top:5px;">Document unavailable</div>`
+                }
+
+              </div>
+            </div>
+          `;
+
+        })()
+
+      : esc(message.text)
+ }
         
         </div>
 
