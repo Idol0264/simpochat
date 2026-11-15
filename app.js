@@ -4751,16 +4751,39 @@ function renderGroupChat(
                 Replying to
               </strong>
 
-              <span>
-                ${
-                  replyMessage.type === "voice"
-                    ? "🎙 Voice message"
-                    : esc(
-                        replyMessage.text
-                          || ""
-                      )
-                }
-              </span>
+              ${
+                (() => {
+                  const imageUrl =
+                    replyMessage.type === "media"
+                      ? (
+                          replyMessage.media?.find(item => item?.url)?.url ||
+                          replyMessage.mediaUrl ||
+                          ""
+                        )
+                      : "";
+
+                  if (imageUrl) {
+                    return `
+                      <img
+                        class="reply-image-thumb"
+                        src="${esc(imageUrl)}"
+                        alt="Replied image"
+                      >
+                      <span>${esc(replyMessage.text || "Photo")}</span>
+                    `;
+                  }
+
+                  return `
+                    <span>
+                      ${
+                        replyMessage.type === "voice"
+                          ? "🎙 Voice message"
+                          : esc(replyMessage.text || "")
+                      }
+                    </span>
+                  `;
+                })()
+              }
 
             </div>
 
