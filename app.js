@@ -3282,23 +3282,6 @@ function renderNewGroup() {
 
   screen.innerHTML = `
 
-    <div class="section-head">
-
-      <div>
-
-        <div class="section-title">
-          Create New Group
-        </div>
-
-        <div class="section-note">
-          Choose up to 3 categories
-        </div>
-
-      </div>
-
-    </div>
-
-
     <form id="newGroupForm">
 
 
