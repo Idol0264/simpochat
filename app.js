@@ -8927,18 +8927,35 @@ async function compressSimpoChatPostVideoFile(
 
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Keep the original audio; resize and re-encode only the picture.
-    sourceStream = capture.call(video);
-    const audioTracks = sourceStream.getAudioTracks();
+    // Record the resized picture and route audio through Web Audio.
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      throw new Error("Audio processing is not supported by this browser.");
+    }
+
+    audioContext = new AudioContextClass();
+
+    audioSource = audioContext.createMediaElementSource(video);
+    audioDestination = audioContext.createMediaStreamDestination();
+
+    audioSource.connect(audioDestination);
+
+    await audioContext.resume();
 
     const canvasStream = canvas.captureStream(30);
     const videoTrack = canvasStream.getVideoTracks()[0];
+    const audioTracks = audioDestination.stream.getAudioTracks();
 
     if (!videoTrack) {
       throw new Error("Unable to prepare the video track.");
     }
 
-    outputStream = new MediaStream([videoTrack, ...audioTracks]);
+    outputStream = new MediaStream([
+      videoTrack,
+      ...audioTracks
+    ]);
 
     const supportedTypes = [
       "video/webm;codecs=vp8,opus",
