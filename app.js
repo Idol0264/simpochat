@@ -76,7 +76,7 @@ let pendingReplyMessageId = null;
 
 // Keep photo files available for retry while the app is open.
 const pendingPhotoUploads = new Map();
-
+const pendingDocumentUploads = new Map();
 
 /* =========================================================
    SIMPOCHAT — BACKGROUND POST QUEUE STORAGE
