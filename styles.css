@@ -11596,3 +11596,332 @@ html[data-theme="dark"] .simpo-access-card {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — PREMIUM NEW GROUP SCREEN
+   ========================================================= */
+
+/* Screen heading */
+
+#screen:has(#newGroupForm) .section-head {
+  margin: 12px 2px 20px;
+
+  align-items: flex-start;
+}
+
+#screen:has(#newGroupForm) .section-title {
+  font-size: 23px;
+
+  font-weight: 900;
+
+  letter-spacing: -.8px;
+}
+
+#screen:has(#newGroupForm) .section-note {
+  margin-top: 7px;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+/* Main form card */
+
+#newGroupForm {
+  padding: 17px;
+
+  border-radius: 25px;
+
+  background: var(--surface-strong);
+
+  border: 1px solid var(--line);
+
+  box-shadow: var(--shadow-soft);
+
+  max-height: calc(100dvh - 190px);
+
+  scrollbar-width: thin;
+}
+
+/* Individual form sections */
+
+#newGroupForm .field {
+  margin-bottom: 16px;
+
+  padding: 13px;
+
+  border-radius: 17px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--line);
+}
+
+/* Field headings */
+
+#newGroupForm .field > label {
+  display: block;
+
+  margin-bottom: 10px;
+
+  color: var(--text);
+
+  font-size: 12px;
+
+  font-weight: 850;
+}
+
+/* Group name */
+
+#newGroupForm .field input:not([type="radio"]) {
+  width: 100%;
+
+  height: 49px;
+
+  padding: 0 14px;
+
+  border-radius: 14px;
+
+  border: 1px solid var(--line-strong);
+
+  background: var(--surface-strong);
+
+  color: var(--text);
+
+  font-size: 13px;
+}
+
+#newGroupForm .field input:focus {
+  border-color: var(--accent);
+
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(139, 92, 246, .12);
+}
+
+/* Group photo */
+
+#newGroupForm .group-photo-picker {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 5px;
+}
+
+#newGroupForm .group-photo-preview {
+  width: 94px;
+  height: 94px;
+
+  border-radius: 28px;
+
+  border: 3px solid var(--surface-strong);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, .14);
+}
+
+#newGroupForm .group-photo-picker-actions {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 9px;
+}
+
+#newGroupForm .group-photo-button,
+#newGroupForm .group-photo-picker-actions button {
+  min-height: 41px;
+
+  padding: 0 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 13px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+}
+
+#newGroupForm .form-note {
+  max-width: 280px;
+
+  text-align: center;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  line-height: 1.6;
+}
+
+/* Category selection */
+
+#newGroupForm .category-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 9px;
+}
+
+#newGroupForm .category-option {
+  width: 100%;
+
+  min-height: 43px;
+
+  padding: 8px;
+
+  border-radius: 13px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  text-align: center;
+}
+
+#newGroupForm .category-option.selected {
+  background:
+    linear-gradient(
+      135deg,
+      #7545ff,
+      #a855f7
+    );
+
+  border-color: transparent;
+
+  color: white;
+
+  box-shadow:
+    0 6px 18px rgba(124, 58, 237, .22);
+}
+
+#newGroupForm .category-more-btn {
+  min-height: 43px;
+
+  margin-top: 11px;
+
+  border-radius: 13px;
+
+  font-size: 11px;
+}
+
+/* Group access options */
+
+#newGroupForm .group-setting-options {
+  gap: 9px;
+}
+
+#newGroupForm .group-setting-option {
+  min-height: 65px;
+
+  padding: 13px;
+
+  align-items: center;
+
+  border-radius: 15px;
+
+  background: var(--surface-strong);
+
+  transition:
+    border-color .2s ease,
+    background .2s ease;
+}
+
+#newGroupForm .group-setting-option:has(input:checked) {
+  border-color: var(--accent);
+
+  background:
+    rgba(139, 92, 246, .09);
+}
+
+#newGroupForm .group-setting-option input[type="radio"] {
+  width: 19px;
+  height: 19px;
+
+  flex: 0 0 19px;
+
+  accent-color: var(--accent);
+}
+
+#newGroupForm .group-setting-option strong {
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+#newGroupForm .group-setting-option small {
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* Create and cancel buttons */
+
+#newGroupForm .new-group-actions {
+  display: grid;
+
+  grid-template-columns: 1.4fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 19px;
+}
+
+#newGroupForm .new-group-actions button {
+  min-height: 49px;
+
+  border-radius: 15px;
+
+  font-size: 12px;
+
+  font-weight: 850;
+}
+
+#newGroupForm .new-group-actions .primary-btn {
+  background:
+    linear-gradient(
+      120deg,
+      #7545ff,
+      #a855f7
+    );
+
+  box-shadow:
+    0 8px 22px rgba(124, 58, 237, .23);
+}
+
+/* Small phone adjustment */
+
+@media (max-width: 390px) {
+
+  #newGroupForm {
+    padding: 12px;
+  }
+
+  #newGroupForm .field {
+    padding: 10px;
+  }
+
+  #newGroupForm .category-grid {
+    gap: 7px;
+  }
+
+  #newGroupForm .new-group-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
