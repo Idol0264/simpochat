@@ -6065,11 +6065,11 @@ function attachMessageLongPress() {
         const isDocument = pendingDocumentUploads.has(messageId);
          
         if (
-          !message ||
-          !message.failed ||
-          (!message.text && !isVoice && !isPhoto)
+           !message ||
+           !message.failed ||
+           (!message.text && !isVoice && !isPhoto && !isDocument)
         ) {
-          return;
+           return;
         }
 
         button.disabled = true;
