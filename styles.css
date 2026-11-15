@@ -11345,3 +11345,24 @@ body.admin-mode .fab {
     max-height: 70dvh !important;
   }
 }
+
+/* Image thumbnail inside message reply previews */
+
+.message-reply-preview .reply-image-thumb,
+.reply-composer-preview .reply-image-thumb {
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  margin: 2px 0;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.message-reply-preview .reply-image-thumb {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
