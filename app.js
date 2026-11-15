@@ -21657,7 +21657,9 @@ function openFilePicker() {
 
   input.type =
     "file";
-
+   
+  // Allow all document and file formats.
+  input.accept = "*/*";
 
   input.addEventListener(
     "change",
