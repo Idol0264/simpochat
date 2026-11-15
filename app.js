@@ -6058,11 +6058,12 @@ function attachMessageLongPress() {
         const message = messages.find(
           item => item.id === messageId
         );
-
+         
         const photoUpload = pendingPhotoUploads.get(messageId);
         const isPhoto = Boolean(photoUpload);
         const isVoice = message?.type === "voice";
-
+        const isDocument = pendingDocumentUploads.has(messageId);
+         
         if (
           !message ||
           !message.failed ||
