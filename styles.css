@@ -11925,3 +11925,42 @@ html[data-theme="dark"] .simpo-access-card {
   }
 
 }
+
+/* SIMPOCHAT — CENTRED WELCOME TITLE */
+
+.simpo-access-card .simpo-welcome-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  margin: 0 0 12px;
+
+  text-align: center;
+  line-height: 1.1;
+}
+
+.simpo-access-card .simpo-welcome-kicker {
+  display: block;
+
+  font-size: 0.34em;
+  font-weight: 400;
+
+  letter-spacing: 1.5px;
+  line-height: 1.5;
+
+  color: var(--muted);
+}
+
+.simpo-access-card .simpo-welcome-brand {
+  display: block;
+
+  font-size: 1em;
+  font-weight: 900;
+
+  letter-spacing: -1.2px;
+  line-height: 1.1;
+
+  color: #A855F7;
+}
