@@ -8813,7 +8813,9 @@ async function compressSimpoChatPostVideoFile(
   const video = document.createElement("video");
   const objectUrl = URL.createObjectURL(file);
 
-  let sourceStream = null;
+  let audioContext = null;
+  let audioSource = null;
+  let audioDestination = null;
   let outputStream = null;
   let recorder = null;
   let animationFrame = null;
