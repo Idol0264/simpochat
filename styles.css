@@ -11944,7 +11944,7 @@ html[data-theme="dark"] .simpo-access-card {
 .simpo-access-card .simpo-welcome-kicker {
   display: block;
 
-  font-size: 0.34em;
+  font-size: 0.45em;
   font-weight: 400;
 
   letter-spacing: 1.5px;
@@ -11956,7 +11956,7 @@ html[data-theme="dark"] .simpo-access-card {
 .simpo-access-card .simpo-welcome-brand {
   display: block;
 
-  font-size: 1em;
+  font-size: 1.12em;
   font-weight: 900;
 
   letter-spacing: -1.2px;
