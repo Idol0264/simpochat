@@ -6190,10 +6190,21 @@ function attachMessageLongPress() {
             });
 
             renderGroupChat();
-            return;
+             return;
           }
 
-          let audioBlob = null;
+           if (isDocument) {
+              message.pending = true;
+              message.failed = false;
+
+              saveState();
+              renderGroupChat();
+
+              await simpoUploadAndSendDocument(messageId);
+              return;
+           }
+
+           let audioBlob = null;
 
           if (isVoice) {
             audioBlob = await simpoGetOfflineAudio(
