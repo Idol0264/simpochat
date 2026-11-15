@@ -23138,9 +23138,10 @@ function renderAccessSetup() {
   >
 </div>
 
-        <h1>
-          Welcome to SimpoChat
-        </h1>
+<h1 class="simpo-welcome-heading">
+  <span class="simpo-welcome-kicker">Welcome to</span>
+  <span class="simpo-welcome-brand">SimpoChat</span>
+</h1>
 
         <p class="simpo-access-subtitle">
           Enter your name and email to continue.
