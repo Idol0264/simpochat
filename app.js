@@ -4297,23 +4297,38 @@ async function loadGroupMessages(groupId) {
         "Unable to load messages."
       );
     }
-
+     
 const serverMessages =
   data.messages.map(message => {
+
     const contentType =
       message.content_type === "audio"
         ? "voice"
         : message.content_type === "photos"
           ? "media"
-          : "text";
+          : message.content_type === "document"
+            ? "document"
+            : "text";
 
-    const mediaUrls = Array.isArray(message.media_urls)
-      ? message.media_urls.filter(
-          url => typeof url === "string" && url
-        )
-      : message.media_url
-        ? [message.media_url]
-        : [];
+    const rawMedia = Array.isArray(message.media_urls)
+      ? message.media_urls
+      : [];
+
+    const mediaUrls = rawMedia.filter(
+      url => typeof url === "string" && url
+    );
+
+    const documentInfo =
+      contentType === "document"
+        ? (
+            rawMedia.find(
+              item =>
+                item &&
+                typeof item === "object" &&
+                typeof item.url === "string"
+            ) || null
+          )
+        : null;
 
     return {
       id: message.id,
@@ -4327,6 +4342,8 @@ const serverMessages =
         url
       })),
 
+      document: documentInfo,
+
       mediaUrl: message.media_url || "",
       durationSeconds: message.duration_seconds || null,
       createdAt: message.created_at,
@@ -4334,6 +4351,7 @@ const serverMessages =
       replyTo: message.reply_to || null,
       expiresAt: message.expires_at
     };
+
   });
 
 /* Keep messages that have not reached the server. */
