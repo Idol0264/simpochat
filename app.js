@@ -16695,22 +16695,13 @@ function renderSettings() {
       </section>
 
 <!-- ADMINISTRATION -->
-
-<section class="settings-section">
+<section id="simpoAdminSettingsSection" class="settings-section" hidden>
 
   <div class="section-title">
     Administration
   </div>
 
-  <div id="simpoAdminAccessActions">
-    <button class="menu-item" data-action="admin-login">
-      <div class="menu-icon">🛡️</div>
-      <div>
-        <strong>Administrator Access</strong>
-        <span>Verify your email to continue.</span>
-      </div>
-    </button>
-  </div>
+  <div id="simpoAdminAccessActions"></div>
 
 </section>
 
