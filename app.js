@@ -22272,25 +22272,42 @@ function openAudioFilePicker() {
    REPORT FORM
    --------------------------------------------------------- */
 
-function openReportForm(reportType = "group", reportedUserId = "") {
+function openReportForm(
+  reportType = "group",
+  reportedUserId = "",
+  reportedUserName = ""
+) {
 
-  const group = getGroup(state.selectedGroup);
+  const isDirectProfileReport =
+    reportType === "person" &&
+    Boolean(reportedUserName);
 
-  if (!group) {
+  const group = isDirectProfileReport
+    ? null
+    : getGroup(state.selectedGroup);
+
+  if (!group && !isDirectProfileReport) {
     alert("Unable to identify this group.");
     return;
   }
 
   const reportedMember =
     reportType === "person"
-      ? getMember(group, reportedUserId)
+      ? (
+          isDirectProfileReport
+            ? {
+                id: reportedUserId,
+                name: reportedUserName
+              }
+            : getMember(group, reportedUserId)
+        )
       : null;
 
   if (reportType === "person" && !reportedMember) {
     alert("Unable to identify the reported member.");
     return;
   }
-
+   
   modalRoot.innerHTML = `
 
     <div class="modal-backdrop" data-close>
