@@ -22334,7 +22334,7 @@ function openReportForm(
 
           <label>Report category</label>
 
-          <select name="reason" required class="form-input">
+          <select name="reason" required class="form-input simpo-report-input">
             <option value="">Select a reason</option>
             <option value="harassment">Harassment</option>
             <option value="bullying">Bullying</option>
@@ -22351,7 +22351,7 @@ function openReportForm(
 
           <textarea
             name="description"
-            class="form-input"
+            class="form-input simpo-report-input"
             rows="5"
             minlength="10"
             maxlength="3000"
@@ -22364,7 +22364,7 @@ function openReportForm(
           <input
             type="url"
             name="evidence_url"
-            class="form-input"
+            class="form-input simpo-report-input"
             placeholder="https://..."
           >
 
