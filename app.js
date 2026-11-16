@@ -4781,13 +4781,9 @@ function renderGroupChat(
                   }
 
                   return `
-                    <span>
-                      ${
-                        replyMessage.type === "voice"
-                          ? "🎙 Voice message"
-                          : esc(replyMessage.text || "")
-                      }
-                    </span>
+                  <span>
+                  ${esc(simpoGetReplyMessageLabel(replyMessage))}
+                  </span>
                   `;
                 })()
               }
