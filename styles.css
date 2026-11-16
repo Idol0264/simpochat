@@ -11964,3 +11964,87 @@ html[data-theme="dark"] .simpo-access-card {
 
   color: #A855F7;
 }
+
+/* =========================================
+   SIMPOCHAT — REPORT MEMBER BUTTON
+   ========================================= */
+
+.invite-card .report-member-btn {
+  color: #d93636;
+  background: var(--surface-strong);
+  border: 2px solid #d93636;
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   SIMPOCHAT — REPORT FORM
+   ========================================= */
+
+.simpo-report-modal {
+  width: min(100%, 520px);
+  padding: 20px;
+}
+
+.simpo-report-form {
+  display: grid;
+  gap: 10px;
+}
+
+.simpo-report-form label {
+  display: block;
+  margin: 7px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.simpo-report-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--line);
+  border-radius: 13px;
+
+  background: var(--surface);
+  color: var(--text);
+
+  font: inherit;
+  font-size: 14px;
+}
+
+.simpo-report-form textarea.simpo-report-input {
+  min-height: 130px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.simpo-report-input:focus {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(
+    in srgb,
+    var(--accent) 20%,
+    transparent
+  );
+}
+
+.simpo-report-form .form-note {
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 4px 0 8px;
+}
+
+.simpo-report-form .primary-btn,
+.simpo-report-form .secondary-btn {
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+}
+
+.simpo-report-form .secondary-btn {
+  margin-top: 0;
+}
