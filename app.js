@@ -5377,13 +5377,9 @@ function renderMessage(
                       <span>${esc(repliedMessage.text || "Photo")}</span>
                     `
                     : `
-                      <span>
-                      ${
-                         repliedMessage.type === "voice"
-                           ? "🎙 Voice message"
-                           : esc(repliedMessage.text || "")
-                      }
-                      </span>
+                    <span>
+                      ${esc(simpoGetReplyMessageLabel(repliedMessage))}
+                    </span>
                     `
                }
                
