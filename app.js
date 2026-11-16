@@ -20183,23 +20183,38 @@ function openAttachmentMenu() {
             class="menu-item"
             data-action="choose-file"
           >
-
             <div class="menu-icon">
               ▣
             </div>
 
             <div>
-
               <strong>
-                Document
+                Documents
               </strong>
 
               <span>
-                Choose a document from your device.
+                Choose documents only from your device.
               </span>
+            </div>
+          </button>
 
+          <button
+            class="menu-item"
+            data-action="choose-audio-file"
+          >
+            <div class="menu-icon">
+              ♫
             </div>
 
+            <div>
+              <strong>
+                Audio
+              </strong>
+
+              <span>
+                Choose an audio file from your device.
+              </span>
+            </div>
           </button>
 
         </div>
