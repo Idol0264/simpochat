@@ -20258,7 +20258,7 @@ function openAttachmentMenu() {
             data-action="choose-audio-file"
           >
             <div class="menu-icon">
-              ♫
+              🎵
             </div>
 
             <div>
