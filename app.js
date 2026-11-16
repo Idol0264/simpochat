@@ -4324,14 +4324,14 @@ const serverMessages =
       member: message.sender_id,
       sender: message.sender || null,
       text: message.text || "",
-      type: contentType,
+      type: mappedType,
 
       media: mediaUrls.map(url => ({
         type: "image",
         url
       })),
 
-      type: mappedType,
+      document: documentInfo,
 
       mediaUrl: message.media_url || "",
       durationSeconds: message.duration_seconds || null,
