@@ -22312,7 +22312,7 @@ function openReportForm(
 
     <div class="modal-backdrop" data-close>
 
-      <div class="modal">
+        <form id="simpo-report-form" class="simpo-report-form">
 
         <div class="modal-head">
 
@@ -22330,7 +22330,7 @@ function openReportForm(
             : `You are reporting ${esc(group.name)}.`}
         </p>
 
-        <form id="simpo-report-form">
+        <form id="simpo-report-form" class="simpo-report-form">
 
           <label>Report category</label>
 
