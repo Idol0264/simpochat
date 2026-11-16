@@ -15255,7 +15255,7 @@ async function renderAdminSection(section) {
 <div class="admin-user-card" style="margin-bottom:18px;">
   <strong>Add Administrator</strong>
   <p class="section-note">
-    Enter an existing SimpoChat member's email and choose their permissions.
+    Enter an existing SimpoChat member's email and choose their administrator role.
   </p>
 
   <form id="adminAddAdministratorForm">
@@ -15266,7 +15266,35 @@ async function renderAdminSection(section) {
       required
     >
 
-    <div class="admin-permission-list" style="margin-top:12px;">
+    <div style="margin-top:12px;">
+      <label for="adminNewAdministratorRole">
+        Administrator Role
+      </label>
+
+      <select
+        id="adminNewAdministratorRole"
+        class="settings-input"
+        style="width:100%;margin-top:6px;"
+      >
+        <option value="admin">Admin</option>
+        <option value="super_admin">Super Admin</option>
+      </select>
+    </div>
+
+    <div
+      id="adminNewSuperAdminNote"
+      class="section-note"
+      hidden
+      style="margin-top:10px;"
+    >
+      Super Admin receives all administrator permissions automatically.
+    </div>
+
+    <div
+      id="adminNewPermissionList"
+      class="admin-permission-list"
+      style="margin-top:12px;"
+    >
       <label class="admin-permission-row">
         <input type="checkbox" name="adminNewPermission" value="can_block_users">
         Block / Unblock Users
