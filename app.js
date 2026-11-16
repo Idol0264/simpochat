@@ -20216,7 +20216,7 @@ function openAttachmentMenu() {
           >
 
             <div class="menu-icon">
-              ◉
+              📷
             </div>
 
             <div>
@@ -20239,7 +20239,7 @@ function openAttachmentMenu() {
             data-action="choose-file"
           >
             <div class="menu-icon">
-              ▣
+              📄
             </div>
 
             <div>
