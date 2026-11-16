@@ -21858,8 +21858,11 @@ async function simpoUploadAndSendDocument(messageId) {
 
       member:
         remote.sender_id || state.currentUser.id,
-
-      type: "document",
+      
+      type:
+         String(file.type || "").toLowerCase().startsWith("audio/")
+         ? "audio-file"
+         : "document",
 
       document: documentInfo,
 
