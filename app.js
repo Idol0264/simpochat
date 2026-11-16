@@ -16775,45 +16775,87 @@ initializeSimpoLocationSettings();
 }
 
 async function refreshSimpoAdminAccessControls() {
+  const section = document.getElementById("simpoAdminSettingsSection");
   const container = document.getElementById("simpoAdminAccessActions");
-  if (!container) return;
 
-  const showAdministratorAccess = (message = "Verify your email to continue to the administrator dashboard.") => {
-    if (!container.isConnected) return;
-    container.innerHTML = `
-      <button class="menu-item" data-action="admin-login">
-        <div class="menu-icon">🛡️</div>
-        <div>
-          <strong>Administrator Access</strong>
-          <span>${esc(message)}</span>
-        </div>
-      </button>
-    `;
-  };
+  if (!section || !container) return;
 
-  if (!simpoAdminAuth) {
-    showAdministratorAccess("Administrator email verification is unavailable.");
-    return;
-  }
+  section.hidden = true;
+  container.innerHTML = "";
+  delete window.SIMPOCHAT_ADMIN;
+
+  const memberId = String(state.currentUser?.id || "").trim();
+  const memberEmail = String(state.currentUser?.email || "")
+    .trim()
+    .toLowerCase();
+
+  if (!memberId || !memberEmail) return;
 
   try {
-    const { data, error } = await simpoAdminAuth.auth.getSession();
+    // First check whether this member has an active appointment.
+    const previewResponse = await fetch(SIMPOCHAT_ACCESS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: "admin_access_preview",
+        user_id: memberId,
+        email: memberEmail
+      })
+    });
+
+    const preview = await previewResponse.json();
+
+    if (!previewResponse.ok || preview.is_admin !== true) {
+      return;
+    }
+
+    // Only appointed members can see this section.
+    section.hidden = false;
+
+    const showAdministratorAccess = (message) => {
+      container.innerHTML = `
+        <button class="menu-item" data-action="admin-login">
+          <div class="menu-icon">🛡️</div>
+          <div>
+            <strong>Administrator Access</strong>
+            <span>${esc(message)}</span>
+          </div>
+        </button>
+      `;
+    };
+
+    if (!simpoAdminAuth) {
+      showAdministratorAccess(
+        "Administrator email verification is unavailable."
+      );
+      return;
+    }
+
+    const { data, error } =
+      await simpoAdminAuth.auth.getSession();
+
     if (error) throw error;
 
     const session = data?.session;
-    const sessionEmail = String(session?.user?.email || "").trim().toLowerCase();
-    const memberEmail = String(state.currentUser?.email || "").trim().toLowerCase();
+    const sessionEmail = String(session?.user?.email || "")
+      .trim()
+      .toLowerCase();
 
     if (
       !session?.access_token ||
       !session?.user?.email_confirmed_at ||
-      !sessionEmail ||
       sessionEmail !== memberEmail
     ) {
-      showAdministratorAccess();
+      showAdministratorAccess(
+        "Verify your email to continue to the administrator dashboard."
+      );
       return;
     }
 
+    // Verify the actual administrator appointment again.
     const response = await fetch(SIMPOCHAT_ACCESS_URL, {
       method: "POST",
       headers: {
@@ -16821,20 +16863,16 @@ async function refreshSimpoAdminAccessControls() {
         "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY,
         "Authorization": "Bearer " + session.access_token
       },
-      body: JSON.stringify({ action: "admin_status" })
+      body: JSON.stringify({
+        action: "admin_status"
+      })
     });
 
     const status = await response.json();
-    if (!response.ok) {
-      throw new Error(status.message || "Unable to check administrator access.");
-    }
 
-    if (!status.is_admin || !status.role) {
-      container.innerHTML = `
-        <div class="section-note">
-          Your email is verified, but administrator access has not been appointed to this account.
-        </div>
-      `;
+    if (!response.ok || !status.is_admin || !status.role) {
+      section.hidden = true;
+      container.innerHTML = "";
       return;
     }
 
@@ -16854,8 +16892,16 @@ async function refreshSimpoAdminAccessControls() {
     `;
 
   } catch (error) {
-    console.warn("Could not refresh administrator access buttons:", error);
-    showAdministratorAccess("Tap to verify your administrator email.");
+    console.warn(
+      "Could not refresh administrator access controls:",
+      error
+    );
+
+    // Fail closed: never expose the section if appointment
+    // status cannot be confirmed.
+    section.hidden = true;
+    container.innerHTML = "";
+    delete window.SIMPOCHAT_ADMIN;
   }
 }
 
