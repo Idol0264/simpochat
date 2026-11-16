@@ -23042,6 +23042,24 @@ document.addEventListener(
     openFilePicker();
 
   }
+
+document.addEventListener(
+  "click",
+  event => {
+    const button = event.target.closest(
+      "[data-action='choose-audio-file']"
+    );
+
+    if (!button) {
+      return;
+    }
+
+    modalRoot.innerHTML = "";
+
+    openAudioFilePicker();
+  }
+);
+
 );
 
 
