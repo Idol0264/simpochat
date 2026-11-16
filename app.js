@@ -15395,9 +15395,31 @@ async function renderAdminSection(section) {
         </div>
       `;
 
+
 const addAdministratorForm = container.querySelector(
   "#adminAddAdministratorForm"
 );
+
+const administratorRoleSelect = container.querySelector(
+  "#adminNewAdministratorRole"
+);
+
+const permissionList = container.querySelector(
+  "#adminNewPermissionList"
+);
+
+const superAdminNote = container.querySelector(
+  "#adminNewSuperAdminNote"
+);
+
+// Show or hide permission choices based on the selected role.
+administratorRoleSelect?.addEventListener("change", () => {
+  const isSuperAdmin =
+    administratorRoleSelect.value === "super_admin";
+
+  permissionList.hidden = isSuperAdmin;
+  superAdminNote.hidden = !isSuperAdmin;
+});
 
 addAdministratorForm?.addEventListener("submit", async event => {
   event.preventDefault();
@@ -15406,15 +15428,19 @@ addAdministratorForm?.addEventListener("submit", async event => {
     "#adminNewAdministratorEmail"
   )?.value.trim().toLowerCase();
 
+  const role = administratorRoleSelect?.value || "admin";
+
   const submitButton = addAdministratorForm.querySelector(
     'button[type="submit"]'
   );
 
-  const permissions = Array.from(
-    addAdministratorForm.querySelectorAll(
-      'input[name="adminNewPermission"]:checked'
-    )
-  ).map(input => input.value);
+  const permissions = role === "super_admin"
+    ? []
+    : Array.from(
+        addAdministratorForm.querySelectorAll(
+          'input[name="adminNewPermission"]:checked'
+        )
+      ).map(input => input.value);
 
   if (!email) return;
 
@@ -15424,10 +15450,15 @@ addAdministratorForm?.addEventListener("submit", async event => {
   try {
     await callSimpoAdmin("admin_add_administrator", {
       email,
+      role,
       permissions
     });
 
-    alert("Administrator added successfully.");
+    alert(
+      role === "super_admin"
+        ? "Super Admin appointed successfully."
+        : "Administrator added successfully."
+    );
 
     await renderAdminSection("settings");
 
