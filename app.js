@@ -22003,32 +22003,109 @@ function queueDocumentFiles(files) {
 }
 
 
-function openFilePicker() {
 
-  const input =
-    document.createElement("input");
+function simpoIsAudioDeviceFile(file) {
+  const name = String(file?.name || "").toLowerCase();
+  const mimeType = String(file?.type || "").toLowerCase();
+
+  const audioExtensions = [
+    ".aac", ".aif", ".aiff", ".alac", ".amr", ".flac",
+    ".m4a", ".mid", ".midi", ".mp3", ".oga", ".ogg",
+    ".opus", ".wav", ".weba", ".wma"
+  ];
+
+  return (
+    mimeType.startsWith("audio/") ||
+    audioExtensions.some(extension => name.endsWith(extension))
+  );
+}
+
+
+function simpoIsVideoDeviceFile(file) {
+  const name = String(file?.name || "").toLowerCase();
+  const mimeType = String(file?.type || "").toLowerCase();
+
+  const videoExtensions = [
+    ".3gp", ".avi", ".m2v", ".m4v", ".mkv", ".mov",
+    ".mp4", ".mpeg", ".mpg", ".mts", ".webm", ".wmv"
+  ];
+
+  return (
+    mimeType.startsWith("video/") ||
+    videoExtensions.some(extension => name.endsWith(extension))
+  );
+}
+
+
+function openFilePicker() {
+  const input = document.createElement("input");
 
   input.type = "file";
-
   input.multiple = true;
-
   input.accept = "*/*";
 
   input.addEventListener("change", () => {
+    const selectedFiles = Array.from(input.files || []);
 
-    const files =
-      Array.from(input.files || []);
+    const rejectedFiles = selectedFiles.filter(
+      file =>
+        simpoIsAudioDeviceFile(file) ||
+        simpoIsVideoDeviceFile(file)
+    );
+
+    const files = selectedFiles.filter(
+      file =>
+        !simpoIsAudioDeviceFile(file) &&
+        !simpoIsVideoDeviceFile(file)
+    );
+
+    if (rejectedFiles.length) {
+      alert(
+        "Audio and video files cannot be sent as documents. Use the Audio button for audio files."
+      );
+    }
 
     if (files.length) {
       queueDocumentFiles(files);
     }
 
     input.value = "";
-
   });
 
   input.click();
+}
 
+
+function openAudioFilePicker() {
+  const input = document.createElement("input");
+
+  input.type = "file";
+  input.multiple = true;
+  input.accept = "audio/*";
+
+  input.addEventListener("change", () => {
+    const selectedFiles = Array.from(input.files || []);
+
+    const files = selectedFiles.filter(
+      file =>
+        simpoIsAudioDeviceFile(file) &&
+        !simpoIsVideoDeviceFile(file)
+    );
+
+    if (files.length !== selectedFiles.length) {
+      alert(
+        "The Audio button accepts audio files only. Video and other files were not added."
+      );
+    }
+
+    if (files.length) {
+      queueDocumentFiles(files);
+    }
+
+    input.value = "";
+  });
+
+  input.click();
 }
 
 
