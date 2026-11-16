@@ -5214,6 +5214,37 @@ function renderUserAvatar(
 }
 
 
+function simpoGetReplyMessageLabel(message) {
+  if (!message) return "";
+
+  if (message.type === "voice") {
+    return "🎙 Voice message";
+  }
+
+  if (message.type === "media") {
+    return message.text || "Photo";
+  }
+
+  const documentInfo = message.document || {};
+  const mimeType = String(
+    documentInfo.mime_type || ""
+  ).toLowerCase();
+
+  if (
+    message.type === "audio-file" ||
+    mimeType.startsWith("audio/")
+  ) {
+    return "🎵 " + (documentInfo.name || "Audio file");
+  }
+
+  if (message.type === "document") {
+    return "📄 " + (documentInfo.name || "Document");
+  }
+
+  return message.text || "";
+}
+
+
 /* ---------------------------------------------------------
    MESSAGE
    --------------------------------------------------------- */
