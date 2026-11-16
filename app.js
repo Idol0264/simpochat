@@ -22436,7 +22436,7 @@ function openReportForm(
 
             report_type: reportType,
 
-            group_id: group.id,
+            group_id: group ? group.id : null,
 
             reported_user_id:
               reportType === "person"
