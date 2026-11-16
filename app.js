@@ -23025,23 +23025,19 @@ document.addEventListener(
 document.addEventListener(
   "click",
   event => {
-
-    const button =
-      event.target.closest(
-        "[data-action='choose-file']"
-      );
-
+    const button = event.target.closest(
+      "[data-action='choose-file']"
+    );
 
     if (!button) {
       return;
     }
 
-
     modalRoot.innerHTML = "";
-
     openFilePicker();
-
   }
+);
+
 
 document.addEventListener(
   "click",
@@ -23055,11 +23051,8 @@ document.addEventListener(
     }
 
     modalRoot.innerHTML = "";
-
     openAudioFilePicker();
   }
-);
-
 );
 
 
