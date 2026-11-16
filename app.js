@@ -21944,8 +21944,11 @@ function queueDocumentFiles(files) {
       id: messageId,
 
       member: state.currentUser.id,
-
-      type: "document",
+    
+       type:
+          String(file.type || "").toLowerCase().startsWith("audio/")
+          ? "audio-file"
+          : "document",
 
       document: {
         name: file.name,
