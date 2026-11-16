@@ -4312,6 +4312,12 @@ const serverMessages =
             ) || null
           )
         : null;
+     
+    const mappedType =
+      contentType === "document" &&
+      String(documentInfo?.mime_type || "").toLowerCase().startsWith("audio/")
+        ? "audio-file"
+        : contentType;
 
     return {
       id: message.id,
@@ -4325,7 +4331,7 @@ const serverMessages =
         url
       })),
 
-      document: documentInfo,
+      type: mappedType,
 
       mediaUrl: message.media_url || "",
       durationSeconds: message.duration_seconds || null,
