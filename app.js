@@ -8515,102 +8515,152 @@ const group =
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
-function renderTemporaryChat(
-  memberId
-) {
+async function renderTemporaryChat(conversationId) {
 
-  const member =
-    findMemberAcrossGroups(
-      memberId
-    );
+  const chat = safeArray(
+    state.temporaryChats
+  ).find(item => item.id === conversationId);
 
-
-  if (!member) {
+  if (!chat) {
+    state.screen = "temporary-chat-inbox";
+    render();
     return;
   }
 
+  const member = chat.member || {
+    id: chat.memberId,
+    name: chat.memberName || "Member",
+    avatarImage: chat.avatarImage || "",
+    avatar: "M",
+    hue: 210
+  };
 
-  setHeader(
-    member.name,
-    "Temporary chat"
-  );
+  const pseudoGroup = {
+    id: conversationId,
+    name: member.name,
+    members: [
+      state.currentUser,
+      member
+    ]
+  };
 
+  setHeader(member.name, "Temporary chat");
 
   screen.innerHTML = `
+    <div class="chat-screen temporary-private-chat">
 
-    <div class="chat-screen">
+      <div class="chat-sticky-header">
 
         <div class="chat-header">
 
-        <button
-          class="icon-btn"
-          data-action="back"
-        >
-          ‹
-        </button>
+          <div class="chat-header-main">
 
+            ${renderUserAvatar(
+              member,
+              "group-avatar small"
+            )}
 
-        <div class="chat-header-main">
-
-          ${renderUserAvatar(
-             member,
-             "group-avatar small"
-          )}
-
-
-          <span class="chat-header-copy">
-
-            <strong>
-              ${esc(member.name)}
-            </strong>
-
-            <span>
-              Temporary chat
+            <span class="chat-header-copy">
+              <strong>${esc(member.name)}</strong>
+              <span>Temporary chat</span>
             </span>
 
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="temporary-chat-body">
-
-        <div class="empty">
-
-          <div class="empty-icon">
-            ⏳
           </div>
 
-          <h3>
-            Temporary chat
-          </h3>
+          <div class="chat-header-actions">
 
-          <p>
-            Messages in this chat disappear
-            when the temporary chat ends.
-          </p>
+            <button
+              class="icon-btn"
+              data-action="temporary-voice-call"
+              aria-label="Voice call"
+              title="Voice call"
+            >☎</button>
+
+            <button
+              class="icon-btn"
+              data-action="temporary-video-call"
+              aria-label="Video call"
+              title="Video call"
+            >▣</button>
+
+            <button
+              class="temporary-chat-finish-btn"
+              data-action="finish-temp-chat"
+            >Finish</button>
+
+          </div>
 
         </div>
 
       </div>
 
+      <div class="messages" id="messages">
 
-      <div class="temporary-chat-footer">
-
-        <button
-          class="danger-btn"
-          data-action="finish-temp-chat"
-        >
-          Finish Chat
-        </button>
+        ${
+          safeArray(state.messages[conversationId]).length
+            ? safeArray(state.messages[conversationId])
+                .map(message =>
+                  renderMessage(message, pseudoGroup)
+                )
+                .join("")
+            : `
+              <div class="empty chat-empty">
+                <div class="empty-icon">💬</div>
+                <h3>Start your conversation</h3>
+                <p>Messages here are private between you two.</p>
+              </div>
+            `
+        }
 
       </div>
 
-    </div>
+      <form class="message-composer" id="messageForm">
 
+        <textarea
+          id="messageInput"
+          rows="1"
+          autocomplete="off"
+          placeholder="Message ${esc(member.name)}"
+          aria-label="Message"
+        ></textarea>
+
+        <button
+          type="submit"
+          class="send-btn"
+          aria-label="Send"
+        >➤</button>
+
+      </form>
+
+    </div>
   `;
+
+  const form = document.querySelector("#messageForm");
+
+  form?.addEventListener("submit", event => {
+    event.preventDefault();
+    sendMessage();
+  });
+
+  const input = document.querySelector("#messageInput");
+
+  input?.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  attachMessageLongPress();
+  attachMediaImageViewer();
+  initializeSimpoAudioPlayers();
+
+  const messagesBox = document.querySelector("#messages");
+
+  if (messagesBox) {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
 }
 
 
