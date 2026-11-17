@@ -22935,167 +22935,79 @@ function openTemporaryMemberPicker() {
    ACCEPT TEMPORARY CHAT INVITE
    --------------------------------------------------------- */
 
-async function acceptTemporaryChatInvite(
-  inviteId
-) {
+async function acceptTemporaryChatInvite(inviteId) {
 
-  const invite =
-    safeArray(
-      state.temporaryInvites
-    ).find(
-      item =>
-        item.id === inviteId &&
-        item.to ===
-          state.currentUser.id &&
-        item.status ===
-          "pending"
-    );
+  const invite = safeArray(
+    state.temporaryInvites
+  ).find(item =>
+    item.id === inviteId &&
+    item.to === state.currentUser.id &&
+    item.status === "pending"
+  );
 
-  if (!invite) {
-    return;
-  }
-
-  const sessionToken =
-    localStorage.getItem(
-      SESSION_TOKEN_KEY
-    );
-
-  if (!sessionToken) {
-    alert(
-      "Your SimpoChat session is not available. Please try again."
-    );
-    return;
-  }
+  if (!invite) return;
 
   try {
 
-    const response =
-      await fetch(
-        SIMPOCHAT_ACCESS_URL,
-        {
-          method: "POST",
+    const data = await temporaryChatRequest(
+      "respond_temporary_invite",
+      {
+        invite_id: inviteId,
+        decision: "accepted"
+      }
+    );
 
-          headers: {
-            "Content-Type":
-              "application/json",
+    const conversation = data.conversation;
 
-            "Authorization":
-              `Bearer ${sessionToken}`
-          },
-
-          body: JSON.stringify({
-            action:
-              "respond_temporary_invite",
-
-            invite_id:
-              inviteId,
-
-            decision:
-              "accepted"
-          })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      data.allowed !== true
-    ) {
+    if (!conversation?.id) {
       throw new Error(
-        data.message ||
-        "Unable to accept invitation."
+        "The private conversation was not created."
       );
     }
 
+    const member = {
+      id: invite.from,
+      name: invite.fromName || "Member",
+      avatarImage: invite.fromAvatarUrl || "",
+      avatar: (invite.fromName || "M").charAt(0).toUpperCase(),
+      hue: randomHue()
+    };
 
-    invite.status =
-      "accepted";
+    const chat = {
+      id: conversation.id,
+      conversationId: conversation.id,
+      memberId: member.id,
+      memberName: member.name,
+      member,
+      avatarImage: member.avatarImage,
+      groupId: invite.groupId || null,
+      createdAt: conversation.created_at || now(),
+      status: "active"
+    };
 
+    state.temporaryChats = safeArray(
+      state.temporaryChats
+    ).filter(item => item.id !== chat.id);
 
-    state.temporaryChats =
-      safeArray(
-        state.temporaryChats
-      );
+    state.temporaryChats.unshift(chat);
 
+    state.temporaryInvites = safeArray(
+      state.temporaryInvites
+    ).filter(item => item.id !== inviteId);
 
-    const memberId =
-      invite.from;
+    state.selectedTemporaryChatId = conversation.id;
 
-
-    const alreadyExists =
-      state.temporaryChats.some(
-        chat =>
-          chat.memberId ===
-            memberId &&
-          chat.status ===
-            "active"
-      );
-
-
-    if (!alreadyExists) {
-
-      state.temporaryChats.push({
-
-        id:
-          uid("temp-chat"),
-
-        memberId:
-
-          memberId,
-
-        memberName:
-          invite.fromName ||
-          "Member",
-
-        avatarImage:
-          invite.fromAvatarUrl ||
-          "",
-
-        groupId:
-          invite.groupId ||
-          null,
-
-        createdAt:
-          invite.createdAt ||
-          now(),
-
-        status:
-          "active",
-
-        messages:
-          []
-
-      });
-
-    }
-
-
-    state.temporaryChatTab =
-      "messages";
-
+    state.screen = "temporary-chat";
 
     saveState();
 
-
     render();
-
 
   } catch (error) {
 
-    console.error(
-      "SimpoChat temporary invite accept failed:",
-      error
-    );
+    console.error(error);
 
-
-    alert(
-      error?.message ||
-      "Unable to accept invitation."
-    );
+    alert(error.message || "Unable to accept invitation.");
 
   }
 
