@@ -12191,3 +12191,44 @@ html[data-theme="dark"] .simpo-access-card {
   min-height: 52px;
   margin: 0;
 }
+
+
+/* =========================================================
+   SIMPOCHAT — TEMPORARY CHAT PROFILE + MESSAGE DESIGN
+   ========================================================= */
+
+/* Keep the sender's profile beside sent messages */
+.temporary-private-chat .message-row.mine {
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 9px;
+}
+
+/* Restore sender profile picture */
+.temporary-private-chat .message-row.mine .message-avatar {
+  display: grid !important;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin-top: 23px;
+  overflow: hidden;
+  border-radius: 13px;
+}
+
+/* Message positioning */
+.temporary-private-chat .message-row.mine .message-content {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 49px);
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Refined message bubble */
+.temporary-private-chat .message-row.mine .message-bubble {
+  border-radius: 18px 8px 18px 5px;
+  text-align: left;
+}
+
