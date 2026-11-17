@@ -12076,3 +12076,33 @@ html[data-theme="dark"] .simpo-access-card {
 .simpo-report-form .secondary-btn {
   margin-top: 0;
 }
+
+/* TEMPORARY CHAT MUTE BUTTON */
+
+.temporary-chat-mute-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  min-width: 45px;
+  min-height: 43px;
+  font-size: 19px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+.temporary-chat-mute-btn:active {
+  transform: scale(.94);
+}
+
+/* FINISH BUTTON */
+
+.temporary-chat-finish-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
