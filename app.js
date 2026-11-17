@@ -8591,6 +8591,16 @@ const group =
               <div
                 class="temporary-chat-invite-actions"
               >
+              
+              <button
+                class="temporary-chat-mute-btn"
+                data-action="mute-temporary-inviter"
+                data-user-id="${esc(invite.from)}"
+                title="Mute invitations from this member"
+                aria-label="Mute this member"
+              >
+                🔇
+              </button>
 
                 <button
                   class="secondary-btn"
