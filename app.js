@@ -18982,7 +18982,9 @@ document.addEventListener(
 
     const target =
       event.target.closest(
-        "[data-action], [data-close], [data-group-action], [data-post-id], [data-post-reaction], [data-post-comments], [data-member-id], [data-temp-invite]"
+        
+        "[data-action], [data-close], [data-group-action], [data-post-id], [data-post-reaction], [data-post-comments], [data-member-id], [data-temp-invite], [data-temp-chat-id]"
+
       );
 
 
