@@ -834,6 +834,10 @@ function createDefaultState() {
 
     selectedGroup: null,
     selectedMember: null,
+    selectedTemporaryChatId: null,
+    temporaryChats: [],
+    temporaryInvites: [],
+
 
     selectionMode: false,
     selectedItems: [],
