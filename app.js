@@ -19430,6 +19430,24 @@ async function handleAction(
 
   break;
 
+        
+case "accept-temporary-invite":
+
+  await acceptTemporaryChatInvite(
+    actionTarget.dataset.inviteId
+  );
+
+  break;
+
+
+case "reject-temporary-invite":
+
+  await rejectTemporaryChatInvite(
+    actionTarget.dataset.inviteId
+  );
+
+  break;
+        
 
 case "finish-temp-chat":
 
