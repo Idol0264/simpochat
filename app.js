@@ -5920,6 +5920,82 @@ function attachMessageLongPress() {
            
           if (action === "delete") {
             (async () => {
+
+              // Handle Temporary Chat deletion separately.
+              if (state.screen === "temporary-chat") {
+                const conversationId =
+                  state.selectedTemporaryChatId;
+
+                const messages =
+                  safeArray(state.messages[conversationId]);
+
+                const messageIndex = messages.findIndex(
+                  message => message.id === messageId
+                );
+
+                if (!conversationId || messageIndex === -1) return;
+
+                const targetMessage = messages[messageIndex];
+
+                // Remove unsent messages locally.
+                if (targetMessage.pending || targetMessage.failed) {
+                  messages.splice(messageIndex, 1);
+                  state.messages[conversationId] = messages;
+
+                  if (pendingReplyMessageId === messageId) {
+                    pendingReplyMessageId = null;
+                  }
+
+                  activeMessageActionId = null;
+                  messageActionTimer = null;
+
+                  saveState();
+                  renderTemporaryChat(conversationId);
+                  return;
+                }
+
+                try {
+                  const data = await temporaryChatRequest(
+                    "delete_temporary_message",
+                    {
+                      conversation_id: conversationId,
+                      message_id: messageId
+                    }
+                  );
+
+                  if (!data.deleted) {
+                    throw new Error(
+                      data.message || "The message could not be deleted."
+                    );
+                  }
+
+                  messages.splice(messageIndex, 1);
+                  state.messages[conversationId] = messages;
+
+                  if (pendingReplyMessageId === messageId) {
+                    pendingReplyMessageId = null;
+                  }
+
+                  activeMessageActionId = null;
+                  messageActionTimer = null;
+
+                  saveState();
+                  renderTemporaryChat(conversationId);
+                } catch (error) {
+                  console.error(
+                    "Temporary Chat message deletion failed:",
+                    error
+                  );
+
+                  alert(
+                    error.message ||
+                    "Unable to delete this private message. Please try again."
+                  );
+                }
+
+                return;
+              }
+
               const group = getGroup(state.selectedGroup);
 
               if (!group) return;
