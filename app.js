@@ -8781,6 +8781,64 @@ async function renderTemporaryChat(conversationId) {
 }
 
 
+async function startTemporaryChatCall(type) {
+
+  const conversationId =
+    state.selectedTemporaryChatId;
+
+  const chat = safeArray(
+    state.temporaryChats
+  ).find(item => item.id === conversationId);
+
+  if (!chat) return;
+
+  try {
+
+    const result = await callServiceRequest({
+      action: "start_temporary_call",
+      conversation_id: conversationId,
+      call_type: type
+    });
+
+    const callId = result.call?.call_id;
+
+    if (!callId) {
+      throw new Error("Unable to create private call.");
+    }
+
+    const joinData = await callServiceRequest({
+      action: "join_call",
+      call_id: callId
+    });
+
+    activeCallContext = {
+      id: callId,
+      group: {
+        name: chat.memberName || chat.member?.name || "Private chat"
+      },
+      type,
+      isHost: true
+    };
+
+    renderLiveKitCallScreen();
+
+    await connectLiveKitCall(joinData);
+
+  } catch (error) {
+
+    console.error("Private call error:", error);
+
+    activeCallContext = null;
+
+    showSimpoCallNotice(
+      error.message || "Unable to start private call."
+    );
+
+  }
+
+}
+
+
 /* ---------------------------------------------------------
    FIND MEMBER ACROSS GROUPS
    --------------------------------------------------------- */
