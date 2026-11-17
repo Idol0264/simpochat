@@ -23078,6 +23078,48 @@ async function acceptTemporaryChatInvite(inviteId) {
 
 }
 
+/* FINISH TEMPORARY CHAT */
+
+async function finishTemporaryChat() {
+
+  const conversationId =
+    state.selectedTemporaryChatId;
+
+  if (!conversationId) return;
+
+  if (!confirm(
+    "Finish this chat? Your private conversation and its messages will be deleted."
+  )) return;
+
+  try {
+
+    await temporaryChatRequest(
+      "finish_temporary_chat",
+      {
+        conversation_id: conversationId
+      }
+    );
+
+    state.temporaryChats = safeArray(
+      state.temporaryChats
+    ).filter(chat => chat.id !== conversationId);
+
+    delete state.messages[conversationId];
+
+    state.selectedTemporaryChatId = null;
+    state.screen = "temporary-chat-inbox";
+
+    saveState();
+    render();
+
+  } catch (error) {
+
+    alert(error.message || "Unable to finish chat.");
+
+  }
+
+}
+
 
 /* ---------------------------------------------------------
    REJECT TEMPORARY CHAT INVITE
