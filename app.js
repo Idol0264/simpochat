@@ -19742,8 +19742,8 @@ async function handleAction(
 
       openReportForm(
         "person",
-        target.dataset.reportMemberId,
-        target.dataset.reportMemberName
+        actionTarget.dataset.reportMemberId,
+        actionTarget.dataset.reportMemberName
       );
 
       break;
