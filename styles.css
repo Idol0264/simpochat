@@ -5287,6 +5287,23 @@ span:last-child {
   font-weight: 850;
 }
 
+.temporary-chat-avatar.has-photo {
+  overflow: hidden;
+  background: transparent;
+}
+
+.temporary-chat-avatar.has-photo img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+  object-position: center;
+
+  border-radius: inherit;
+}
+
 .temporary-chat-copy {
   min-width: 0;
 
