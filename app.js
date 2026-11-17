@@ -8042,6 +8042,71 @@ async function syncTemporaryChatInvites() {
 }
 
 
+async function loadTemporaryChatMessages(conversationId) {
+
+  const data = await temporaryChatRequest(
+    "list_temporary_messages",
+    {
+      conversation_id: conversationId
+    }
+  );
+
+  state.messages[conversationId] =
+    safeArray(data.messages).map(message => {
+
+      const contentType = message.content_type || "text";
+      const mediaUrls = Array.isArray(message.media_urls)
+        ? message.media_urls
+        : [];
+
+      const documentInfo = contentType === "document"
+        ? mediaUrls.find(item =>
+            item && typeof item === "object" && item.url
+          ) || null
+        : null;
+
+      return {
+        id: message.id,
+        member: message.sender_id,
+        sender: message.sender || null,
+
+        text: message.body || message.text || "",
+
+        type:
+          contentType === "audio" ? "voice" :
+          contentType === "photos" ? "media" :
+          contentType === "document"
+            ? (
+                String(documentInfo?.mime_type || "")
+                  .startsWith("audio/")
+                  ? "audio-file"
+                  : "document"
+              )
+            : "text",
+
+        media: contentType === "photos"
+          ? mediaUrls.map(url => ({
+              type: "image",
+              url
+            }))
+          : [],
+
+        document: documentInfo,
+        mediaUrl: message.media_url || "",
+        durationSeconds: message.duration_seconds || 0,
+        createdAt: message.created_at,
+        replyTo: message.reply_to || null,
+        read: true
+      };
+
+    });
+
+  saveState();
+
+  return state.messages[conversationId];
+}
+
+
 /* ---------------------------------------------------------
    TEMPORARY CHAT INBOX
    --------------------------------------------------------- */
