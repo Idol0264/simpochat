@@ -19431,6 +19431,22 @@ async function handleAction(
   break;
 
 
+case "finish-temp-chat":
+
+  await finishTemporaryChat();
+
+  break;
+
+
+case "mute-temporary-inviter":
+
+  await muteTemporaryInviter(
+    actionTarget.dataset.userId
+  );
+
+  break;
+
+        
     case "temporary-chat-messages":
         
         state.temporaryChatTab =
