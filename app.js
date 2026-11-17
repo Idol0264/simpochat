@@ -22312,7 +22312,8 @@ function openReportForm(
 
     <div class="modal-backdrop" data-close>
 
-        <form id="simpo-report-form" class="simpo-report-form">
+        
+      <div class="modal simpo-report-modal">
 
         <div class="modal-head">
 
@@ -22320,8 +22321,8 @@ function openReportForm(
             Report ${reportType === "person" ? "Member" : "Group"}
           </div>
 
-          <button class="close-btn" data-close>×</button>
-
+          
+          <button type="button" class="close-btn" data-close aria-label="Close report form">×</button>
         </div>
 
         <p class="form-note">
