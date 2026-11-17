@@ -8424,9 +8424,7 @@ function renderTemporaryMessages(
 
             <button
               class="temporary-chat-item"
-              data-temp-chat-member="${esc(
-                member.id
-              )}"
+              data-temp-chat-id="${esc(chat.id)}"
             >
 
               ${renderUserAvatar(
