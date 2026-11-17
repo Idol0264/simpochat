@@ -23145,21 +23145,6 @@ function cleanupExpired() {
     );
 
 
-  /*
-   * Temporary chats
-   */
-
-  state.temporaryChats =
-    safeArray(
-      state.temporaryChats
-    ).filter(
-      chat =>
-        Number(
-          chat.createdAt
-        ) > cutoff
-    );
-
-
   saveState();
 }
 
