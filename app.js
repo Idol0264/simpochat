@@ -19221,24 +19221,24 @@ if (
        EXISTING TEMPORARY CHAT
        ------------------------------------- */
 
-    if (
-      target.dataset.tempChatMember
-    ) {
+     if (
+       target.dataset.tempChatId
+     ) {
 
-      state.selectedMember =
-        target.dataset.tempChatMember;
+       state.selectedTemporaryChatId =
+         target.dataset.tempChatId;
 
-      state.screen =
-        "temporary-chat";
+       state.screen =
+         "temporary-chat";
 
-      saveState();
+       saveState();
 
-      render();
+       render();
 
-      return;
-    }
+       return;
+     }
 
-
+     
     /* -------------------------------------
        MEMBER
        ------------------------------------- */
