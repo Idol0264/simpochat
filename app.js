@@ -8410,13 +8410,10 @@ function renderTemporaryMessages(
         .map(chat => {
 
           const member =
-            findMemberAcrossGroups(
-              chat.memberId
-            );
+             chat.member ||
+             findMemberAcrossGroups(chat.memberId);
 
-          if (!member) {
-            return "";
-          }
+           if (!member) return "";
 
           const group =
             getGroup(
