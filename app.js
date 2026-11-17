@@ -2261,11 +2261,10 @@ if (
   }
 
  if (state.screen === "temporary-chat") {
-    return renderTemporaryChat(
-       state.selectedMember
-    );
-
-  }
+   return renderTemporaryChat(
+      state.selectedTemporaryChatId
+  );
+ }
 
   if (state.screen === "group-chat") {
     return renderGroupChat();
