@@ -7908,69 +7908,129 @@ function openTemporaryChatInvite(
 }
 
 
-async function syncTemporaryChatInvites() {
+async function temporaryChatRequest(action, payload = {}) {
 
-  const sessionToken =
-    localStorage.getItem(
-      SESSION_TOKEN_KEY
-    );
+  const sessionToken = localStorage.getItem(
+    SESSION_TOKEN_KEY
+  );
 
   if (!sessionToken) {
-    return;
+    throw new Error(
+      "Your SimpoChat session is unavailable. Please try again."
+    );
   }
+
+  const response = await fetch(
+    SIMPOCHAT_ACCESS_URL,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${sessionToken}`
+      },
+
+      body: JSON.stringify({
+        action,
+        ...payload
+      })
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.allowed !== true) {
+    throw new Error(
+      data.message || "Temporary Chat request failed."
+    );
+  }
+
+  return data;
+}
+
+
+async function syncTemporaryChatInvites() {
 
   try {
 
-    const response =
-      await fetch(
-        SIMPOCHAT_ACCESS_URL,
-        {
-          method: "POST",
+    const [
+      inviteData,
+      chatData
+    ] = await Promise.all([
 
-          headers: {
-            "Content-Type":
-              "application/json",
+      temporaryChatRequest(
+        "list_temporary_invites"
+      ),
 
-            "Authorization":
-              `Bearer ${sessionToken}`
-          },
+      temporaryChatRequest(
+        "list_temporary_chats"
+      )
 
-          body: JSON.stringify({
-            action:
-              "list_temporary_invites"
-          })
-        }
-      );
+    ]);
 
-
-    const data =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      data.allowed !== true
-    ) {
-      throw new Error(
-        data.message ||
-        "Unable to load temporary chat invitations."
-      );
-    }
-
+    // Received and outgoing pending invitations.
 
     state.temporaryInvites =
-      safeArray(
-        data.invites
-      );
+      safeArray(inviteData.invites);
+
+
+    // Real active conversations from Supabase.
+
+    state.temporaryChats =
+      safeArray(chatData.conversations)
+        .map(conversation => {
+
+          const member =
+            conversation.member || {};
+
+          return {
+
+            id: conversation.id,
+
+            conversationId:
+              conversation.id,
+
+            memberId:
+              member.id || "",
+
+            memberName:
+              member.name || "Member",
+
+            avatarImage:
+              member.avatarImage || "",
+
+            member: {
+              ...member,
+
+              avatar:
+                member.name
+                  ?.charAt(0)
+                  ?.toUpperCase() || "M"
+            },
+
+            groupId: null,
+
+            createdAt:
+              conversation.createdAt,
+
+            status: "active",
+
+            messages: []
+
+          };
+
+        })
+        .filter(chat =>
+          chat.id && chat.memberId
+        );
 
 
     saveState();
 
-
   } catch (error) {
 
     console.error(
-      "SimpoChat temporary invite sync failed:",
+      "SimpoChat temporary chat sync failed:",
       error
     );
 
