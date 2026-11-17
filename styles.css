@@ -11986,6 +11986,17 @@ html[data-theme="dark"] .simpo-access-card {
   padding: 20px;
 }
 
+.simpo-report-modal {
+  background: var(--surface-strong);
+  opacity: 1;
+}
+
+.simpo-report-backdrop {
+  background: rgba(4, 5, 9, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 .simpo-report-form {
   display: grid;
   gap: 10px;
