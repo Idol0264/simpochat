@@ -12232,3 +12232,56 @@ html[data-theme="dark"] .simpo-access-card {
   text-align: left;
 }
 
+/* SIMPOCHAT — FINAL TEMPORARY CHAT MESSAGE ALIGNMENT */
+
+.temporary-private-chat .message-row.mine {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  gap: 9px;
+}
+
+.temporary-private-chat .message-row.mine .message-avatar {
+  display: grid !important;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin-top: 22px;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.temporary-private-chat .message-row.mine .message-content {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  width: fit-content;
+  min-width: 0;
+  max-width: calc(100% - 49px);
+  text-align: right;
+}
+
+.temporary-private-chat .message-row.mine .message-author {
+  width: 100%;
+  margin: 1px 3px 4px;
+  text-align: right;
+}
+
+.temporary-private-chat .message-row.mine .message-bubble {
+  align-self: flex-end;
+  max-width: 100%;
+  border-radius: 18px 5px 18px 18px;
+  text-align: left;
+}
+
+.temporary-private-chat .message-row.mine .message-time {
+  align-self: flex-end;
+  margin: 4px 4px 0;
+  text-align: right;
+}
+
