@@ -22310,7 +22310,8 @@ function openReportForm(
    
   modalRoot.innerHTML = `
 
-    <div class="modal-backdrop" data-close>
+    
+    <div class="modal-backdrop simpo-report-backdrop" data-close>
 
         
       <div class="modal simpo-report-modal">
