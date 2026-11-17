@@ -23120,6 +23120,42 @@ async function finishTemporaryChat() {
 
 }
 
+/* MUTE TEMPORARY CHAT INVITER */
+
+async function muteTemporaryInviter(userId) {
+
+  if (!userId) return;
+
+  if (!confirm(
+    "Stop this member from sending you Temporary Chat invitations?"
+  )) return;
+
+  try {
+
+    await temporaryChatRequest(
+      "mute_temporary_inviter",
+      {
+        user_id: userId
+      }
+    );
+
+    state.temporaryInvites = safeArray(
+      state.temporaryInvites
+    ).filter(invite => invite.from !== userId);
+
+    saveState();
+    render();
+
+    alert("Member muted successfully.");
+
+  } catch (error) {
+
+    alert(error.message || "Unable to mute member.");
+
+  }
+
+}
+
 
 /* ---------------------------------------------------------
    REJECT TEMPORARY CHAT INVITE
