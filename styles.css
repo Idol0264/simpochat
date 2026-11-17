@@ -12129,3 +12129,44 @@ html[data-theme="dark"] .simpo-access-card {
   margin-left: auto;
   flex-direction: row-reverse;
 }
+/* TEMPORARY CHAT INVITE CARD ALIGNMENT */
+
+.temporary-chat-invite-card {
+  position: relative;
+}
+
+.temporary-chat-invite-head {
+  position: relative;
+  padding-right: 55px;
+}
+
+.temporary-chat-mute-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 13px;
+  background: #dc3545;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.temporary-chat-invite-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.temporary-chat-invite-actions button {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+}
