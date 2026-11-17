@@ -5887,9 +5887,15 @@ function attachMessageLongPress() {
                 scrollRoot
                 ? scrollRoot.scrollTop
                 : 0;
-             renderGroupChat({
-                autoScroll: false
-             });
+             if (state.screen === "temporary-chat") {
+                renderTemporaryChat(
+                   state.selectedTemporaryChatId
+                );
+             } else {
+                renderGroupChat({
+                   autoScroll: false
+                });
+             }
              
              requestAnimationFrame(
                 () => {
