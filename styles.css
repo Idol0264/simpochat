@@ -12125,10 +12125,31 @@ html[data-theme="dark"] .simpo-access-card {
   max-width: 88%;
 }
 
+/* SENT TEMPORARY MESSAGES */
+
 .temporary-private-chat .message-row.mine {
+  width: 100%;
+  max-width: 100%;
   margin-left: auto;
-  flex-direction: row-reverse;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
+
+.temporary-private-chat .message-row.mine .message-avatar {
+  display: none;
+}
+
+.temporary-private-chat .message-row.mine .message-content {
+  align-items: flex-end;
+  text-align: right;
+  max-width: 85%;
+}
+
+.temporary-private-chat .message-row.mine .message-bubble {
+  text-align: left;
+}
+
 /* TEMPORARY CHAT INVITE CARD ALIGNMENT */
 
 .temporary-chat-invite-card {
