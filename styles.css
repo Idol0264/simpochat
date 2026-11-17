@@ -12077,32 +12077,55 @@ html[data-theme="dark"] .simpo-access-card {
   margin-top: 0;
 }
 
-/* TEMPORARY CHAT MUTE BUTTON */
 
-.temporary-chat-mute-btn {
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  min-width: 45px;
-  min-height: 43px;
-  font-size: 19px;
-  cursor: pointer;
-  margin-right: 6px;
+/* TEMPORARY PRIVATE CHAT HEADER */
+
+.temporary-private-chat .chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.temporary-chat-mute-btn:active {
-  transform: scale(.94);
+.temporary-private-chat .chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
-
-/* FINISH BUTTON */
 
 .temporary-chat-finish-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
   background: #dc3545;
   color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 9px 13px;
   font-weight: 700;
+  font-size: 12px;
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* RED MUTE BUTTON */
+
+.temporary-chat-mute-btn {
+  width: 48px;
+  min-height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: #dc3545;
+  color: white;
+  font-size: 19px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* PRIVATE MESSAGE ALIGNMENT */
+
+.temporary-private-chat .message-row {
+  max-width: 88%;
+}
+
+.temporary-private-chat .message-row.mine {
+  margin-left: auto;
+  flex-direction: row-reverse;
 }
