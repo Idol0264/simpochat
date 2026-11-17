@@ -6410,6 +6410,11 @@ function attachMessageLongPress() {
    --------------------------------------------------------- */
 
 async function sendMessage() {
+   
+if (state.screen === "temporary-chat") {
+  return sendTemporaryChatText();
+}
+   
    const input = $("#messageInput");
 const messagesBox =
   $("#messages");
@@ -6531,6 +6536,123 @@ if (messagesBox) {
     renderGroupChat();
   }
 }
+
+
+async function sendTemporaryChatText() {
+
+  const conversationId =
+    state.selectedTemporaryChatId;
+
+  const input =
+    document.querySelector("#messageInput");
+
+  const text = input?.value.trim();
+
+  if (!conversationId || !text) return;
+
+  const pendingId = uid("temporary-message");
+
+  const replyTo = pendingReplyMessageId || null;
+
+  if (!state.messages[conversationId]) {
+    state.messages[conversationId] = [];
+  }
+
+  state.messages[conversationId].push({
+
+    id: pendingId,
+    member: state.currentUser.id,
+    sender: state.currentUser,
+    text,
+    type: "text",
+    createdAt: new Date().toISOString(),
+    replyTo,
+    pending: true
+
+  });
+
+  input.value = "";
+
+  pendingReplyMessageId = null;
+  activeMessageActionId = null;
+
+  saveState();
+
+  renderTemporaryChat(conversationId);
+
+  try {
+
+    const data = await temporaryChatRequest(
+      "send_temporary_message",
+      {
+        conversation_id: conversationId,
+        body: text,
+        content_type: "text",
+        client_message_id: pendingId,
+        reply_to: replyTo
+      }
+    );
+
+    const messages =
+      safeArray(state.messages[conversationId]);
+
+    const index = messages.findIndex(
+      message => message.id === pendingId
+    );
+
+    const saved = data.message;
+
+    const confirmed = {
+      id: saved.id,
+      member: saved.sender_id,
+      sender: state.currentUser,
+      text: saved.body || saved.text || text,
+      type: "text",
+      createdAt: saved.created_at,
+      replyTo: saved.reply_to || null,
+      pending: false
+    };
+
+    if (index >= 0) {
+      messages[index] = confirmed;
+    }
+
+    state.messages[conversationId] = messages;
+
+    saveState();
+
+    if (
+      state.screen === "temporary-chat" &&
+      state.selectedTemporaryChatId === conversationId
+    ) {
+      renderTemporaryChat(conversationId);
+    }
+
+  } catch (error) {
+
+    console.error("Temporary message error:", error);
+
+    const messages =
+      safeArray(state.messages[conversationId]);
+
+    const failed = messages.find(
+      message => message.id === pendingId
+    );
+
+    if (failed) {
+      failed.pending = false;
+      failed.failed = true;
+    }
+
+    saveState();
+
+    alert(error.message || "Unable to send message.");
+
+    renderTemporaryChat(conversationId);
+  }
+
+}
+
 
 /* ---------------------------------------------------------
    SEND CAMERA MEDIA MESSAGE
