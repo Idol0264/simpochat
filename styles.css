@@ -12266,9 +12266,15 @@ html[data-theme="dark"] .simpo-access-card {
   text-align: right;
 }
 
+/* Match group-chat sender label position */
+.temporary-private-chat .message-author {
+  margin: 1px 0 4px 3px;
+}
+
+/* Sent message sender label */
 .temporary-private-chat .message-row.mine .message-author {
   width: 100%;
-  margin: -2px 3px 4px;
+  margin: 1px 0 4px 3px;
   text-align: right;
 }
 
