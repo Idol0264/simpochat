@@ -8413,6 +8413,105 @@ body {
   object-fit: contain;
 }
 
+/* =========================================
+   SIMPOCHAT CUSTOM VIDEO PLAYER
+   ========================================= */
+
+.simpo-video-player {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+}
+
+.simpo-video-player .post-viewer-real-media {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: 65vh;
+  object-fit: contain;
+  background: #000;
+}
+
+.simpo-video-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(28, 24, 40, 0.96);
+  box-sizing: border-box;
+}
+
+.simpo-video-controls button {
+  display: grid;
+  flex: 0 0 38px;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 17px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.simpo-video-controls button:active {
+  transform: scale(0.92);
+}
+
+.simpo-video-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.simpo-video-progress {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 35px;
+  height: 5px;
+  margin: 0;
+  border-radius: 20px;
+  accent-color: #a855f7;
+  cursor: pointer;
+}
+
+.simpo-video-time {
+  flex: 0 0 auto;
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.simpo-video-status {
+  width: 100%;
+  min-height: 15px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   END CUSTOM VIDEO PLAYER
+   ========================================= */
+
+
+
 .post-photo-collection {
   display: flex;
   gap: 0;
