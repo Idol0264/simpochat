@@ -11657,13 +11657,45 @@ function openPost(
 
   `;
    
-// Keep video playback inside the selected trim range.
+   // Keep video playback inside the selected trim range
+// and connect the custom controls and clip download.
+
 const postVideo =
   modalRoot.querySelector(
-    ".post-viewer-real-media"
+    ".simpo-video-player .post-viewer-real-media"
   );
 
 if (post.type === "video" && postVideo) {
+
+  const playButton =
+    modalRoot.querySelector(
+      "[data-simpo-video-play]"
+    );
+
+  const progress =
+    modalRoot.querySelector(
+      "[data-simpo-video-progress]"
+    );
+
+  const currentTimeLabel =
+    modalRoot.querySelector(
+      "[data-simpo-video-current]"
+    );
+
+  const durationLabel =
+    modalRoot.querySelector(
+      "[data-simpo-video-duration]"
+    );
+
+  const downloadButton =
+    modalRoot.querySelector(
+      "[data-simpo-video-download]"
+    );
+
+  const downloadStatus =
+    modalRoot.querySelector(
+      "[data-simpo-video-status]"
+    );
 
   let clipStart = Math.max(
     0,
@@ -11677,11 +11709,87 @@ if (post.type === "video" && postVideo) {
     clipEnd <= clipStart
   ) {
     clipEnd =
-      clipStart + Number(post.duration || 0);
+      clipStart + Number(post.duration || 15);
   }
 
   let clipInitialized = false;
   let correctingSeek = false;
+  let clipFinished = false;
+  let downloadInProgress = false;
+
+  const formatVideoTime = seconds => {
+
+    const safeSeconds =
+      Math.max(0, Math.floor(seconds || 0));
+
+    const minutes =
+      Math.floor(safeSeconds / 60);
+
+    const remaining =
+      safeSeconds % 60;
+
+    return (
+      minutes +
+      ":" +
+      String(remaining).padStart(2, "0")
+    );
+
+  };
+
+  const clipDuration = () => {
+
+    return Math.max(
+      0,
+      Math.min(
+        15,
+        clipEnd - clipStart
+      )
+    );
+
+  };
+
+  const updatePlayButton = () => {
+
+    if (!playButton) return;
+
+    playButton.textContent =
+      postVideo.paused ? "▶" : "Ⅱ";
+
+    playButton.setAttribute(
+      "aria-label",
+      postVideo.paused
+        ? "Play video"
+        : "Pause video"
+    );
+
+  };
+
+  const updateProgress = () => {
+
+    const elapsed =
+      Math.max(
+        0,
+        Math.min(
+          clipDuration(),
+          postVideo.currentTime - clipStart
+        )
+      );
+
+    if (progress) {
+      progress.value = elapsed;
+    }
+
+    if (currentTimeLabel) {
+      currentTimeLabel.textContent =
+        formatVideoTime(elapsed);
+    }
+
+    if (durationLabel) {
+      durationLabel.textContent =
+        formatVideoTime(clipDuration());
+    }
+
+  };
 
   postVideo.addEventListener(
     "loadedmetadata",
@@ -11697,31 +11805,36 @@ if (post.type === "video" && postVideo) {
 
       clipEnd = Math.min(
         clipEnd,
+        clipStart + 15,
         mediaDuration
       );
 
       if (clipEnd <= clipStart) {
         clipStart = 0;
-        clipEnd = mediaDuration;
+        clipEnd = Math.min(15, mediaDuration);
       }
+
+      if (progress) {
+        progress.min = 0;
+        progress.max = clipDuration();
+        progress.value = 0;
+      }
+
+      updateProgress();
 
       if (clipStart > 0.05) {
 
         postVideo.pause();
 
-        const resumeAtClipStart = () => {
-
-          if (clipInitialized) return;
-
-          clipInitialized = true;
-
-          postVideo.play().catch(() => {});
-
-        };
-
         postVideo.addEventListener(
           "seeked",
-          resumeAtClipStart,
+          () => {
+
+            clipInitialized = true;
+
+            postVideo.play().catch(() => {});
+
+          },
           { once: true }
         );
 
@@ -11737,28 +11850,28 @@ if (post.type === "video" && postVideo) {
     { once: true }
   );
 
-  let clipFinished = false;
-
   postVideo.addEventListener(
     "timeupdate",
     () => {
 
       if (
-        !clipFinished &&
         clipInitialized &&
         clipEnd > clipStart &&
         postVideo.currentTime >= clipEnd
       ) {
 
-        clipFinished = true;
+        postVideo.currentTime = clipEnd;
         postVideo.pause();
+        clipFinished = true;
 
       }
+
+      updateProgress();
+      updatePlayButton();
 
     }
   );
 
-  // Restart from the selected beginning when Play is tapped again.
   postVideo.addEventListener(
     "play",
     () => {
@@ -11770,7 +11883,14 @@ if (post.type === "video" && postVideo) {
 
       }
 
+      updatePlayButton();
+
     }
+  );
+
+  postVideo.addEventListener(
+    "pause",
+    updatePlayButton
   );
 
   postVideo.addEventListener(
@@ -11802,9 +11922,344 @@ if (post.type === "video" && postVideo) {
   postVideo.addEventListener(
     "seeked",
     () => {
+
       correctingSeek = false;
+      updateProgress();
+
     }
   );
+
+  // Play and pause button.
+  if (playButton) {
+
+    playButton.addEventListener(
+      "click",
+      () => {
+
+        if (postVideo.paused) {
+
+          if (clipFinished) {
+            clipFinished = false;
+            postVideo.currentTime = clipStart;
+          }
+
+          postVideo.play().catch(() => {});
+
+        } else {
+
+          postVideo.pause();
+
+        }
+
+      }
+    );
+
+  }
+
+  // Allow the viewer to seek inside the selected clip.
+  if (progress) {
+
+    progress.addEventListener(
+      "input",
+      () => {
+
+        const requestedTime =
+          Number(progress.value || 0);
+
+        postVideo.currentTime =
+          Math.min(
+            clipEnd,
+            clipStart + requestedTime
+          );
+
+        updateProgress();
+
+      }
+    );
+
+  }
+
+  // Download only the selected clip, up to 15 seconds.
+  if (downloadButton) {
+
+    downloadButton.addEventListener(
+      "click",
+      async () => {
+
+        if (downloadInProgress) return;
+
+        const captureFunction =
+          postVideo.captureStream ||
+          postVideo.mozCaptureStream;
+
+        if (
+          !captureFunction ||
+          typeof MediaRecorder === "undefined"
+        ) {
+
+          if (downloadStatus) {
+            downloadStatus.textContent =
+              "Clip download is not supported by this browser.";
+          }
+
+          return;
+
+        }
+
+        if (
+          !clipInitialized ||
+          clipDuration() <= 0
+        ) {
+
+          if (downloadStatus) {
+            downloadStatus.textContent =
+              "Please wait for the video to load.";
+          }
+
+          return;
+
+        }
+
+        downloadInProgress = true;
+        downloadButton.disabled = true;
+
+        if (downloadStatus) {
+          downloadStatus.textContent =
+            "Preparing your selected clip...";
+        }
+
+        let recorder = null;
+        let capturedStream = null;
+
+        try {
+
+          postVideo.pause();
+
+          // Move to the beginning of the selected clip.
+          await new Promise(resolve => {
+
+            if (
+              Math.abs(
+                postVideo.currentTime - clipStart
+              ) < 0.05
+            ) {
+              resolve();
+              return;
+            }
+
+            postVideo.addEventListener(
+              "seeked",
+              resolve,
+              { once: true }
+            );
+
+            postVideo.currentTime = clipStart;
+
+          });
+
+          capturedStream =
+            captureFunction.call(postVideo);
+
+          if (
+            !capturedStream ||
+            capturedStream.getTracks().length === 0
+          ) {
+            throw new Error(
+              "The browser could not capture this video."
+            );
+          }
+
+          const mimeTypes = [
+            "video/webm;codecs=vp9,opus",
+            "video/webm;codecs=vp8,opus",
+            "video/webm"
+          ];
+
+          const supportedType =
+            mimeTypes.find(type =>
+              MediaRecorder.isTypeSupported(type)
+            );
+
+          recorder = supportedType
+            ? new MediaRecorder(
+                capturedStream,
+                { mimeType: supportedType }
+              )
+            : new MediaRecorder(capturedStream);
+
+          const recordedChunks = [];
+
+          recorder.addEventListener(
+            "dataavailable",
+            event => {
+
+              if (
+                event.data &&
+                event.data.size > 0
+              ) {
+                recordedChunks.push(event.data);
+              }
+
+            }
+          );
+
+          recorder.addEventListener(
+            "stop",
+            () => {
+
+              const outputType =
+                recorder.mimeType || "video/webm";
+
+              const clipBlob =
+                new Blob(
+                  recordedChunks,
+                  { type: outputType }
+                );
+
+              if (!clipBlob.size) {
+
+                if (downloadStatus) {
+                  downloadStatus.textContent =
+                    "The clip could not be created.";
+                }
+
+                return;
+
+              }
+
+              const fileUrl =
+                URL.createObjectURL(clipBlob);
+
+              const link =
+                document.createElement("a");
+
+              link.href = fileUrl;
+              link.download =
+                "simpochat-clip.webm";
+
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+
+              setTimeout(
+                () => URL.revokeObjectURL(fileUrl),
+                60000
+              );
+
+              if (downloadStatus) {
+                downloadStatus.textContent =
+                  "Your selected clip is ready.";
+              }
+
+            }
+          );
+
+          recorder.addEventListener(
+            "error",
+            () => {
+
+              if (downloadStatus) {
+                downloadStatus.textContent =
+                  "Video recording failed. Please try again.";
+              }
+
+            }
+          );
+
+          // Start recording before playback.
+          recorder.start(250);
+
+          await postVideo.play();
+
+          if (downloadStatus) {
+            downloadStatus.textContent =
+              "Recording your selected clip...";
+          }
+
+          // Stop recording at the selected ending.
+          const stopAtClipEnd = () => {
+
+            if (
+              recorder &&
+              recorder.state === "recording" &&
+              postVideo.currentTime >= clipEnd
+            ) {
+
+              postVideo.pause();
+              recorder.stop();
+
+            }
+
+          };
+
+          postVideo.addEventListener(
+            "timeupdate",
+            stopAtClipEnd
+          );
+
+          recorder.addEventListener(
+            "stop",
+            () => {
+
+              postVideo.removeEventListener(
+                "timeupdate",
+                stopAtClipEnd
+              );
+
+              if (capturedStream) {
+                capturedStream
+                  .getTracks()
+                  .forEach(track => track.stop());
+              }
+
+              downloadInProgress = false;
+              downloadButton.disabled = false;
+
+              updateProgress();
+              updatePlayButton();
+
+            },
+            { once: true }
+          );
+
+        } catch (error) {
+
+          console.error(
+            "SimpoChat clip download failed:",
+            error
+          );
+
+          if (
+            recorder &&
+            recorder.state === "recording"
+          ) {
+            recorder.stop();
+          }
+
+          if (capturedStream) {
+            capturedStream
+              .getTracks()
+              .forEach(track => track.stop());
+          }
+
+          downloadInProgress = false;
+          downloadButton.disabled = false;
+
+          if (downloadStatus) {
+            downloadStatus.textContent =
+              error.message ||
+              "Unable to download this clip.";
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+  updatePlayButton();
+  updateProgress();
 
 }
    
