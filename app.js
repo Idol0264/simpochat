@@ -11466,8 +11466,14 @@ function openPost(
         </div>
 
 
+
                 <!-- POST MEDIA -->
 
+        <div class="post-viewer-video">
+
+          ${
+            post.type === "video" && post.mediaUrl
+              ? `
                 <div class="simpo-video-player">
 
                   <video
@@ -11524,6 +11530,64 @@ function openPost(
                   ></div>
 
                 </div>
+              `
+              : post.type === "photos" &&
+                Array.isArray(post.photos) &&
+                post.photos.length
+                  ? `
+                    <div class="post-photo-collection">
+                    ${
+                       post.photos.slice(0, 5).map((photo, index) => `
+                       <img
+                       class="post-viewer-real-media"
+                       src="${esc(photo.mediaUrl)}"
+                       alt="Photo ${index + 1}"
+                       loading="${index === 0 ? "eager" : "lazy"}"
+                       >
+                       `).join("")
+                    }
+                    </div>
+
+                    ${
+                       post.photos.length > 1
+                       ? `
+                       <div
+                       class="post-photo-dots"
+                       aria-label="Photo carousel position"
+                       >
+                       ${
+                          post.photos.slice(0, 5).map((photo, index) => `
+
+                          <span
+                          class="post-photo-dot${index === 0 ? " active" : ""}"
+                          data-photo-dot="${index}"
+                          ></span>
+                          `).join("")
+                       }
+                       </div>
+                       `
+                       : ""
+                    }
+                  `
+                  : (
+                      post.type === "photo" ||
+                      post.type === "image"
+                    ) && post.mediaUrl
+                      ? `
+                        <img
+                          class="post-viewer-real-media"
+                          src="${esc(post.mediaUrl)}"
+                          alt="Post photo"
+                        >
+                      `
+                      : `
+                        <div class="post-video-placeholder">
+                          Media is unavailable for this post.
+                        </div>
+                      `
+          }
+
+        </div>
 
 
         <!-- POST DETAILS -->
