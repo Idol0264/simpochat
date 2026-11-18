@@ -8872,14 +8872,7 @@ async function renderTemporaryChat(conversationId) {
     sendMessage();
   });
 
-  const input = document.querySelector("#messageInput");
-
-  input?.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
+    const input = document.querySelector("#messageInput");
 
   attachMessageLongPress();
   attachMediaImageViewer();
