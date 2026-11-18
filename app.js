@@ -8855,10 +8855,12 @@ async function renderTemporaryChat(conversationId) {
         ></textarea>
 
         <button
-          type="submit"
-          class="send-btn"
-          aria-label="Send"
-        >➤</button>
+          type="button"
+          class="composer-btn"
+          data-action="voice-message"
+          aria-label="Voice message"
+          title="Voice message"
+        >🎙</button>
 
       </form>
 
