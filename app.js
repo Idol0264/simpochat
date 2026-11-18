@@ -20404,9 +20404,13 @@ case "mute-temporary-inviter":
      
      
      case "voice-message":
-        
-        createVoiceMessage();
-        
+
+        if (state.screen === "temporary-chat") {
+           createTemporaryVoiceMessage();
+        } else {
+           createVoiceMessage();
+        }
+
         break;
      
      
