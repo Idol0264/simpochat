@@ -9945,7 +9945,7 @@ async function compressSimpoChatPostVideoFile(
 
     if (blob.size > maxOutputBytes) {
       throw new Error(
-        "This video could not be reduced below 20 MB. Please choose a shorter clip."
+        "This video could not be reduced below 48 MB. Please choose a shorter clip or lower quality."
       );
     }
 
