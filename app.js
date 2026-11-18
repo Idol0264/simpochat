@@ -9100,8 +9100,16 @@ async function renderTemporaryChat(conversationId) {
           aria-label="Voice message"
           title="Voice message"
         >🎙</button>
-
-      </form>
+        
+      <button
+        type="submit"
+        class="send-btn"
+        aria-label="Send"
+      >
+       ➤
+      </button>
+ 
+     </form>
 
     </div>
   `;
