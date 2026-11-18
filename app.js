@@ -20203,20 +20203,23 @@ case "mute-temporary-inviter":
 
       break;
 
-
+        
     case "cancel-reply":
-        
-        pendingReplyMessageId =
-           null;
-        
-        activeMessageActionId =
-           null;
-        
+
+      pendingReplyMessageId = null;
+      activeMessageActionId = null;
+
+      if (state.screen === "temporary-chat") {
+        renderTemporaryChat(
+          state.selectedTemporaryChatId
+        );
+      } else {
         renderGroupChat();
+      }
+
+      break;
+
         
-        break;
-
-
     case "group-posts":
 
       state.postFilter =
