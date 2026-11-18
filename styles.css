@@ -8489,15 +8489,27 @@ body {
   cursor: pointer;
 }
 
+.simpo-video-timeline {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 7px;
+}
+
 .simpo-video-time {
-  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   color: #fff;
   font-size: 11px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.simpo-video-status {
+.simpo-video-download-status {
   width: 100%;
   min-height: 15px;
   color: rgba(255, 255, 255, 0.7);
