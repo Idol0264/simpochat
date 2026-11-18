@@ -5920,6 +5920,66 @@ function attachMessageLongPress() {
            
           if (action === "delete") {
             (async () => {
+               
+              if (state.screen === "temporary-chat") {
+                const conversationId =
+                  state.selectedTemporaryChatId;
+
+                const messages = safeArray(
+                  state.messages[conversationId]
+                );
+
+                const messageIndex = messages.findIndex(
+                  message => message.id === messageId
+                );
+
+                if (messageIndex === -1) return;
+
+                const targetMessage = messages[messageIndex];
+
+                // Unsent or failed messages can be deleted locally.
+                if (targetMessage.failed || targetMessage.pending) {
+                  messages.splice(messageIndex, 1);
+                  state.messages[conversationId] = messages;
+                } else {
+                  try {
+                    const data = await temporaryChatRequest(
+                      "delete_temporary_message",
+                      {
+                        conversation_id: conversationId,
+                        message_id: messageId
+                      }
+                    );
+
+                    if (!data.deleted) {
+                      throw new Error(
+                        data.message || "Unable to delete this message."
+                      );
+                    }
+
+                    messages.splice(messageIndex, 1);
+                    state.messages[conversationId] = messages;
+
+                  } catch (error) {
+                    alert(
+                      error.message ||
+                      "Unable to delete this temporary message."
+                    );
+                    return;
+                  }
+                }
+
+                if (pendingReplyMessageId === messageId) {
+                  pendingReplyMessageId = null;
+                }
+
+                activeMessageActionId = null;
+                messageActionTimer = null;
+
+                saveState();
+                renderTemporaryChat(conversationId);
+                return;
+              }
 
               const group = getGroup(state.selectedGroup);
 
