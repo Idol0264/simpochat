@@ -9749,10 +9749,8 @@ async function compressSimpoChatPostVideoFile(
       throw new Error("Choose a valid video clip.");
     }
 
-    const maxOutputBytes = 20 * 1024 * 1024;
-    const needsTrim =
-      start > 0.05 ||
-      (sourceDuration > 0 && clipDuration < sourceDuration - 0.05);
+        // Compressed videos must stay below 48 MB to leave upload headroom.
+    const maxOutputBytes = 48 * 1024 * 1024;
 
     const originalType = String(file.type || "")
       .split(";")[0]
@@ -9764,10 +9762,10 @@ async function compressSimpoChatPostVideoFile(
       "video/quicktime"
     ].includes(originalType);
 
-    // Do not re-encode an already-small, compatible video unnecessarily.
+    // Upload supported original videos unchanged when they are within 50 MB.
+    // The viewer will still play only the selected section.
     if (
-      file.size <= maxOutputBytes &&
-      !needsTrim &&
+      file.size <= 50 * 1024 * 1024 &&
       canKeepOriginal
     ) {
       return file;
