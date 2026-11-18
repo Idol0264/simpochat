@@ -11468,78 +11468,62 @@ function openPost(
 
                 <!-- POST MEDIA -->
 
-        <div class="post-viewer-video">
+                <div class="simpo-video-player">
 
-          ${
-            post.type === "video" && post.mediaUrl
-              ? `
-                <video
-                  class="post-viewer-real-media"
-                  src="${esc(post.mediaUrl)}"
-                  controls
-                  autoplay
-                  playsinline
-                  preload="metadata"
-                ></video>
-              `
-              : post.type === "photos" &&
-                Array.isArray(post.photos) &&
-                post.photos.length
-                  ? `
-                    <div class="post-photo-collection">
-                    ${
-                       post.photos.slice(0, 5).map((photo, index) => `
-                       <img
-                       class="post-viewer-real-media"
-                       src="${esc(photo.mediaUrl)}"
-                       alt="Photo ${index + 1}"
-                       loading="${index === 0 ? "eager" : "lazy"}"
-                       >
-                       `).join("")
-                    }
+                  <video
+                    class="post-viewer-real-media"
+                    crossorigin="anonymous"
+                    src="${esc(post.mediaUrl)}"
+                    autoplay
+                    playsinline
+                    preload="metadata"
+                  ></video>
+
+                  <div class="simpo-video-controls">
+
+                    <button
+                      type="button"
+                      class="simpo-video-play"
+                      data-simpo-video-play
+                      aria-label="Pause video"
+                    >Ⅱ</button>
+
+                    <div class="simpo-video-timeline">
+
+                      <input
+                        type="range"
+                        class="simpo-video-progress"
+                        data-simpo-video-progress
+                        min="0"
+                        max="15"
+                        step="0.05"
+                        value="0"
+                        aria-label="Video position"
+                      >
+
+                      <div class="simpo-video-time">
+                        <span data-simpo-video-current>0:00</span>
+                        <span data-simpo-video-duration>0:15</span>
+                      </div>
+
                     </div>
-                    
-                    ${
-                       post.photos.length > 1
-                       ? `
-                       <div
-                       class="post-photo-dots"
-                       aria-label="Photo carousel position"
-                       >
-                       ${
-                          post.photos.slice(0, 5).map((photo, index) => `
-                          
-                          
-                          <span          
-                          class="post-photo-dot${index === 0 ? " active" : ""}"
-                          data-photo-dot="${index}"
-                          ></span>
-                          `).join("")
-                       }
-                       </div>
-                       `
-                       : ""
-                    }
-                  `
-                  : (
-                      post.type === "photo" ||
-                      post.type === "image"
-                    ) && post.mediaUrl
-                      ? `
-                        <img
-                          class="post-viewer-real-media"
-                          src="${esc(post.mediaUrl)}"
-                          alt="Post photo"
-                        >
-                      `
-                      : `
-                        <div class="post-video-placeholder">
-                          Media is unavailable for this post.
-                        </div>
-                      `
-          }
 
-        </div>
+                    <button
+                      type="button"
+                      class="simpo-video-download"
+                      data-simpo-video-download
+                      aria-label="Download selected clip"
+                    >↓</button>
+
+                  </div>
+
+                  <div
+                    class="simpo-video-download-status"
+                    data-simpo-video-status
+                    aria-live="polite"
+                  ></div>
+
+                </div>
 
 
         <!-- POST DETAILS -->
