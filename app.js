@@ -10226,20 +10226,22 @@ async function simpoProcessPendingPostNow(postId) {
         throw new Error("The video trim range is invalid.");
       }
 
-    // Compress the selected video clip before uploading.
+      // Compress only when the original cannot be uploaded unchanged.
       const compressedFile =
-         await compressSimpoChatPostVideoFile(
-            item.file,
-            start,
-            duration
-         );
+        await compressSimpoChatPostVideoFile(
+          item.file,
+          start,
+          duration
+        );
 
-    // Upload the compressed clip.
+      const wasCompressed = compressedFile !== item.file;
+
+      // Upload the original or compressed video.
       const mediaUrl =
-         await uploadSimpoChatPostMedia(
-            compressedFile,
-            post.groupIds
-         );
+        await uploadSimpoChatPostMedia(
+          compressedFile,
+          post.groupIds
+        );
 
       postData = {
 
@@ -10256,17 +10258,25 @@ async function simpoProcessPendingPostNow(postId) {
         duration: duration,
 
         metadata: {
-           originalDuration: duration,
-           trimStart: 0,
-           trimEnd: duration,
-           fileName: item.file.name,
-           compressed: true
+          originalDuration: wasCompressed
+            ? duration
+            : originalDuration,
+
+          trimStart: wasCompressed
+            ? 0
+            : start,
+
+          trimEnd: wasCompressed
+            ? duration
+            : end,
+
+          fileName: item.file.name,
+
+          compressed: wasCompressed
         }
 
       };
-
-    }
-
+       
 
     /* PHOTO COLLECTION */
 
