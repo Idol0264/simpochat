@@ -6727,6 +6727,245 @@ async function sendTemporaryChatText() {
 }
 
 
+async function createTemporaryVoiceMessage() {
+  const conversationId = state.selectedTemporaryChatId;
+  const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  if (!conversationId || !sessionToken) {
+    alert("Please open a temporary chat and make sure you are signed in.");
+    return;
+  }
+
+  // Tap the microphone again to stop and send.
+  if (
+    simpoVoiceRecording &&
+    simpoVoiceRecorder &&
+    simpoVoiceRecorder.state === "recording"
+  ) {
+    simpoVoiceRecorder.stop();
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined") {
+    alert("Audio recording is not supported in this browser. Please try Chrome.");
+    return;
+  }
+
+  let stream;
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const mimeOptions = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus"
+    ];
+
+    let mimeType = "";
+    for (const candidate of mimeOptions) {
+      if (MediaRecorder.isTypeSupported(candidate)) {
+        mimeType = candidate;
+        break;
+      }
+    }
+
+    simpoVoiceChunks = [];
+    simpoVoiceCancelled = false;
+    simpoVoiceRecorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
+
+    simpoVoiceStartedAt = Date.now();
+    simpoVoiceRecording = true;
+
+    const voiceButton = document.querySelector(
+      '.composer-btn[data-action="voice-message"]'
+    );
+
+    if (voiceButton) {
+      voiceButton.classList.add("is-recording");
+      voiceButton.textContent = "🔴";
+      voiceButton.setAttribute("aria-label", "Stop and send voice message");
+    }
+
+    simpoVoiceRecorder.ondataavailable = event => {
+      if (event.data?.size > 0) {
+        simpoVoiceChunks.push(event.data);
+      }
+    };
+
+    simpoVoiceRecorder.onerror = () => {
+      simpoVoiceRecording = false;
+      stream.getTracks().forEach(track => track.stop());
+      resetSimpoVoiceButtons();
+      alert("Recording failed. Please try again.");
+    };
+
+    simpoVoiceRecorder.onstop = async () => {
+      simpoVoiceRecording = false;
+      stream.getTracks().forEach(track => track.stop());
+      resetSimpoVoiceButtons();
+
+      if (simpoVoiceCancelled) {
+        simpoVoiceCancelled = false;
+        simpoVoiceChunks = [];
+        return;
+      }
+
+      const durationSeconds = Math.round(
+        (Date.now() - simpoVoiceStartedAt) / 1000
+      );
+
+      if (!simpoVoiceChunks.length) {
+        alert("No audio was recorded. Please try again.");
+        return;
+      }
+
+      if (durationSeconds > 180) {
+        alert("Voice messages can be up to 3 minutes long.");
+        return;
+      }
+
+      const audioBlob = new Blob(simpoVoiceChunks, {
+        type: simpoVoiceRecorder.mimeType || "audio/webm"
+      });
+
+      if (audioBlob.size > 10 * 1024 * 1024) {
+        alert("This recording is too large. Please record a shorter message.");
+        return;
+      }
+
+      const pendingId = uid("temporary-voice-pending");
+      const localAudioUrl = URL.createObjectURL(audioBlob);
+      const replyTo = pendingReplyMessageId || null;
+
+      const localMessage = {
+        id: pendingId,
+        member: state.currentUser.id,
+        sender: state.currentUser,
+        text: "",
+        type: "voice",
+        mediaUrl: localAudioUrl,
+        durationSeconds,
+        createdAt: new Date().toISOString(),
+        replyTo,
+        pending: true,
+        failed: false
+      };
+
+      if (!state.messages[conversationId]) {
+        state.messages[conversationId] = [];
+      }
+
+      state.messages[conversationId].push(localMessage);
+      pendingReplyMessageId = null;
+      activeMessageActionId = null;
+
+      saveState();
+      renderTemporaryChat(conversationId);
+
+      try {
+        const audioDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () =>
+            reject(new Error("Unable to prepare the audio recording."));
+          reader.readAsDataURL(audioBlob);
+        });
+
+        const data = await temporaryChatRequest(
+          "send_temporary_message",
+          {
+            conversation_id: conversationId,
+            content_type: "audio",
+            audio_data_url: audioDataUrl,
+            duration_seconds: durationSeconds,
+            client_message_id: pendingId,
+            reply_to: replyTo
+          }
+        );
+
+        const saved = data.message;
+        if (!saved) {
+          throw new Error("The voice message was not saved.");
+        }
+
+        const messages = safeArray(state.messages[conversationId]);
+        const index = messages.findIndex(message => message.id === pendingId);
+
+        const confirmed = {
+          id: saved.id,
+          member: saved.sender_id,
+          sender: state.currentUser,
+          text: "",
+          type: "voice",
+          mediaUrl: saved.media_url || localAudioUrl,
+          durationSeconds: saved.duration_seconds || durationSeconds,
+          createdAt: saved.created_at || localMessage.createdAt,
+          replyTo: saved.reply_to || replyTo,
+          pending: false,
+          failed: false
+        };
+
+        if (index !== -1) {
+          messages[index] = confirmed;
+        }
+
+        state.messages[conversationId] = messages;
+        saveState();
+
+        if (
+          state.screen === "temporary-chat" &&
+          state.selectedTemporaryChatId === conversationId
+        ) {
+          renderTemporaryChat(conversationId);
+        }
+
+        if (saved.media_url) {
+          URL.revokeObjectURL(localAudioUrl);
+        }
+
+      } catch (error) {
+        console.error("Temporary voice message error:", error);
+
+        const messages = safeArray(state.messages[conversationId]);
+        const failed = messages.find(message => message.id === pendingId);
+
+        if (failed) {
+          failed.pending = false;
+          failed.failed = true;
+          failed.mediaUrl = localAudioUrl;
+        }
+
+        saveState();
+        alert(error.message || "Unable to send voice message.");
+
+        if (state.screen === "temporary-chat") {
+          renderTemporaryChat(conversationId);
+        }
+      }
+    };
+
+    simpoVoiceRecorder.start();
+    showSimpoVoiceFirstTip();
+
+  } catch (error) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    simpoVoiceRecording = false;
+    resetSimpoVoiceButtons();
+
+    console.error("Temporary chat microphone error:", error);
+    alert("Could not access your microphone. Please allow microphone permission and try again.");
+  }
+}
+
+
 /* ---------------------------------------------------------
    SEND CAMERA MEDIA MESSAGE
    --------------------------------------------------------- */
