@@ -8812,6 +8812,38 @@ async function renderTemporaryChat(conversationId) {
 
       </div>
 
+      ${
+        pendingReplyMessageId
+          ? (() => {
+              const replyMessage = safeArray(
+                state.messages[conversationId]
+              ).find(
+                message => message.id === pendingReplyMessageId
+              );
+
+              if (!replyMessage) return "";
+
+              return `
+                <div class="reply-composer-preview">
+                  <div class="reply-composer-copy">
+                    <strong>Replying to</strong>
+                    <span>
+                      ${esc(simpoGetReplyMessageLabel(replyMessage))}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="reply-composer-close"
+                    data-action="cancel-reply"
+                    aria-label="Cancel reply"
+                  >×</button>
+                </div>
+              `;
+            })()
+          : ""
+      }
+
       <form class="message-composer" id="messageForm">
 
         <textarea
