@@ -10085,16 +10085,20 @@ try {
 }
 
 
-async function uploadSimpoChatPostMedia(file, groupIds) {
+async function uploadSimpoChatPostMedia(
+  file,
+  groupIds,
+  onProgress = null
+) {
   const uploadFile = file?.type?.startsWith("image/")
     ? await simpoPrepareImageFile(file)
     : file;
-   
+
   const uploadContentType =
     String(uploadFile.type || "")
       .split(";")[0]
       .trim();
-   
+
   const prepared = await simpoChatPostRequest(
     "create_post_upload",
     {
@@ -10121,22 +10125,47 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
     throw new Error("Supabase returned an invalid upload URL.");
   }
 
-  const uploadResponse = await fetch(uploadUrl, {
-    method: "PUT",
-   headers: {
-      "Content-Type": uploadContentType
-   },
-    body: uploadFile
+  await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("PUT", uploadUrl, true);
+    xhr.setRequestHeader("Content-Type", uploadContentType);
+
+    xhr.upload.addEventListener("progress", event => {
+      if (event.lengthComputable && typeof onProgress === "function") {
+        const percent = Math.round(
+          (event.loaded / event.total) * 100
+        );
+
+        onProgress(percent);
+      }
+    });
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(
+          new Error(
+            `Supabase media upload failed (${xhr.status}): ` +
+            (xhr.responseText || "Please try again.")
+          )
+        );
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(
+        new Error("Network error while uploading media. Please try again.")
+      );
+    };
+
+    xhr.onabort = () => {
+      reject(new Error("Media upload was cancelled."));
+    };
+
+    xhr.send(uploadFile);
   });
-
-  if (!uploadResponse.ok) {
-    const detail = await uploadResponse.text().catch(() => "");
-
-    throw new Error(
-      `Supabase media upload failed (${uploadResponse.status}): ` +
-      (detail || "Please try again.")
-    );
-  }
 
   if (!prepared.public_url) {
     throw new Error(
@@ -10146,6 +10175,7 @@ async function uploadSimpoChatPostMedia(file, groupIds) {
 
   return prepared.public_url;
 }
+
 
 async function saveSimpoChatPostToSupabase(postData) {
   const data = await simpoChatPostRequest(
