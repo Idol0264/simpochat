@@ -10266,11 +10266,26 @@ async function simpoProcessPendingPostNow(postId) {
 
       const wasCompressed = compressedFile !== item.file;
 
-      // Upload the original or compressed video.
+
+      // Upload the original or compressed video with live progress.
       const mediaUrl =
         await uploadSimpoChatPostMedia(
           compressedFile,
-          post.groupIds
+          post.groupIds,
+          percent => {
+            const pendingCard =
+              [...document.querySelectorAll("[data-pending-post-id]")]
+                .find(card =>
+                  card.dataset.pendingPostId === String(post.id)
+                );
+
+            const status =
+              pendingCard?.querySelector(".pending-post-status");
+
+            if (status) {
+              status.textContent = `Uploading ${percent}%`;
+            }
+          }
         );
 
       postData = {
