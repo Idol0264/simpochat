@@ -10325,7 +10325,7 @@ async function simpoProcessPendingPostNow(postId) {
 
     /* PHOTO COLLECTION */
 
-    else if (post.type === "photos") {
+    } else if (post.type === "photos") {
 
       const files = post.files || [];
 
