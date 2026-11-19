@@ -12413,16 +12413,16 @@ html[data-theme="dark"] .simpo-access-card {
 }
 
 .post-viewer-video .simpo-video-controls {
-  padding: 7px 8px;
-  margin-bottom: 11px;
-  border-radius: 13px;
+  padding: 4px 7px;
+  margin-bottom: 3px;
+  border-radius: 11px;
   background: rgba(28, 24, 40, 0.76);
 }
 
 .post-viewer-video .simpo-video-controls button {
-  flex-basis: 32px;
-  width: 32px;
-  height: 32px;
+  flex-basis: 28px;
+  width: 28px;
+  height: 28px;
 }
 
 .post-viewer-video .simpo-video-timeline {
