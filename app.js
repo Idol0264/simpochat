@@ -6842,6 +6842,16 @@ async function createTemporaryVoiceMessage() {
       const localAudioUrl = URL.createObjectURL(audioBlob);
       const replyTo = pendingReplyMessageId || null;
 
+      // Save recording locally for offline retry.
+      try {
+        await simpoSaveOfflineAudio(pendingId, audioBlob);
+      } catch (storageError) {
+        console.error("Temporary audio storage failed:", storageError);
+        alert("Unable to save this recording for retry.");
+        URL.revokeObjectURL(localAudioUrl);
+        return;
+      }
+
       const localMessage = {
         id: pendingId,
         member: state.currentUser.id,
@@ -6849,6 +6859,7 @@ async function createTemporaryVoiceMessage() {
         text: "",
         type: "voice",
         mediaUrl: localAudioUrl,
+        localAudioKey: pendingId,
         durationSeconds,
         createdAt: new Date().toISOString(),
         replyTo,
