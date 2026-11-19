@@ -6161,14 +6161,186 @@ function attachMessageLongPress() {
 
         if (button.disabled) return;
 
-        const group = getGroup(state.selectedGroup);
         const sessionToken =
           localStorage.getItem(SESSION_TOKEN_KEY);
 
-        if (!group || !sessionToken) return;
+        if (!sessionToken) return;
 
         const messageId = button.dataset.retryMessage;
+
+        // Temporary Chat offline voice retry
+        if (state.screen === "temporary-chat") {
+          const conversationId = state.selectedTemporaryChatId;
+          const temporaryMessages = safeArray(state.messages[conversationId]);
+
+          const temporaryMessage = temporaryMessages.find(
+            item => item.id === messageId
+          );
+
+          if (
+            !conversationId ||
+            !temporaryMessage ||
+            !temporaryMessage.failed ||
+            temporaryMessage.type !== "voice"
+          ) return;
+
+          button.disabled = true;
+          button.textContent = "Sending…";
+
+          temporaryMessage.pending = true;
+          temporaryMessage.failed = false;
+
+          saveState();
+          renderTemporaryChat(conversationId);
+
+          try {
+            const audioBlob = await simpoGetOfflineAudio(
+              temporaryMessage.localAudioKey || temporaryMessage.id
+            );
+
+            if (!audioBlob) {
+              throw new Error(
+                "Saved recording unavailable. Please record it again."
+              );
+            }
+
+            const audioDataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+
+              reader.onload = () => resolve(reader.result);
+
+              reader.onerror = () => reject(
+                new Error("Unable to prepare saved recording.")
+              );
+
+              reader.readAsDataURL(audioBlob);
+            });
+
+            const response = await temporaryChatRequest(
+              "send_temporary_message",
+              {
+                conversation_id: conversationId,
+                content_type: "audio",
+                audio_data_url: audioDataUrl,
+                duration_seconds:
+                  temporaryMessage.durationSeconds || 0,
+                client_message_id: temporaryMessage.id,
+                reply_to: temporaryMessage.replyTo || null
+              }
+            );
+
+            const saved = response.message;
+
+            if (!saved || !saved.id) {
+              throw new Error(
+                "Voice message was not confirmed by the server."
+              );
+            }
+
+            const currentMessages = safeArray(
+              state.messages[conversationId]
+            );
+
+            const messageIndex = currentMessages.findIndex(
+              item => item.id === messageId
+            );
+
+            const confirmedMessage = {
+              id: saved.id,
+              member: saved.sender_id || state.currentUser.id,
+              sender: state.currentUser,
+              text: saved.body || saved.text || "",
+              type: "voice",
+              mediaUrl: saved.media_url || temporaryMessage.mediaUrl,
+              durationSeconds:
+                saved.duration_seconds ||
+                temporaryMessage.durationSeconds || 0,
+              createdAt:
+                saved.created_at || temporaryMessage.createdAt,
+              replyTo:
+                saved.reply_to || temporaryMessage.replyTo || null,
+              pending: false,
+              failed: false
+            };
+
+            if (messageIndex !== -1) {
+              currentMessages[messageIndex] = confirmedMessage;
+            } else if (
+              !currentMessages.some(item => item.id === saved.id)
+            ) {
+              currentMessages.push(confirmedMessage);
+            }
+
+            currentMessages.sort(
+              (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            );
+
+            state.messages[conversationId] = currentMessages;
+            saveState();
+
+            if (saved.media_url) {
+              try {
+                await simpoDeleteOfflineAudio(
+                  temporaryMessage.localAudioKey ||
+                  temporaryMessage.id
+                );
+              } catch (cleanupError) {
+                console.warn(
+                  "Unable to remove resent temporary audio:",
+                  cleanupError
+                );
+              }
+
+              if (
+                temporaryMessage.mediaUrl &&
+                temporaryMessage.mediaUrl.startsWith("blob:")
+              ) {
+                URL.revokeObjectURL(temporaryMessage.mediaUrl);
+              }
+            }
+
+            renderTemporaryChat(conversationId);
+
+          } catch (error) {
+            console.error(
+              "Temporary Chat voice retry failed:",
+              error
+            );
+
+            const currentMessages = safeArray(
+              state.messages[conversationId]
+            );
+
+            const failedMessage = currentMessages.find(
+              item => item.id === messageId
+            );
+
+            if (failedMessage) {
+              failedMessage.pending = false;
+              failedMessage.failed = true;
+            }
+
+            state.messages[conversationId] = currentMessages;
+
+            saveState();
+            renderTemporaryChat(conversationId);
+
+            alert(
+              error.message ||
+              "Unable to resend voice message. Please try again."
+            );
+          }
+
+          return;
+        }
+
+        // Existing normal group-chat retry system
+        const group = getGroup(state.selectedGroup);
+
+        if (!group) return;
+
         const messages = safeArray(state.messages[group.id]);
+
         const message = messages.find(
           item => item.id === messageId
         );
