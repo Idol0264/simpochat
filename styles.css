@@ -12414,7 +12414,7 @@ html[data-theme="dark"] .simpo-access-card {
 
 .post-viewer-video .simpo-video-controls {
   padding: 4px 7px;
-  margin-bottom: 1px;
+  margin-bottom: 0.5px;
   border-radius: 11px;
   background: rgba(28, 24, 40, 0.76);
 }
