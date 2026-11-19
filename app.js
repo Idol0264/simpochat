@@ -6325,12 +6325,6 @@ function attachMessageLongPress() {
             saveState();
             renderTemporaryChat(conversationId);
 
-            alert(
-              error.message ||
-              "Unable to resend voice message. Please try again."
-            );
-          }
-
           return;
         }
 
@@ -7124,7 +7118,6 @@ async function createTemporaryVoiceMessage() {
         }
 
         saveState();
-        alert(error.message || "Unable to send voice message.");
 
         if (state.screen === "temporary-chat") {
           renderTemporaryChat(conversationId);
