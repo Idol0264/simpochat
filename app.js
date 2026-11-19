@@ -10090,14 +10090,22 @@ async function uploadSimpoChatPostMedia(
   groupIds,
   onProgress = null
 ) {
+  let uploadStage = "Preparing file";
+
   const uploadFile = file?.type?.startsWith("image/")
     ? await simpoPrepareImageFile(file)
     : file;
+
+  if (!(uploadFile instanceof Blob)) {
+    throw new Error("The selected media file is invalid.");
+  }
 
   const uploadContentType =
     String(uploadFile.type || "")
       .split(";")[0]
       .trim();
+
+  uploadStage = "Requesting signed upload URL";
 
   const prepared = await simpoChatPostRequest(
     "create_post_upload",
@@ -10127,12 +10135,46 @@ async function uploadSimpoChatPostMedia(
 
   await new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const startedAt = Date.now();
+
+    let settled = false;
+
+    function fail(message) {
+      if (settled) return;
+
+      settled = true;
+
+      reject(
+        new Error(
+          `${message} [Stage: ${uploadStage}]`
+        )
+      );
+    }
 
     xhr.open("PUT", uploadUrl, true);
-    xhr.setRequestHeader("Content-Type", uploadContentType);
+
+    xhr.setRequestHeader(
+      "Content-Type",
+      uploadContentType
+    );
+
+    xhr.upload.addEventListener("loadstart", () => {
+      uploadStage = "Sending video";
+      console.info(
+        "SimpoChat upload started:",
+        {
+          size: uploadFile.size,
+          type: uploadContentType,
+          online: navigator.onLine
+        }
+      );
+    });
 
     xhr.upload.addEventListener("progress", event => {
-      if (event.lengthComputable && typeof onProgress === "function") {
+      if (
+        event.lengthComputable &&
+        typeof onProgress === "function"
+      ) {
         const percent = Math.round(
           (event.loaded / event.total) * 100
         );
@@ -10141,28 +10183,66 @@ async function uploadSimpoChatPostMedia(
       }
     });
 
+    xhr.upload.addEventListener("error", () => {
+      fail(
+        "The browser could not send the media file."
+      );
+    });
+
+    xhr.upload.addEventListener("abort", () => {
+      fail("The media upload was aborted.");
+    });
+
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
+        uploadStage = "Upload completed";
+
+        console.info(
+          "SimpoChat upload completed:",
+          {
+            status: xhr.status,
+            durationMs: Date.now() - startedAt
+          }
+        );
+
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+
       } else {
-        reject(
-          new Error(
-            `Supabase media upload failed (${xhr.status}): ` +
-            (xhr.responseText || "Please try again.")
-          )
+        fail(
+          `Supabase rejected the upload (HTTP ${xhr.status}): ` +
+          (xhr.responseText || "No response details.")
         );
       }
     };
 
     xhr.onerror = () => {
-      reject(
-        new Error("Network error while uploading media. Please try again.")
+      fail(
+        `Network error (HTTP ${xhr.status}, readyState ${xhr.readyState}, ` +
+        `online ${navigator.onLine}).`
       );
     };
 
-    xhr.onabort = () => {
-      reject(new Error("Media upload was cancelled."));
+    xhr.ontimeout = () => {
+      fail("The media upload timed out.");
     };
+
+    xhr.onabort = () => {
+      fail("The media upload was cancelled.");
+    };
+
+    uploadStage = "Starting browser upload";
+
+    console.info(
+      "SimpoChat is sending upload request:",
+      {
+        size: uploadFile.size,
+        type: uploadContentType,
+        online: navigator.onLine
+      }
+    );
 
     xhr.send(uploadFile);
   });
