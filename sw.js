@@ -4,7 +4,7 @@
 
 "use strict";
 
-const CACHE_NAME = "simpochat-shell-v6";
+const CACHE_NAME = "simpochat-shell-v7";
 
 const APP_SHELL = [
   "./",
