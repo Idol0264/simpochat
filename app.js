@@ -344,10 +344,11 @@ async function simpoRetryFailedPendingPosts() {
 
 }
 
-
 window.addEventListener("online", () => {
 
   void simpoRetryFailedPendingPosts();
+
+  void simpoRetryFailedTemporaryChatTexts();
 
 });
 
