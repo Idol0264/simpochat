@@ -6995,6 +6995,137 @@ async function sendTemporaryChatText() {
 
 }
 
+const temporaryTextRetryLocks = new Set();
+
+async function simpoRetryFailedTemporaryChatTexts(
+  conversationId = null
+) {
+  if (!navigator.onLine) return;
+
+  const conversationIds = conversationId
+    ? [conversationId]
+    : Object.keys(state.messages || {});
+
+  for (const chatId of conversationIds) {
+    if (!navigator.onLine) break;
+
+    const messages = safeArray(state.messages[chatId]);
+
+    const failedMessages = messages.filter(message =>
+      message.type === "text" &&
+      message.failed === true &&
+      message.id &&
+      message.text
+    );
+
+    for (const localMessage of failedMessages) {
+      if (!navigator.onLine) break;
+
+      const lockKey = `${chatId}:${localMessage.id}`;
+
+      if (temporaryTextRetryLocks.has(lockKey)) continue;
+
+      temporaryTextRetryLocks.add(lockKey);
+
+      localMessage.pending = true;
+      localMessage.failed = false;
+
+      saveState();
+
+      if (
+        state.screen === "temporary-chat" &&
+        state.selectedTemporaryChatId === chatId
+      ) {
+        renderTemporaryChat(chatId);
+      }
+
+      try {
+        const data = await temporaryChatRequest(
+          "send_temporary_message",
+          {
+            conversation_id: chatId,
+            body: localMessage.text,
+            content_type: "text",
+            client_message_id: localMessage.id,
+            reply_to: localMessage.replyTo || null
+          }
+        );
+
+        const saved = data.message;
+
+        if (!saved || !saved.id) {
+          throw new Error("Message delivery was not confirmed.");
+        }
+
+        const currentMessages = safeArray(
+          state.messages[chatId]
+        );
+
+        const index = currentMessages.findIndex(
+          message => message.id === localMessage.id
+        );
+
+        const confirmed = {
+          id: saved.id,
+          member: saved.sender_id || state.currentUser.id,
+          sender: state.currentUser,
+          text: saved.body || saved.text || localMessage.text,
+          type: "text",
+          createdAt: saved.created_at || localMessage.createdAt,
+          replyTo: saved.reply_to || localMessage.replyTo || null,
+          pending: false,
+          failed: false
+        };
+
+        if (index !== -1) {
+          currentMessages[index] = confirmed;
+        } else if (
+          !currentMessages.some(message => message.id === saved.id)
+        ) {
+          currentMessages.push(confirmed);
+        }
+
+        state.messages[chatId] = currentMessages;
+
+        saveState();
+
+      } catch (error) {
+        console.warn(
+          "Temporary Chat automatic text retry failed:",
+          error
+        );
+
+        const currentMessages = safeArray(
+          state.messages[chatId]
+        );
+
+        const failed = currentMessages.find(
+          message => message.id === localMessage.id
+        );
+
+        if (failed) {
+          failed.pending = false;
+          failed.failed = true;
+        }
+
+        state.messages[chatId] = currentMessages;
+
+        saveState();
+
+      } finally {
+        temporaryTextRetryLocks.delete(lockKey);
+
+        if (
+          state.screen === "temporary-chat" &&
+          state.selectedTemporaryChatId === chatId
+        ) {
+          renderTemporaryChat(chatId);
+        }
+      }
+    }
+  }
+}
+
 
 async function createTemporaryVoiceMessage() {
   const conversationId = state.selectedTemporaryChatId;
