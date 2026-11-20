@@ -9017,7 +9017,7 @@ function startTemporaryChatSync(conversationId) {
         : true;
 
       const previousScrollTop = messagesBox?.scrollTop || 0;
-
+      await simpoRetryFailedTemporaryChatTexts(conversationId);
       await loadTemporaryChatMessages(conversationId);
 
       const newMessages = safeArray(
