@@ -24968,7 +24968,7 @@ function bindHeaderSearch() {
 
   document
     .querySelectorAll(
-      "[data-action='search']"
+      "[data-action='open-search']"
     )
     .forEach(button => {
 
