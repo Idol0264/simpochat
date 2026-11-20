@@ -8830,7 +8830,7 @@ function startTemporaryChatSync(conversationId) {
 
     }
 
-  }, 600);
+  }, 3000);
 
 }
 
