@@ -8737,6 +8737,103 @@ async function loadTemporaryChatMessages(conversationId) {
   return state.messages[conversationId];
 }
 
+let temporaryChatSyncTimer = null;
+let temporaryChatSyncInFlight = false;
+
+function startTemporaryChatSync(conversationId) {
+
+  if (temporaryChatSyncTimer) {
+    clearInterval(temporaryChatSyncTimer);
+    temporaryChatSyncTimer = null;
+  }
+
+  temporaryChatSyncTimer = setInterval(async () => {
+
+    if (
+      state.screen !== "temporary-chat" ||
+      state.selectedTemporaryChatId !== conversationId
+    ) {
+      clearInterval(temporaryChatSyncTimer);
+      temporaryChatSyncTimer = null;
+      return;
+    }
+
+    if (temporaryChatSyncInFlight) return;
+
+    temporaryChatSyncInFlight = true;
+
+    try {
+
+      const beforeIds = new Set(
+        safeArray(state.messages[conversationId])
+          .map(message => message.id)
+      );
+
+      const input = document.querySelector("#messageInput");
+      const messagesBox = document.querySelector("#messages");
+
+      const draft = input?.value || "";
+      const wasFocused = document.activeElement === input;
+
+      const wasAtBottom = messagesBox
+        ? messagesBox.scrollHeight -
+          messagesBox.scrollTop -
+          messagesBox.clientHeight < 60
+        : true;
+
+      const previousScrollTop = messagesBox?.scrollTop || 0;
+
+      await loadTemporaryChatMessages(conversationId);
+
+      const newMessages = safeArray(
+        state.messages[conversationId]
+      ).filter(message =>
+        !beforeIds.has(message.id) &&
+        !message.pending &&
+        !message.failed
+      );
+
+      if (newMessages.length) {
+
+        await renderTemporaryChat(conversationId);
+
+        const updatedInput =
+          document.querySelector("#messageInput");
+
+        const updatedMessages =
+          document.querySelector("#messages");
+
+        if (updatedInput) {
+          updatedInput.value = draft;
+
+          if (wasFocused) updatedInput.focus();
+        }
+
+        if (updatedMessages) {
+          updatedMessages.scrollTop = wasAtBottom
+            ? updatedMessages.scrollHeight
+            : previousScrollTop;
+        }
+
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "Temporary Chat sync:",
+        error
+      );
+
+    } finally {
+
+      temporaryChatSyncInFlight = false;
+
+    }
+
+  }, 600);
+
+}
+
 
 /* ---------------------------------------------------------
    TEMPORARY CHAT INBOX
