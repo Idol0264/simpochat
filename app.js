@@ -8652,6 +8652,7 @@ async function syncTemporaryChatInvites() {
 }
 
 
+
 async function loadTemporaryChatMessages(conversationId) {
 
   const data = await temporaryChatRequest(
@@ -8661,55 +8662,75 @@ async function loadTemporaryChatMessages(conversationId) {
     }
   );
 
-  state.messages[conversationId] =
-    safeArray(data.messages).map(message => {
+  // Keep locally pending and failed messages.
+  const localMessages = safeArray(
+    state.messages[conversationId]
+  ).filter(message =>
+    message.pending || message.failed
+  );
 
-      const contentType = message.content_type || "text";
-      const mediaUrls = Array.isArray(message.media_urls)
-        ? message.media_urls
-        : [];
+  const serverMessages = safeArray(
+    data.messages
+  ).map(message => {
 
-      const documentInfo = contentType === "document"
-        ? mediaUrls.find(item =>
-            item && typeof item === "object" && item.url
-          ) || null
-        : null;
+    const contentType = message.content_type || "text";
 
-      return {
-        id: message.id,
-        member: message.sender_id,
-        sender: message.sender || null,
+    const mediaUrls = Array.isArray(message.media_urls)
+      ? message.media_urls
+      : [];
 
-        text: message.body || message.text || "",
+    const documentInfo = contentType === "document"
+      ? mediaUrls.find(item =>
+          item && typeof item === "object" && item.url
+        ) || null
+      : null;
 
-        type:
-          contentType === "audio" ? "voice" :
-          contentType === "photos" ? "media" :
-          contentType === "document"
-            ? (
-                String(documentInfo?.mime_type || "")
-                  .startsWith("audio/")
-                  ? "audio-file"
-                  : "document"
-              )
-            : "text",
+    return {
+      id: message.id,
+      member: message.sender_id,
+      sender: message.sender || null,
+      text: message.body || message.text || "",
 
-        media: contentType === "photos"
-          ? mediaUrls.map(url => ({
-              type: "image",
-              url
-            }))
-          : [],
+      type:
+        contentType === "audio" ? "voice" :
+        contentType === "photos" ? "media" :
+        contentType === "document"
+          ? (
+              String(documentInfo?.mime_type || "")
+                .startsWith("audio/")
+                ? "audio-file"
+                : "document"
+            )
+          : "text",
 
-        document: documentInfo,
-        mediaUrl: message.media_url || "",
-        durationSeconds: message.duration_seconds || 0,
-        createdAt: message.created_at,
-        replyTo: message.reply_to || null,
-        read: true
-      };
+      media: contentType === "photos"
+        ? mediaUrls.map(url => ({
+            type: "image",
+            url
+          }))
+        : [],
 
-    });
+      document: documentInfo,
+      mediaUrl: message.media_url || "",
+      durationSeconds: message.duration_seconds || 0,
+      createdAt: message.created_at,
+      replyTo: message.reply_to || null,
+      read: true
+    };
+
+  });
+
+  // Combine server messages with unsent local messages.
+  state.messages[conversationId] = [
+    ...serverMessages,
+    ...localMessages.filter(local =>
+      !serverMessages.some(server =>
+        server.id === local.id
+      )
+    )
+  ].sort((a, b) =>
+    new Date(a.createdAt) - new Date(b.createdAt)
+  );
 
   saveState();
 
