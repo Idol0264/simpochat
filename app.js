@@ -6168,9 +6168,21 @@ function attachMessageLongPress() {
 
         const messageId = button.dataset.retryMessage;
 
-          // Temporary Chat failed text-message retry
-          if (temporaryMessage.type === "text") {
+        // Temporary Chat failed text-message retry
+        if (state.screen === "temporary-chat") {
+          const conversationId = state.selectedTemporaryChatId;
+          const temporaryMessages = safeArray(state.messages[conversationId]);
+          const temporaryMessage = temporaryMessages.find(
+            item => item.id === messageId
+          );
 
+          if (
+            !conversationId ||
+            !temporaryMessage ||
+            !temporaryMessage.failed
+          ) return;
+
+          if (temporaryMessage.type === "text") {
             button.disabled = true;
             button.textContent = "Sending…";
 
@@ -6181,7 +6193,6 @@ function attachMessageLongPress() {
             renderTemporaryChat(conversationId);
 
             try {
-
               const response = await temporaryChatRequest(
                 "send_temporary_message",
                 {
@@ -6210,36 +6221,53 @@ function attachMessageLongPress() {
               if (index !== -1) {
                 currentMessages[index] = {
                   id: saved.id,
-                  member: saved.sender_id,
+                  member: saved.sender_id || state.currentUser.id,
                   sender: state.currentUser,
                   text: saved.body || saved.text || temporaryMessage.text,
                   type: "text",
-                  createdAt: saved.created_at,
+                  createdAt: saved.created_at || temporaryMessage.createdAt,
                   replyTo: saved.reply_to || temporaryMessage.replyTo || null,
                   pending: false,
                   failed: false
                 };
+              } else if (!currentMessages.some(item => item.id === saved.id)) {
+                currentMessages.push({
+                  id: saved.id,
+                  member: saved.sender_id || state.currentUser.id,
+                  sender: state.currentUser,
+                  text: saved.body || saved.text || temporaryMessage.text,
+                  type: "text",
+                  createdAt: saved.created_at || new Date().toISOString(),
+                  replyTo: saved.reply_to || temporaryMessage.replyTo || null,
+                  pending: false,
+                  failed: false
+                });
               }
 
               state.messages[conversationId] = currentMessages;
-
               saveState();
               renderTemporaryChat(conversationId);
-
             } catch (error) {
-
               console.error("Temporary text retry failed:", error);
 
-              temporaryMessage.pending = false;
-              temporaryMessage.failed = true;
+              const currentMessages = safeArray(state.messages[conversationId]);
+              const failedMessage = currentMessages.find(
+                item => item.id === messageId
+              );
 
+              if (failedMessage) {
+                failedMessage.pending = false;
+                failedMessage.failed = true;
+              }
+
+              state.messages[conversationId] = currentMessages;
               saveState();
               renderTemporaryChat(conversationId);
-
             }
 
             return;
           }
+        }
 
         // Temporary Chat offline voice retry
         if (state.screen === "temporary-chat") {
