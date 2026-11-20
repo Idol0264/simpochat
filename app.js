@@ -9130,6 +9130,30 @@ const group =
 
 async function renderTemporaryChat(conversationId) {
 
+  // Always retrieve the latest messages from Supabase.
+  try {
+
+    await loadTemporaryChatMessages(
+      conversationId
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Temporary Chat messages could not be loaded:",
+      error
+    );
+
+  }
+
+  // Prevent an older request from rendering the wrong chat.
+  if (
+    state.screen !== "temporary-chat" ||
+    state.selectedTemporaryChatId !== conversationId
+  ) {
+    return;
+  }
+
   const chat = safeArray(
     state.temporaryChats
   ).find(item => item.id === conversationId);
