@@ -9451,6 +9451,9 @@ async function renderTemporaryChat(conversationId) {
     messagesBox.scrollTop = messagesBox.scrollHeight;
   }
 
+  // Start automatic three-second message synchronization.
+  startTemporaryChatSync(conversationId);
+
 }
 
 
