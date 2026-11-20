@@ -6322,10 +6322,12 @@ function attachMessageLongPress() {
 
             state.messages[conversationId] = currentMessages;
 
+
             saveState();
             renderTemporaryChat(conversationId);
 
-          return;
+            return;
+          }
         }
 
         // Existing normal group-chat retry system
