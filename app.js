@@ -21641,7 +21641,21 @@ case "mute-temporary-inviter":
       );
 
       break;
-     
+
+
+    case "temporary-voice-call":
+
+      startTemporaryChatCall("voice");
+
+      break;
+
+
+    case "temporary-video-call":
+
+      startTemporaryChatCall("video");
+
+      break;
+
      
      case "voice-message":
 
