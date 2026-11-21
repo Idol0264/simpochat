@@ -3950,9 +3950,19 @@ document.addEventListener("input", event => {
         warning.textContent = "Group already created";
 
         feedback.appendChild(warning);
+         const suggestionLabel =
+            document.createElement("div");
 
-        const suggestions =
-          document.createElement("div");
+         suggestionLabel.className =
+            "group-name-suggestion-label";
+
+         suggestionLabel.textContent =
+            "Available name options — choose one:";
+
+         feedback.appendChild(suggestionLabel);
+
+         const suggestions =
+            document.createElement("div");
 
         suggestions.className =
           "group-name-suggestions";
