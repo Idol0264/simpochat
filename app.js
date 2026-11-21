@@ -3291,23 +3291,27 @@ function renderNewGroup() {
 
       <!-- GROUP NAME -->
 
-      <div class="field">
-
-        <label
-          for="newGroupName"
-        >
-          Group name
-        </label>
-
-        <input
-          id="newGroupName"
-          maxlength="80"
-          autocomplete="off"
-          placeholder="Enter group name"
-          required
-        >
-
-      </div>
+    <div class="field">
+      
+      <label for="newGroupName">
+        Group name
+      </label>
+      
+      <input
+        id="newGroupName"
+        maxlength="80"
+        autocomplete="off"
+        placeholder="Enter group name"
+        required
+      >
+      
+      <div
+        id="groupNameFeedback"
+        class="group-name-feedback"
+        aria-live="polite"
+      ></div>
+  
+   </div>
 
 
       
