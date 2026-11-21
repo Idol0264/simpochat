@@ -10837,6 +10837,11 @@ body.admin-mode .fab {
   color: #6345c8;
 }
 
+.admin-group-type.verified-business {
+  background: #e0f0ff;
+  color: #1769aa;
+}
+
 .admin-group-type.community {
   background: #e4f5e9;
   color: #18743b;
