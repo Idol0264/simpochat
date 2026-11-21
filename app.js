@@ -7013,10 +7013,10 @@ async function simpoRetryFailedTemporaryChatTexts(
     const messages = safeArray(state.messages[chatId]);
 
     const failedMessages = messages.filter(message =>
-      message.type === "text" &&
+      (message.type === "text" || message.type === "voice") &&
       message.failed === true &&
       message.id &&
-      message.text
+      (message.type === "voice" || message.text)
     );
 
     for (const localMessage of failedMessages) {
@@ -7033,34 +7033,58 @@ async function simpoRetryFailedTemporaryChatTexts(
 
       saveState();
 
-      if (
-        state.screen === "temporary-chat" &&
-        state.selectedTemporaryChatId === chatId
-      ) {
-        renderTemporaryChat(chatId);
-      }
-
       try {
-        const data = await temporaryChatRequest(
-          "send_temporary_message",
-          {
+        let payload;
+
+        if (localMessage.type === "voice") {
+          const audioBlob = await simpoGetOfflineAudio(
+            localMessage.localAudioKey || localMessage.id
+          );
+
+          if (!audioBlob) {
+            throw new Error("Saved voice recording unavailable.");
+          }
+
+          const audioDataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(
+              new Error("Unable to prepare voice recording.")
+            );
+            reader.readAsDataURL(audioBlob);
+          });
+
+          payload = {
+            conversation_id: chatId,
+            content_type: "audio",
+            audio_data_url: audioDataUrl,
+            duration_seconds: localMessage.durationSeconds || 0,
+            client_message_id: localMessage.id,
+            reply_to: localMessage.replyTo || null
+          };
+
+        } else {
+          payload = {
             conversation_id: chatId,
             body: localMessage.text,
             content_type: "text",
             client_message_id: localMessage.id,
             reply_to: localMessage.replyTo || null
-          }
+          };
+        }
+
+        const data = await temporaryChatRequest(
+          "send_temporary_message",
+          payload
         );
 
         const saved = data.message;
 
         if (!saved || !saved.id) {
-          throw new Error("Message delivery was not confirmed.");
+          throw new Error("Message delivery not confirmed.");
         }
 
-        const currentMessages = safeArray(
-          state.messages[chatId]
-        );
+        const currentMessages = safeArray(state.messages[chatId]);
 
         const index = currentMessages.findIndex(
           message => message.id === localMessage.id
@@ -7070,8 +7094,15 @@ async function simpoRetryFailedTemporaryChatTexts(
           id: saved.id,
           member: saved.sender_id || state.currentUser.id,
           sender: state.currentUser,
-          text: saved.body || saved.text || localMessage.text,
-          type: "text",
+          text: localMessage.type === "voice"
+            ? (saved.body || saved.text || "")
+            : (saved.body || saved.text || localMessage.text),
+          type: localMessage.type,
+          ...(localMessage.type === "voice" ? {
+            mediaUrl: saved.media_url || localMessage.mediaUrl || "",
+            durationSeconds: saved.duration_seconds ||
+              localMessage.durationSeconds || 0
+          } : {}),
           createdAt: saved.created_at || localMessage.createdAt,
           replyTo: saved.reply_to || localMessage.replyTo || null,
           pending: false,
@@ -7080,25 +7111,35 @@ async function simpoRetryFailedTemporaryChatTexts(
 
         if (index !== -1) {
           currentMessages[index] = confirmed;
-        } else if (
-          !currentMessages.some(message => message.id === saved.id)
-        ) {
+        } else if (!currentMessages.some(
+          message => message.id === saved.id
+        )) {
           currentMessages.push(confirmed);
         }
 
-        state.messages[chatId] = currentMessages;
+        currentMessages.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
 
+        state.messages[chatId] = currentMessages;
         saveState();
 
-      } catch (error) {
-        console.warn(
-          "Temporary Chat automatic text retry failed:",
-          error
-        );
+        if (localMessage.type === "voice" && saved.media_url) {
+          await simpoDeleteOfflineAudio(
+            localMessage.localAudioKey || localMessage.id
+          ).catch(error => {
+            console.warn("Audio cleanup failed:", error);
+          });
 
-        const currentMessages = safeArray(
-          state.messages[chatId]
-        );
+          if (localMessage.mediaUrl?.startsWith("blob:")) {
+            URL.revokeObjectURL(localMessage.mediaUrl);
+          }
+        }
+
+      } catch (error) {
+        console.warn("Automatic Temporary Chat retry failed:", error);
+
+        const currentMessages = safeArray(state.messages[chatId]);
 
         const failed = currentMessages.find(
           message => message.id === localMessage.id
@@ -7110,7 +7151,6 @@ async function simpoRetryFailedTemporaryChatTexts(
         }
 
         state.messages[chatId] = currentMessages;
-
         saveState();
 
       } finally {
