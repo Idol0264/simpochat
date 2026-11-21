@@ -4166,6 +4166,16 @@ async function createGroup() {
           "Group already created";
 
         feedback.appendChild(warning);
+         const suggestionLabel =
+            document.createElement("div");
+         
+         suggestionLabel.className =
+            "group-name-suggestion-label";
+         
+         suggestionLabel.textContent =
+            "Available name options — choose one:";
+         
+        feedback.appendChild(suggestionLabel);
 
         const suggestions =
           document.createElement("div");
