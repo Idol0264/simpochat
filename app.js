@@ -21543,23 +21543,15 @@ case "mute-temporary-inviter":
           break;
         }
 
-        const icon =
-          prompt("Enter a group emoji or icon:", "💬") || "💬";
+        const categoryText = prompt(
+          "Enter the official group category:"
+        );
 
-        const categoryText =
-          prompt("Enter group categories separated by commas:", "");
+        if (!categoryText || !categoryText.trim()) {
+          break;
+        }
 
-        const category = categoryText
-          ? categoryText.split(",").map(item => item.trim()).filter(Boolean)
-          : [];
-
-        const join_mode = confirm(
-          "Should members be able to join directly?\n\nOK = Open joining\nCancel = Approval required"
-        ) ? "open" : "approval";
-
-        const approval_mode = confirm(
-          "Should any group admin approve join requests?\n\nOK = Any admin\nCancel = Creator only"
-        ) ? "admins" : "creator";
+        const category = [categoryText.trim()];
 
         const result = await callSimpoAdmin(
           "admin_create_official_group",
