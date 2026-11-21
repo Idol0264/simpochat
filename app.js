@@ -15653,44 +15653,62 @@ async function renderSearchResults() {
   }
 
 
-  container.innerHTML = `
-
-    ${
-      groups.length
-        ? `
-          <div class="group-list">
-
-            ${groups
-              .map(
-                group =>
-                  renderSearchGroup(
-                    group
-                  )
-              )
-              .join("")}
-
-          </div>
-        `
-        : `
-          <div class="empty">
-
-            <div class="empty-icon">
-              ⌕
-            </div>
-
-            <h3>
-              No groups found
-            </h3>
-
-            <p>
-              Try another group name or category.
-            </p>
-
-          </div>
-        `
-    }
-
+  const renderGroupList = list => `
+    <div class="group-list">
+      ${list.map(group => renderSearchGroup(group)).join("")}
+    </div>
   `;
+
+  if (query) {
+    // Search mode: display all matching group types.
+    container.innerHTML = groups.length
+      ? renderGroupList(groups)
+      : `
+        <div class="empty">
+          <div class="empty-icon">⌕</div>
+          <h3>No groups found</h3>
+          <p>Try another group name or category.</p>
+        </div>
+      `;
+  } else {
+    // Browse mode: separate joined groups from discoverable groups.
+    const joinedBusiness = groups.filter(
+      group => group.isVerifiedBusiness && group.joinStatus === "member"
+    );
+
+    const joinedOfficial = groups.filter(
+      group => group.isOfficial && group.joinStatus === "member"
+    );
+
+    const moreOfficial = groups.filter(
+      group => group.isOfficial && group.joinStatus !== "member"
+    );
+
+    const moreBusiness = groups.filter(
+      group => group.isVerifiedBusiness && group.joinStatus !== "member"
+    );
+
+    const section = (heading, list) => list.length
+      ? `
+        <section class="directory-section">
+          <div class="directory-section-title">${heading}</div>
+          ${renderGroupList(list)}
+        </section>
+      `
+      : "";
+
+    container.innerHTML =
+      section("VERIFIED BUSINESS GROUPS", joinedBusiness) +
+      section("OFFICIAL GROUPS", joinedOfficial) +
+      section("MORE", [...moreOfficial, ...moreBusiness]) ||
+      `
+        <div class="empty">
+          <div class="empty-icon">⌕</div>
+          <h3>No groups to explore yet</h3>
+          <p>Official and verified business groups will appear here.</p>
+        </div>
+      `;
+  }
 
 
   container
