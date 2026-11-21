@@ -15858,7 +15858,8 @@ async function renderSearchResults() {
   `;
 
   if (query) {
-    // Search mode: display all matching group types.
+    // Search results are already ranked by Supabase:
+    // Official, Verified Business, then Ordinary.
     container.innerHTML = groups.length
       ? renderGroupList(groups)
       : `
@@ -15869,27 +15870,44 @@ async function renderSearchResults() {
         </div>
       `;
   } else {
-    // Browse mode: separate joined groups from discoverable groups.
+    // Directory:
+    // 1. Joined Verified Business Groups
+    // 2. Joined Official Groups
+    // 3. More Verified Business Groups
+    // 4. More Official Groups
+    //
+    // Ordinary groups stay on the Home screen.
+
     const joinedBusiness = groups.filter(
-      group => group.isVerifiedBusiness && group.joinStatus === "member"
+      group =>
+        group.isVerifiedBusiness &&
+        group.joinStatus === "member"
     );
 
     const joinedOfficial = groups.filter(
-      group => group.isOfficial && group.joinStatus === "member"
-    );
-
-    const moreOfficial = groups.filter(
-      group => group.isOfficial && group.joinStatus !== "member"
+      group =>
+        group.isOfficial &&
+        group.joinStatus === "member"
     );
 
     const moreBusiness = groups.filter(
-      group => group.isVerifiedBusiness && group.joinStatus !== "member"
+      group =>
+        group.isVerifiedBusiness &&
+        group.joinStatus !== "member"
+    );
+
+    const moreOfficial = groups.filter(
+      group =>
+        group.isOfficial &&
+        group.joinStatus !== "member"
     );
 
     const section = (heading, list) => list.length
       ? `
         <section class="directory-section">
-          <div class="directory-section-title">${heading}</div>
+          <div class="directory-section-title">
+            ${heading}
+          </div>
           ${renderGroupList(list)}
         </section>
       `
@@ -15898,12 +15916,13 @@ async function renderSearchResults() {
     container.innerHTML =
       section("VERIFIED BUSINESS GROUPS", joinedBusiness) +
       section("OFFICIAL GROUPS", joinedOfficial) +
-      section("MORE", [...moreOfficial, ...moreBusiness]) ||
+      section("MORE VERIFIED BUSINESS GROUPS TO EXPLORE", moreBusiness) +
+      section("MORE OFFICIAL GROUPS TO EXPLORE", moreOfficial) ||
       `
         <div class="empty">
           <div class="empty-icon">⌕</div>
           <h3>No groups to explore yet</h3>
-          <p>Official and verified business groups will appear here.</p>
+          <p>Verified Business and Official Groups will appear here.</p>
         </div>
       `;
   }
