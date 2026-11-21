@@ -17101,8 +17101,13 @@ async function renderAdminSection(section) {
 
           const matchesFilter =
             filter === "all" ||
-            (filter === "official" && group.is_official) ||
-            (filter === "community" && !group.is_official);
+            (filter === "official" &&
+              group.is_official === true) ||
+            (filter === "verified_business" &&
+              group.is_verified_business === true) ||
+            (filter === "community" &&
+              group.is_official !== true &&
+              group.is_verified_business !== true);
 
           return matchesSearch && matchesFilter;
 
