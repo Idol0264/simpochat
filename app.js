@@ -16560,6 +16560,10 @@ async function renderAdminAdministratorWorkspace(
     const workspace = result.workspace || {};
     const profile = workspace.profile || {};
 
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
+
     const occupation = Array.isArray(profile.occupation)
       ? profile.occupation.join(", ")
       : profile.occupation || "Not provided";
