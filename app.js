@@ -3885,6 +3885,115 @@ function renderNewGroup() {
 
 
 /* ---------------------------------------------------------
+   LIVE GROUP NAME AVAILABILITY CHECK
+   --------------------------------------------------------- */
+
+let groupNameCheckTimer = null;
+let groupNameCheckNumber = 0;
+
+document.addEventListener("input", event => {
+  if (!event.target || event.target.id !== "newGroupName") {
+    return;
+  }
+
+  const input = event.target;
+  const feedback = document.getElementById("groupNameFeedback");
+
+  if (!feedback) return;
+
+  clearTimeout(groupNameCheckTimer);
+
+  const name = input.value.trim();
+  const checkNumber = ++groupNameCheckNumber;
+
+  feedback.replaceChildren();
+
+  if (name.length < 2) return;
+
+  groupNameCheckTimer = setTimeout(async () => {
+    const sessionToken =
+      localStorage.getItem(SESSION_TOKEN_KEY);
+
+    if (!sessionToken) return;
+
+    try {
+      const response = await fetch(
+        SIMPOCHAT_ACCESS_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({
+            action: "check_group_name",
+            name
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        checkNumber !== groupNameCheckNumber ||
+        input.value.trim() !== name
+      ) return;
+
+      feedback.replaceChildren();
+
+      if (!response.ok) return;
+
+      if (data.available === false) {
+        const warning = document.createElement("div");
+
+        warning.className = "group-name-conflict";
+        warning.textContent = "Group already created";
+
+        feedback.appendChild(warning);
+
+        const suggestions =
+          document.createElement("div");
+
+        suggestions.className =
+          "group-name-suggestions";
+
+        (data.suggestions || []).slice(0, 3)
+          .forEach(suggestion => {
+            const option =
+              document.createElement("button");
+
+            option.type = "button";
+            option.className =
+              "group-name-suggestion";
+
+            option.textContent = suggestion;
+
+            option.addEventListener("click", () => {
+              input.value = suggestion;
+              feedback.replaceChildren();
+              input.focus();
+              input.dispatchEvent(
+                new Event("input", { bubbles: true })
+              );
+            });
+
+            suggestions.appendChild(option);
+          });
+
+        feedback.appendChild(suggestions);
+      }
+
+    } catch (error) {
+      console.error(
+        "Group name check failed:",
+        error
+      );
+    }
+  }, 450);
+});
+
+
+/* ---------------------------------------------------------
    CREATE GROUP
    --------------------------------------------------------- */
 
