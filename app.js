@@ -21550,7 +21550,95 @@ case "mute-temporary-inviter":
       break;
     }
 
-        
+
+    case "admin-create-verified-business-group": {
+
+      try {
+
+        const access = await callSimpoAdmin(
+          "admin_status"
+        );
+
+        if (!access.can_create_verified_business_accounts) {
+          alert("You do not have permission to create Verified Business Groups.");
+          break;
+        }
+
+        const name = prompt(
+          "Enter the verified business group name:"
+        );
+
+        if (!name || !name.trim()) {
+          break;
+        }
+
+        const managerEmail = prompt(
+          "Enter the business manager's registered email address:"
+        );
+
+        if (
+          !managerEmail ||
+          !managerEmail.trim() ||
+          !managerEmail.includes("@")
+        ) {
+          alert("A valid manager email address is required.");
+          break;
+        }
+
+        const icon =
+          prompt("Enter a group emoji or icon:", "🏢") || "🏢";
+
+        const categoryText = prompt(
+          "Enter business categories separated by commas:",
+          ""
+        );
+
+        const category = categoryText
+          ? categoryText.split(",").map(item => item.trim()).filter(Boolean)
+          : [];
+
+        const result = await callSimpoAdmin(
+          "admin_create_verified_business_group",
+          {
+            name: name.trim(),
+            manager_email: managerEmail.trim().toLowerCase(),
+            icon,
+            category
+          }
+        );
+
+        if (!result.group) {
+          throw new Error(
+            "The Verified Business Group was not returned."
+          );
+        }
+
+        alert(
+          "Verified Business Group created successfully."
+        );
+
+        state.screen = "admin-groups";
+        saveState();
+        render();
+
+      } catch (error) {
+
+        console.error(
+          "Verified Business Group creation failed:",
+          error
+        );
+
+        alert(
+          error.message ||
+          "Unable to create Verified Business Group."
+        );
+
+      }
+
+      break;
+    }
+
+
     case "admin-section": {
 
       const section =
