@@ -15625,11 +15625,17 @@ async function renderSearchResults() {
             creatorId:
               remoteGroup.creator_id,
 
-             isOfficial:
-                remoteGroup.is_official === true,
-             
-            remote:
-              true
+            isOfficial:
+              remoteGroup.is_official === true,
+
+            isVerifiedBusiness:
+               remoteGroup.is_verified_business === true,
+
+            joinStatus:
+               remoteGroup.join_status || "available",
+
+             remote:
+                true
           })
         );
 
