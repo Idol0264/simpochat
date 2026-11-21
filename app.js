@@ -21557,10 +21557,7 @@ case "mute-temporary-inviter":
           "admin_create_official_group",
           {
             name: name.trim(),
-            icon,
-            category,
-            join_mode,
-            approval_mode
+            category
           }
         );
 
