@@ -12476,3 +12476,14 @@ body:has(.search-page) .fab {
 .group-name-suggestion:active {
   opacity: .7;
 }
+
+/* Available group name options label */
+
+.group-name-suggestion-label {
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.4;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
