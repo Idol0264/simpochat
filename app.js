@@ -17056,6 +17056,7 @@ async function renderAdminSection(section) {
         <select id="adminGroupFilter">
           <option value="all">All groups</option>
           <option value="official">Official groups</option>
+          <option value="verified_business">Verified Business groups</option>
           <option value="community">Community groups</option>
         </select>
 
