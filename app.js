@@ -16988,11 +16988,18 @@ async function renderAdminSection(section) {
       const groups = safeArray(result.groups);
 
       const officialCount = groups.filter(
-        group => group.is_official
+        group => group.is_official === true
       ).length;
 
-      const communityCount =
-        groups.length - officialCount;
+      const businessCount = groups.filter(
+        group => group.is_verified_business === true
+      ).length;
+
+      const communityCount = groups.filter(
+        group =>
+          group.is_official !== true &&
+          group.is_verified_business !== true
+      ).length;
 
       container.innerHTML = `
       
