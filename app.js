@@ -17138,12 +17138,16 @@ async function renderAdminSection(section) {
                       </strong>
 
                       <span class="admin-group-type ${
-                        group.is_official
+                        group.is_official === true
                           ? "official"
+                          : group.is_verified_business === true
+                          ? "verified-business"
                           : "community"
                       }">
-                        ${group.is_official
+                        ${group.is_official === true
                           ? "Official"
+                          : group.is_verified_business === true
+                          ? "Verified Business"
                           : "Community"}
                       </span>
 
