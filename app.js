@@ -17023,7 +17023,12 @@ async function renderAdminSection(section) {
       <strong>${officialCount}</strong>
       <small>Official</small>
       </div>
-      
+
+      <div class="admin-user-stat">
+      <strong>${businessCount}</strong>
+      <small>Verified Business</small>
+      </div>
+
       <div class="admin-user-stat">
       <strong>${communityCount}</strong>
       <small>Community</small>
