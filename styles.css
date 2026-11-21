@@ -12428,3 +12428,8 @@ html[data-theme="dark"] .simpo-access-card {
 .post-viewer-video .simpo-video-timeline {
   gap: 5px;
 }
+
+/* Hide the floating + button while the Search page is open */
+body:has(.search-page) .fab {
+  display: none !important;
+}
