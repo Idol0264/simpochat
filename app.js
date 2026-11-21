@@ -4027,6 +4027,71 @@ async function createGroup() {
       !response.ok ||
       !data.group
     ) {
+      const feedback =
+        $("#groupNameFeedback");
+
+      if (
+        response.status === 409 &&
+        Array.isArray(data.suggestions) &&
+        feedback
+      ) {
+        feedback.replaceChildren();
+
+        const warning =
+          document.createElement("div");
+
+        warning.className =
+          "group-name-conflict";
+
+        warning.textContent =
+          "Group already created";
+
+        feedback.appendChild(warning);
+
+        const suggestions =
+          document.createElement("div");
+
+        suggestions.className =
+          "group-name-suggestions";
+
+        data.suggestions
+          .slice(0, 3)
+          .forEach(suggestion => {
+            const option =
+              document.createElement("button");
+
+            option.type = "button";
+
+            option.className =
+              "group-name-suggestion";
+
+            option.textContent =
+              String(suggestion);
+
+            option.addEventListener("click", () => {
+              input.value =
+                String(suggestion);
+
+              feedback.replaceChildren();
+              input.focus();
+            });
+
+            suggestions.appendChild(option);
+          });
+
+        if (suggestions.children.length) {
+          feedback.appendChild(suggestions);
+
+          input.addEventListener(
+            "input",
+            () => feedback.replaceChildren(),
+            { once: true }
+          );
+
+          return;
+        }
+      }
+
       throw new Error(
         data.message ||
         "Unable to create group."
