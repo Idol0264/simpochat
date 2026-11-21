@@ -12433,3 +12433,46 @@ html[data-theme="dark"] .simpo-access-card {
 body:has(.search-page) .fab {
   display: none !important;
 }
+
+/* Duplicate group-name feedback */
+
+.group-name-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.group-name-conflict {
+  color: #dc3545;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.group-name-suggestions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.group-name-suggestion {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #198754;
+  padding: 1px 0;
+  margin: 0;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-name-suggestion:active {
+  opacity: .7;
+}
