@@ -17058,6 +17058,19 @@ async function renderAdminSection(section) {
             : ""
         }
 
+        ${
+          access.can_create_verified_business_accounts
+            ? `
+              <button
+                class="settings-button admin-create-business-button"
+                data-action="admin-create-verified-business-group"
+              >
+                + Verified Business Group
+              </button>
+            `
+            : ""
+        }
+
         <select id="adminGroupFilter">
           <option value="all">All groups</option>
           <option value="official">Official groups</option>
