@@ -16665,6 +16665,63 @@ async function renderAdminAdministratorWorkspace(
 
         </div>
 
+        ${
+          !workspace.read_only
+            ? `
+              <div class="settings-section">
+
+                <div class="section-title">
+                  Group Creation
+                </div>
+
+                <div class="section-note">
+                  Create and establish groups on SimpoChat.
+                </div>
+
+                ${
+                  access.can_create_official_groups
+                    ? `
+                      <button
+                        type="button"
+                        class="settings-button"
+                        data-action="admin-create-official-group"
+                      >
+                        + Create Official Group
+                      </button>
+                    `
+                    : ""
+                }
+
+                ${
+                  access.can_create_verified_business_accounts
+                    ? `
+                      <button
+                        type="button"
+                        class="settings-button"
+                        data-action="admin-create-verified-business-group"
+                      >
+                        + Create Verified Business Group
+                      </button>
+                    `
+                    : ""
+                }
+
+                ${
+                  !access.can_create_official_groups &&
+                  !access.can_create_verified_business_accounts
+                    ? `
+                      <p class="section-note">
+                        You do not have group creation permissions.
+                      </p>
+                    `
+                    : ""
+                }
+
+              </div>
+            `
+            : ""
+        }
+
       </div>
 
       <button
