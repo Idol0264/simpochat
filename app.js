@@ -16486,6 +16486,73 @@ if (
    REPORT MANAGEMENT
    ========================================================= */
 
+function chooseGroupProfilePhoto() {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp,image/gif";
+    input.style.display = "none";
+
+    const finish = (value) => {
+      input.remove();
+      resolve(value);
+    };
+
+    input.addEventListener("cancel", () => finish(""), { once: true });
+
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+
+      if (!file) {
+        finish("");
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        input.remove();
+        reject(new Error("Choose a JPG, PNG, WEBP or GIF image."));
+        return;
+      }
+
+      if (file.size <= 0 || file.size > 6 * 1024 * 1024) {
+        input.remove();
+        reject(new Error("Choose a group photo smaller than 6 MB."));
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (typeof reader.result !== "string") {
+          input.remove();
+          reject(new Error("The selected group photo could not be read."));
+          return;
+        }
+
+        finish(reader.result);
+      };
+
+      reader.onerror = () => {
+        input.remove();
+        reject(new Error("The selected group photo could not be read."));
+      };
+
+      reader.readAsDataURL(file);
+    }, { once: true });
+
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+
 async function callSimpoAdmin(action, payload = {}) {
 
   const { data, error } =
