@@ -16488,17 +16488,69 @@ if (
 
 function chooseGroupProfilePhoto() {
   return new Promise((resolve, reject) => {
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = [
+      "position:fixed",
+      "left:16px",
+      "right:16px",
+      "bottom:20px",
+      "z-index:999999",
+      "display:flex",
+      "flex-direction:column",
+      "gap:10px",
+      "padding:16px",
+      "border-radius:16px",
+      "background:#211b2d",
+      "color:#fff",
+      "box-shadow:0 8px 32px rgba(0,0,0,.4)",
+      "font:14px sans-serif"
+    ].join(";");
+
+    const message = document.createElement("div");
+    message.textContent =
+      "Choose a group profile photo from your phone.";
+    message.style.cssText = "text-align:center;line-height:1.4;";
+
+    const chooseLabel = document.createElement("label");
+    chooseLabel.textContent = "Choose Photo";
+    chooseLabel.style.cssText = [
+      "display:block",
+      "padding:14px",
+      "border-radius:10px",
+      "background:#8b5cf6",
+      "color:#fff",
+      "font-weight:700",
+      "text-align:center",
+      "cursor:pointer"
+    ].join(";");
+
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/jpeg,image/png,image/webp,image/gif";
-    input.style.display = "none";
+    input.setAttribute("aria-label", "Choose group profile photo");
+    input.style.cssText =
+      "position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;";
+
+    chooseLabel.appendChild(input);
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.cssText =
+      "padding:11px;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:transparent;color:#fff;font:inherit;";
 
     const finish = (value) => {
-      input.remove();
+      wrapper.remove();
       resolve(value);
     };
 
-    input.addEventListener("cancel", () => finish(""), { once: true });
+    cancelButton.addEventListener(
+      "click", () => finish(""), { once: true }
+    );
+
+    input.addEventListener(
+      "cancel", () => finish(""), { once: true }
+    );
 
     input.addEventListener("change", () => {
       const file = input.files?.[0];
@@ -16516,13 +16568,13 @@ function chooseGroupProfilePhoto() {
       ];
 
       if (!allowedTypes.includes(file.type)) {
-        input.remove();
+        wrapper.remove();
         reject(new Error("Choose a JPG, PNG, WEBP or GIF image."));
         return;
       }
 
       if (file.size <= 0 || file.size > 6 * 1024 * 1024) {
-        input.remove();
+        wrapper.remove();
         reject(new Error("Choose a group photo smaller than 6 MB."));
         return;
       }
@@ -16531,7 +16583,7 @@ function chooseGroupProfilePhoto() {
 
       reader.onload = () => {
         if (typeof reader.result !== "string") {
-          input.remove();
+          wrapper.remove();
           reject(new Error("The selected group photo could not be read."));
           return;
         }
@@ -16540,15 +16592,17 @@ function chooseGroupProfilePhoto() {
       };
 
       reader.onerror = () => {
-        input.remove();
+        wrapper.remove();
         reject(new Error("The selected group photo could not be read."));
       };
 
       reader.readAsDataURL(file);
     }, { once: true });
 
-    document.body.appendChild(input);
-    input.click();
+    wrapper.appendChild(message);
+    wrapper.appendChild(chooseLabel);
+    wrapper.appendChild(cancelButton);
+    document.body.appendChild(wrapper);
   });
 }
 
