@@ -21618,21 +21618,30 @@ case "mute-temporary-inviter":
           break;
         }
 
-        const category = [categoryText.trim()];
+        alert("Choose the Official Group profile photo.");
+
+        const photoDataUrl = await chooseGroupProfilePhoto();
+
+        if (!photoDataUrl) {
+          alert("A group photo is required. The group was not created.");
+          break;
+        }
 
         const result = await callSimpoAdmin(
           "admin_create_official_group",
           {
             name: name.trim(),
-            category
+            category: [categoryText.trim()],
+            icon: "",
+            photo_data_url: photoDataUrl
           }
         );
 
-        if (!result.group) {
-          throw new Error("The official group was not returned.");
+        if (!result.group || !result.group.photo_url) {
+          throw new Error("The Official Group or its profile photo was not saved.");
         }
 
-        alert("Official group created successfully.");
+        alert("Official Group created successfully.");
 
         state.screen = "admin-groups";
         saveState();
@@ -21689,9 +21698,6 @@ case "mute-temporary-inviter":
           break;
         }
 
-        const icon =
-          prompt("Enter a group emoji or icon:", "🏢") || "🏢";
-
         const categoryText = prompt(
           "Enter business categories separated by commas:",
           ""
@@ -21701,19 +21707,29 @@ case "mute-temporary-inviter":
           ? categoryText.split(",").map(item => item.trim()).filter(Boolean)
           : [];
 
+        alert("Choose the Verified Business Group profile photo.");
+
+        const photoDataUrl = await chooseGroupProfilePhoto();
+
+        if (!photoDataUrl) {
+          alert("A group photo is required. The group was not created.");
+          break;
+        }
+
         const result = await callSimpoAdmin(
           "admin_create_verified_business_group",
           {
             name: name.trim(),
             manager_email: managerEmail.trim().toLowerCase(),
-            icon,
-            category
+            category,
+            icon: "",
+            photo_data_url: photoDataUrl
           }
         );
 
-        if (!result.group) {
+        if (!result.group || !result.group.photo_url) {
           throw new Error(
-            "The Verified Business Group was not returned."
+            "The Verified Business Group or its profile photo was not saved."
           );
         }
 
