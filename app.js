@@ -21492,6 +21492,29 @@ if (
 
 
     /* -------------------------------------
+       OFFICIAL / BUSINESS MESSAGE INTERACTIONS
+       ------------------------------------- */
+
+    if (target.dataset.messageInteraction) {
+
+      const messageId = target.dataset.messageId;
+
+      if (!messageId) return;
+
+      if (target.dataset.messageInteraction === "react") {
+        openMessageReactions(messageId);
+        return;
+      }
+
+      if (target.dataset.messageInteraction === "comment") {
+        openMessageComments(messageId);
+        return;
+      }
+
+    }
+
+
+    /* -------------------------------------
        TEMPORARY CHAT INVITE
        ------------------------------------- */
 
