@@ -12492,3 +12492,51 @@ body:has(.search-page) .fab {
   margin-bottom: 2px;
   font-weight: 500;
 }
+
+/* OFFICIAL AND VERIFIED BUSINESS GROUP MESSAGE ACTIONS */
+
+.announcement-message-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 0 0 13px 13px;
+  background: rgba(130, 110, 190, 0.10);
+  border-top: 1px solid rgba(130, 110, 190, 0.12);
+}
+
+.announcement-message-actions button {
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.announcement-message-actions button + button {
+  border-left: 1px solid rgba(130, 110, 190, 0.18);
+}
+
+.announcement-message-actions button:active {
+  background: rgba(130, 110, 190, 0.15);
+}
+
+.announcement-message-actions button span {
+  font-size: 17px;
+}
+
+.chat-leave-group-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+}
