@@ -5827,21 +5827,47 @@ ${
         </div>
 
 
+        <div class="message-time ${
+          message.failed
+            ? "message-time-failed"
+            : message.pending
+              ? "message-time-pending"
+              : ""
+        }">
+          ${
+            message.failed
+              ? `<button
+                   type="button"
+                   class="message-failed-label"
+                   data-retry-message="${esc(message.id)}"
+                 >Not sent · Tap to resend</button>`
+              : message.pending
+                ? "Sending…"
+                : formatTime(message.createdAt)
+          }
+        </div>
+
         ${
           (
             group.isOfficial === true ||
-            group.isVerifiedBusiness === true
+            group.isVerifiedBusiness === true ||
+            group.is_official === true ||
+            group.is_verified_business === true ||
+            group.group_type === "official" ||
+            group.group_type === "verified_business" ||
+            group.type === "official" ||
+            group.type === "verified_business"
           ) && !message.pending && !message.failed
             ? `
-              <div class="announcement-message-actions"
-                   data-interaction-message="${esc(message.id)}">
+              <div
+                class="announcement-message-actions"
+                data-interaction-message="${esc(message.id)}">
 
                 <button
                   type="button"
                   class="announcement-react-btn"
                   data-message-interaction="react"
-                  data-message-id="${esc(message.id)}"
-                >
+                  data-message-id="${esc(message.id)}">
                   <span>♡</span>
                   React
                 </button>
@@ -5850,8 +5876,7 @@ ${
                   type="button"
                   class="announcement-comment-btn"
                   data-message-interaction="comment"
-                  data-message-id="${esc(message.id)}"
-                >
+                  data-message-id="${esc(message.id)}">
                   <span>▢</span>
                   Comments
                 </button>
@@ -5861,26 +5886,6 @@ ${
             : ""
         }
 
-
-<div class="message-time ${
-  message.failed
-    ? "message-time-failed"
-    : message.pending
-      ? "message-time-pending"
-      : ""
-}">
-  ${
-    message.failed
-      ? `<button
-           type="button"
-           class="message-failed-label"
-           data-retry-message="${esc(message.id)}"
-         >Not sent · Tap to resend</button>`
-      : message.pending
-        ? "Sending…"
-        : formatTime(message.createdAt)
-  }
-</div>
 
         ${
            actionsVisible && own
