@@ -21256,16 +21256,23 @@ async function openMessageComments(messageId) {
   }
 
   const panel = document.createElement("div");
-
   panel.className = "simpo-message-comments-panel";
 
   panel.innerHTML = `
     <div class="simpo-comments-backdrop"></div>
 
-    <section class="simpo-comments-sheet">
+    <section class="simpo-comments-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Message comments">
+
       <header class="simpo-comments-header">
-        <h2>Comments</h2>
-        <button type="button" class="simpo-comments-close">×</button>
+        <div>
+          <h2>Comments</h2>
+          <span class="simpo-comments-count">Loading...</span>
+        </div>
+        <button type="button"
+          class="simpo-comments-close">×</button>
       </header>
 
       <div class="simpo-comments-list">
@@ -21277,18 +21284,24 @@ async function openMessageComments(messageId) {
           type="text"
           maxlength="2000"
           placeholder="Write a comment..."
+          autocomplete="off"
           required
         >
-        <button type="submit">➤</button>
+        <button type="submit" class="send-btn">➤</button>
       </form>
+
     </section>
   `;
 
-  modalRoot.appendChild(panel);
+  (typeof modalRoot !== "undefined" && modalRoot
+    ? modalRoot
+    : document.body).appendChild(panel);
 
   const list = panel.querySelector(".simpo-comments-list");
-  const form = panel.querySelector("form");
+  const form = panel.querySelector(".simpo-comments-composer");
   const input = form.querySelector("input");
+  const sendButton = form.querySelector("button");
+  const countLabel = panel.querySelector(".simpo-comments-count");
 
   function close() {
     panel.remove();
@@ -21326,12 +21339,47 @@ async function openMessageComments(messageId) {
     return result;
   }
 
+  function updateCommentCount(count) {
+    countLabel.textContent =
+      count === 1 ? "1 comment" : `${count} comments`;
+
+    const selector =
+      `.announcement-message-actions[data-interaction-message="${CSS.escape(String(messageId))}"]`;
+
+    const actionBar = document.querySelector(selector);
+    const commentButton =
+      actionBar?.querySelector(".announcement-comment-btn");
+
+    if (commentButton) {
+      commentButton.replaceChildren();
+
+      const icon = document.createElement("span");
+      icon.textContent = "▢";
+
+      commentButton.append(
+        icon,
+        document.createTextNode(
+          count ? `Comments · ${count}` : "Comments"
+        )
+      );
+    }
+  }
+
   function render(comments) {
     list.replaceChildren();
 
     if (!comments.length) {
-      const empty = document.createElement("p");
-      empty.textContent = "No comments yet. Start the conversation.";
+      const empty = document.createElement("div");
+      empty.className = "simpo-comments-empty";
+
+      const heading = document.createElement("h3");
+      heading.textContent = "No comments yet";
+
+      const message = document.createElement("p");
+      message.textContent =
+        "Be the first to join the conversation.";
+
+      empty.append(heading, message);
       list.appendChild(empty);
       return;
     }
@@ -21340,17 +21388,49 @@ async function openMessageComments(messageId) {
       const row = document.createElement("article");
       row.className = "simpo-comment-row";
 
+      const avatar = document.createElement("div");
+      avatar.className = "simpo-comment-avatar";
+
+      if (comment.authorAvatarUrl) {
+        const image = document.createElement("img");
+        image.src = comment.authorAvatarUrl;
+        image.alt = "";
+        image.loading = "lazy";
+        avatar.appendChild(image);
+      } else {
+        avatar.textContent =
+          (comment.authorName || "M")
+            .trim().charAt(0).toUpperCase();
+      }
+
       const content = document.createElement("div");
       content.className = "simpo-comment-content";
 
+      const meta = document.createElement("div");
+      meta.className = "simpo-comment-meta";
+
       const author = document.createElement("strong");
+      author.className = "simpo-comment-author";
       author.textContent = comment.authorName || "Member";
 
+      const time = document.createElement("time");
+
+      if (comment.createdAt) {
+        const date = new Date(comment.createdAt);
+
+        if (!Number.isNaN(date.getTime())) {
+          time.dateTime = date.toISOString();
+          time.textContent = date.toLocaleString();
+        }
+      }
+
       const body = document.createElement("p");
+      body.className = "simpo-comment-body";
       body.textContent = comment.body || "";
 
-      content.append(author, body);
-      row.appendChild(content);
+      meta.append(author, time);
+      content.append(meta, body);
+      row.append(avatar, content);
       list.appendChild(row);
     });
   }
@@ -21358,11 +21438,19 @@ async function openMessageComments(messageId) {
   async function load() {
     try {
       const result = await request("list_message_comments");
-      if (panel.isConnected) {
-        render(result.comments || []);
-      }
+
+      if (!panel.isConnected) return;
+
+      const comments = result.comments || [];
+
+      render(comments);
+      updateCommentCount(comments.length);
+
     } catch (error) {
-      list.textContent = error.message;
+      if (panel.isConnected) {
+        list.textContent = error.message;
+        countLabel.textContent = "Comments unavailable";
+      }
     }
   }
 
@@ -21373,20 +21461,22 @@ async function openMessageComments(messageId) {
 
     if (!comment) return;
 
-    const button = form.querySelector("button");
-    button.disabled = true;
+    sendButton.disabled = true;
+    input.disabled = true;
 
     try {
       await request("add_message_comment", { comment });
 
       input.value = "";
       await load();
+      input.focus();
 
     } catch (error) {
       alert(error.message);
 
     } finally {
-      button.disabled = false;
+      sendButton.disabled = false;
+      input.disabled = false;
     }
   });
 
