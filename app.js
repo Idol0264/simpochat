@@ -26201,7 +26201,87 @@ async function syncJoinedGroupsFromSupabase() {
   return remoteGroups.length;
 }
 
+
+function renderBusinessGroupVerification(token) {
+  modalRoot.innerHTML = `
+    <div class="modal-overlay" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);">
+      <section class="modal-card" style="width:min(100%,440px);padding:24px;border-radius:20px;">
+        <h2 style="margin:0 0 10px;">Verify your business group</h2>
+        <p style="margin:0 0 20px;">Enter the same organisation email address that received this SimpoChat invitation.</p>
+        <form id="businessGroupVerifyForm">
+          <label for="businessGroupVerifyEmail">Organisation email</label>
+          <input id="businessGroupVerifyEmail" type="email" autocomplete="email" required style="width:100%;margin:8px 0 16px;">
+          <button id="businessGroupVerifySubmit" type="submit" class="primary-button" style="width:100%;">Verify and create group</button>
+        </form>
+        <p id="businessGroupVerifyMessage" role="status" style="margin:16px 0 0;"></p>
+      </section>
+    </div>
+  `;
+
+  const form = document.getElementById("businessGroupVerifyForm");
+  const emailInput = document.getElementById("businessGroupVerifyEmail");
+  const submitButton = document.getElementById("businessGroupVerifySubmit");
+  const message = document.getElementById("businessGroupVerifyMessage");
+
+  form?.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = String(emailInput?.value || "").trim().toLowerCase();
+    if (!email) return;
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Verifying...";
+    message.textContent = "Checking your invitation. Please wait.";
+
+    try {
+      const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SIMPOCHAT_SUPABASE_PUBLISHABLE_KEY
+        },
+        body: JSON.stringify({
+          action: "redeem_verified_business_group_invite",
+          token,
+          email
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.allowed !== true || !result.group) {
+        throw new Error(result.message || "Unable to verify this invitation.");
+      }
+
+      const groupName = result.group.name || "your business group";
+
+      message.textContent =
+        "Verified successfully. " + groupName +
+        " has been created and your account has been assigned as its manager. Sign in to SimpoChat with this email to manage the group.";
+
+      form.remove();
+      history.replaceState({}, document.title, window.location.pathname);
+
+    } catch (error) {
+      message.textContent =
+        error.message || "Verification failed. Please try again.";
+
+      submitButton.disabled = false;
+      submitButton.textContent = "Verify and create group";
+    }
+  });
+}
+
 async function startSimpoChat() {
+
+  const businessVerificationToken =
+    new URLSearchParams(window.location.search).get("business_verify");
+
+  if (businessVerificationToken) {
+    renderBusinessGroupVerification(businessVerificationToken);
+    return;
+  }
+
 
   cleanupExpired();
 
