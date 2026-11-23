@@ -4898,7 +4898,10 @@ function renderGroupChat(
 
 
       <!-- MESSAGE INPUT -->
-
+      ${
+        isOrdinaryAnnouncementMember
+          ? ""
+          : `
       ${
   pendingReplyMessageId
     ? (() => {
@@ -5029,7 +5032,8 @@ function renderGroupChat(
 
 
       </form>
-
+          `
+      }
 
     </div>
 
