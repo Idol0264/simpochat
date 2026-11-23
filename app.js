@@ -21718,101 +21718,159 @@ case "mute-temporary-inviter":
     }
 
 
-    case "admin-create-verified-business-group": {
+case "admin-create-verified-business-group": {
 
-      try {
+  try {
 
-        const access = await callSimpoAdmin(
-          "admin_status"
-        );
+    const access = await callSimpoAdmin(
+      "admin_status"
+    );
 
-        if (!access.can_create_verified_business_accounts) {
-          alert("You do not have permission to create Verified Business Groups.");
-          break;
-        }
-
-        const name = prompt(
-          "Enter the verified business group name:"
-        );
-
-        if (!name || !name.trim()) {
-          break;
-        }
-
-        const managerEmail = prompt(
-          "Enter the business manager's registered email address:"
-        );
-
-        if (
-          !managerEmail ||
-          !managerEmail.trim() ||
-          !managerEmail.includes("@")
-        ) {
-          alert("A valid manager email address is required.");
-          break;
-        }
-
-        const categoryText = prompt(
-          "Enter business categories separated by commas:",
-          ""
-        );
-
-        const category = categoryText
-          ? categoryText.split(",").map(item => item.trim()).filter(Boolean)
-          : [];
-
-        alert("Choose the Verified Business Group profile photo.");
-
-        const photoDataUrl = await chooseGroupProfilePhoto();
-
-        if (!photoDataUrl) {
-          alert("A group photo is required. The group was not created.");
-          break;
-        }
-
-        const result = await callSimpoAdmin(
-          "admin_create_verified_business_group",
-          {
-            name: name.trim(),
-            manager_email: managerEmail.trim().toLowerCase(),
-            category,
-            icon: "",
-            photo_data_url: photoDataUrl
-          }
-        );
-
-        if (!result.group || !result.group.photo_url) {
-          throw new Error(
-            "The Verified Business Group or its profile photo was not saved."
-          );
-        }
-
-        alert(
-          "Verified Business Group created successfully."
-        );
-
-        state.screen = "admin-groups";
-        saveState();
-        render();
-
-      } catch (error) {
-
-        console.error(
-          "Verified Business Group creation failed:",
-          error
-        );
-
-        alert(
-          error.message ||
-          "Unable to create Verified Business Group."
-        );
-
-      }
-
+    if (!access.can_create_verified_business_accounts) {
+      alert("You do not have permission to create Verified Business Groups.");
       break;
     }
 
+    // 1. GROUP NAME
+    const name = prompt(
+      "Enter the Verified Business Group name (no spaces):"
+    );
 
+    if (!name || !name.trim()) {
+      break;
+    }
+
+    // 2. CATEGORY
+    const categoryText = prompt(
+      "Enter the group categories separated by commas:",
+      "Business"
+    );
+
+    const category = categoryText
+      ? [...new Set(
+          categoryText
+            .split(",")
+            .map(item => item.trim())
+            .filter(Boolean)
+        )]
+      : [];
+
+    if (!category.length) {
+      alert("At least one category is required.");
+      break;
+    }
+
+    // 3. GROUP PHOTO
+    alert("Choose the Verified Business Group profile photo.");
+
+    const photoDataUrl = await chooseGroupProfilePhoto();
+
+    if (!photoDataUrl) {
+      alert("A group photo is required. No invitation was created.");
+      break;
+    }
+
+    // 4. ORGANISATION EMAIL
+    const managerEmail = prompt(
+      "Enter the organisation manager's registered SimpoChat email:"
+    );
+
+    if (
+      !managerEmail ||
+      !managerEmail.trim() ||
+      !managerEmail.includes("@")
+    ) {
+      alert("A valid organisation email address is required.");
+      break;
+    }
+
+    // CREATE ONE-TIME VERIFICATION INVITATION
+    const result = await callSimpoAdmin(
+      "admin_create_verified_business_group_invite",
+      {
+        name: name.trim(),
+        manager_email: managerEmail.trim().toLowerCase(),
+        category,
+        icon: "",
+        photo_data_url: photoDataUrl
+      }
+    );
+
+    if (
+      !result.invitation_created ||
+      !result.verification_token
+    ) {
+      throw new Error(
+        "The verification invitation could not be created."
+      );
+    }
+
+    // BUILD THE ORGANISATION'S VERIFICATION LINK
+    const inviteUrl = new URL(window.location.href);
+
+    inviteUrl.search = "";
+    inviteUrl.hash = "";
+
+    inviteUrl.searchParams.set(
+      "business_verify",
+      result.verification_token
+    );
+
+    const verificationLink = inviteUrl.toString();
+
+    let copied = false;
+
+    try {
+      await navigator.clipboard.writeText(
+        verificationLink
+      );
+
+      copied = true;
+
+    } catch (clipboardError) {
+      console.warn(
+        "Automatic link copying failed:",
+        clipboardError
+      );
+    }
+
+    if (copied) {
+
+      alert(
+        "Verification invitation created successfully.\n\n" +
+        "The verification link has been copied.\n\n" +
+        "Send it to the organisation manager. They must open it and enter the invited organisation email.\n\n" +
+        "The link expires in 7 days and can only be used once.\n\n" +
+        "The group will be created after successful verification."
+      );
+
+    } else {
+
+      window.prompt(
+        "Copy this verification link and send it to the organisation manager. It expires in 7 days:",
+        verificationLink
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Verified Business Group invitation failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Unable to create the verification invitation."
+    );
+
+  }
+
+  break;
+}
+
+        
     case "admin-section": {
 
       const section =
