@@ -4746,6 +4746,15 @@ function renderGroupChat(
 
   }
 
+  const isManagedAnnouncementGroup =
+    group.isOfficial === true ||
+    group.isVerifiedBusiness === true;
+
+  const canManageAnnouncementGroup =
+    isManagedAnnouncementGroup && isGroupAdmin(group);
+
+  const isOrdinaryAnnouncementMember =
+    isManagedAnnouncementGroup && !canManageAnnouncementGroup;
 
   setHeader(
     group.name,
