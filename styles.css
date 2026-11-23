@@ -12540,3 +12540,94 @@ body:has(.search-page) .fab {
   padding: 10px 16px;
   font-weight: 700;
 }
+
+/* SIMPOCHAT MESSAGE REACTION PICKER */
+
+.simpo-message-reaction-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+}
+
+.simpo-reaction-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.48);
+  backdrop-filter: blur(3px);
+}
+
+.simpo-reaction-sheet {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 28px));
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--panel, #fff);
+  color: var(--text-color, #171717);
+}
+
+.simpo-reaction-sheet header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.simpo-reaction-close {
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  color: inherit;
+}
+
+.simpo-reaction-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.simpo-reaction-grid button {
+  min-height: 52px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 14px;
+  background: rgba(130,110,190,.10);
+  font-size: 27px;
+}
+
+.simpo-reaction-grid button.is-selected {
+  border-color: #8b5cf6;
+  background: rgba(139,92,246,.20);
+}
+
+.simpo-reaction-remove {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(220,50,60,.10);
+  color: #d93645;
+  font-weight: 650;
+}
+
+.announcement-reaction-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 5px 0;
+}
+
+.announcement-reaction-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(130,110,190,.12);
+  border: 1px solid rgba(130,110,190,.2);
+  font-size: 12px;
+}
+
+.announcement-reaction-chip.is-mine {
+  border-color: #8b5cf6;
+  background: rgba(139,92,246,.22);
+}
