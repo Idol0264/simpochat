@@ -5827,6 +5827,40 @@ ${
         </div>
 
 
+        ${
+          (
+            group.isOfficial === true ||
+            group.isVerifiedBusiness === true
+          ) && !message.pending && !message.failed
+            ? `
+              <div class="announcement-message-actions"
+                   data-interaction-message="${esc(message.id)}">
+
+                <button
+                  type="button"
+                  class="announcement-react-btn"
+                  data-message-interaction="react"
+                  data-message-id="${esc(message.id)}"
+                >
+                  <span>♡</span>
+                  React
+                </button>
+
+                <button
+                  type="button"
+                  class="announcement-comment-btn"
+                  data-message-interaction="comment"
+                  data-message-id="${esc(message.id)}"
+                >
+                  <span>▢</span>
+                  Comments
+                </button>
+
+              </div>
+            `
+            : ""
+        }
+
 
 <div class="message-time ${
   message.failed
