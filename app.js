@@ -21072,13 +21072,42 @@ async function openMessageReactions(messageId) {
     return;
   }
 
-  const emoji = prompt(
-    "Choose a reaction:\n\n❤️ 😂 😍 😮 😢 🔥 👍 👏 🙏 🎉"
-  );
+  const emojis = ["❤️", "😂", "😍", "😮", "😢", "🔥", "👍", "👏", "🙏", "🎉"];
 
-  if (!emoji || !emoji.trim()) return;
+  const host = document.createElement("div");
+  host.className = "simpo-message-reaction-picker";
 
-  try {
+  host.innerHTML = `
+    <div class="simpo-reaction-backdrop"></div>
+    <section class="simpo-reaction-sheet">
+      <header>
+        <strong>React to message</strong>
+        <button type="button" class="simpo-reaction-close">×</button>
+      </header>
+
+      <div class="simpo-reaction-grid">
+        ${emojis.map(emoji =>
+          `<button type="button" data-emoji="${emoji}">${emoji}</button>`
+        ).join("")}
+      </div>
+
+      <button type="button" class="simpo-reaction-remove">
+        Remove my reaction
+      </button>
+    </section>
+  `;
+
+  document.body.appendChild(host);
+
+  const close = () => host.remove();
+
+  host.querySelector(".simpo-reaction-backdrop")
+    .addEventListener("click", close);
+
+  host.querySelector(".simpo-reaction-close")
+    .addEventListener("click", close);
+
+  async function request(action, extra = {}) {
     const response = await fetch(SIMPOCHAT_ACCESS_URL, {
       method: "POST",
       headers: {
@@ -21086,23 +21115,131 @@ async function openMessageReactions(messageId) {
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        action: "set_message_reaction",
+        action,
         message_id: String(messageId),
-        emoji: emoji.trim()
+        ...extra
       })
     });
 
     const result = await response.json();
 
     if (!response.ok || result.allowed === false) {
-      throw new Error(result.message || "Unable to react.");
+      throw new Error(result.message || "Reaction request failed.");
     }
 
-    alert("Reaction added successfully.");
+    return result;
+  }
+
+  function renderReactions(result) {
+    const selector =
+      `.announcement-message-actions[data-interaction-message="${CSS.escape(String(messageId))}"]`;
+
+    const bar = document.querySelector(selector);
+    if (!bar) return;
+
+    let summary = bar.previousElementSibling;
+
+    if (!summary?.classList.contains("announcement-reaction-summary")) {
+      summary = document.createElement("div");
+      summary.className = "announcement-reaction-summary";
+      bar.before(summary);
+    }
+
+    summary.replaceChildren();
+
+    const groups = new Map();
+
+    (result.reactions || []).forEach(item => {
+      const current = groups.get(item.emoji) || {
+        count: 0,
+        mine: false
+      };
+
+      current.count++;
+
+      if (item.userId === result.currentUserId) {
+        current.mine = true;
+      }
+
+      groups.set(item.emoji, current);
+    });
+
+    groups.forEach((data, emoji) => {
+      const chip = document.createElement("span");
+
+      chip.className =
+        "announcement-reaction-chip" +
+        (data.mine ? " is-mine" : "");
+
+      chip.textContent = `${emoji} ${data.count}`;
+
+      summary.appendChild(chip);
+    });
+
+    if (!summary.childElementCount) summary.remove();
+  }
+
+  try {
+    const result = await request("list_message_reactions");
+
+    renderReactions(result);
+
+    const mine = (result.reactions || []).find(
+      item => item.userId === result.currentUserId
+    );
+
+    if (mine) {
+      const selected = host.querySelector(
+        `[data-emoji="${CSS.escape(mine.emoji)}"]`
+      );
+
+      if (selected) selected.classList.add("is-selected");
+    }
 
   } catch (error) {
-    alert(error.message || "Unable to save reaction.");
+    close();
+    alert(error.message);
+    return;
   }
+
+  host.querySelectorAll("[data-emoji]").forEach(button => {
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+
+      try {
+        await request("set_message_reaction", {
+          emoji: button.dataset.emoji
+        });
+
+        const result = await request("list_message_reactions");
+
+        renderReactions(result);
+        close();
+
+      } catch (error) {
+        alert(error.message);
+        button.disabled = false;
+      }
+    });
+  });
+
+  host.querySelector(".simpo-reaction-remove")
+    .addEventListener("click", async event => {
+      event.currentTarget.disabled = true;
+
+      try {
+        await request("remove_message_reaction");
+
+        const result = await request("list_message_reactions");
+
+        renderReactions(result);
+        close();
+
+      } catch (error) {
+        alert(error.message);
+        event.currentTarget.disabled = false;
+      }
+    });
 }
 
 
