@@ -21059,6 +21059,204 @@ function openPostComments(postId) {
   loadComments();
 }
 
+
+/* ---------------------------------------------------------
+   OFFICIAL / BUSINESS GROUP MESSAGE REACTIONS
+   --------------------------------------------------------- */
+
+async function openMessageReactions(messageId) {
+  const token = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  if (!token) {
+    alert("Please reopen SimpoChat and try again.");
+    return;
+  }
+
+  const emoji = prompt(
+    "Choose a reaction:\n\n❤️ 😂 😍 😮 😢 🔥 👍 👏 🙏 🎉"
+  );
+
+  if (!emoji || !emoji.trim()) return;
+
+  try {
+    const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        action: "set_message_reaction",
+        message_id: String(messageId),
+        emoji: emoji.trim()
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.allowed === false) {
+      throw new Error(result.message || "Unable to react.");
+    }
+
+    alert("Reaction added successfully.");
+
+  } catch (error) {
+    alert(error.message || "Unable to save reaction.");
+  }
+}
+
+
+/* ---------------------------------------------------------
+   OFFICIAL / BUSINESS GROUP MESSAGE COMMENTS
+   --------------------------------------------------------- */
+
+async function openMessageComments(messageId) {
+  const token = localStorage.getItem(SESSION_TOKEN_KEY);
+
+  if (!token) {
+    alert("Please reopen SimpoChat and try again.");
+    return;
+  }
+
+  const panel = document.createElement("div");
+
+  panel.className = "simpo-message-comments-panel";
+
+  panel.innerHTML = `
+    <div class="simpo-comments-backdrop"></div>
+
+    <section class="simpo-comments-sheet">
+      <header class="simpo-comments-header">
+        <h2>Comments</h2>
+        <button type="button" class="simpo-comments-close">×</button>
+      </header>
+
+      <div class="simpo-comments-list">
+        <p>Loading comments...</p>
+      </div>
+
+      <form class="simpo-comments-composer">
+        <input
+          type="text"
+          maxlength="2000"
+          placeholder="Write a comment..."
+          required
+        >
+        <button type="submit">➤</button>
+      </form>
+    </section>
+  `;
+
+  modalRoot.appendChild(panel);
+
+  const list = panel.querySelector(".simpo-comments-list");
+  const form = panel.querySelector("form");
+  const input = form.querySelector("input");
+
+  function close() {
+    panel.remove();
+  }
+
+  panel.querySelector(".simpo-comments-close")
+    .addEventListener("click", close);
+
+  panel.querySelector(".simpo-comments-backdrop")
+    .addEventListener("click", close);
+
+  panel.querySelector(".simpo-comments-sheet")
+    .addEventListener("click", event => event.stopPropagation());
+
+  async function request(action, extra = {}) {
+    const response = await fetch(SIMPOCHAT_ACCESS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        action,
+        message_id: String(messageId),
+        ...extra
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.allowed === false) {
+      throw new Error(result.message || "Comment request failed.");
+    }
+
+    return result;
+  }
+
+  function render(comments) {
+    list.replaceChildren();
+
+    if (!comments.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "No comments yet. Start the conversation.";
+      list.appendChild(empty);
+      return;
+    }
+
+    comments.forEach(comment => {
+      const row = document.createElement("article");
+      row.className = "simpo-comment-row";
+
+      const content = document.createElement("div");
+      content.className = "simpo-comment-content";
+
+      const author = document.createElement("strong");
+      author.textContent = comment.authorName || "Member";
+
+      const body = document.createElement("p");
+      body.textContent = comment.body || "";
+
+      content.append(author, body);
+      row.appendChild(content);
+      list.appendChild(row);
+    });
+  }
+
+  async function load() {
+    try {
+      const result = await request("list_message_comments");
+      if (panel.isConnected) {
+        render(result.comments || []);
+      }
+    } catch (error) {
+      list.textContent = error.message;
+    }
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const comment = input.value.trim();
+
+    if (!comment) return;
+
+    const button = form.querySelector("button");
+    button.disabled = true;
+
+    try {
+      await request("add_message_comment", { comment });
+
+      input.value = "";
+      await load();
+
+    } catch (error) {
+      alert(error.message);
+
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  load();
+}
+
+
 /* =========================================================
    SIMPOCHAT — SECTION 5/5
    EVENTS + NAVIGATION + ACTIONS + CLEANUP + STARTUP
