@@ -12631,3 +12631,153 @@ body:has(.search-page) .fab {
   border-color: #8b5cf6;
   background: rgba(139,92,246,.22);
 }
+
+/* SIMPOCHAT OFFICIAL AND BUSINESS MESSAGE COMMENTS */
+
+.simpo-message-comments-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+}
+
+.simpo-message-comments-panel .simpo-comments-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.48);
+  backdrop-filter: blur(3px);
+}
+
+.simpo-message-comments-panel .simpo-comments-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px max(14px, env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+  background: var(--panel, #fff);
+  color: var(--text-color, #171717);
+}
+
+.simpo-message-comments-panel .simpo-comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(130,110,190,.15);
+}
+
+.simpo-message-comments-panel .simpo-comments-header h2 {
+  margin: 0;
+}
+
+.simpo-message-comments-panel .simpo-comments-count {
+  font-size: 12px;
+  opacity: .65;
+}
+
+.simpo-message-comments-panel .simpo-comments-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 28px;
+}
+
+.simpo-message-comments-panel .simpo-comments-list {
+  flex: 1;
+  min-height: 150px;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.simpo-message-comments-panel .simpo-comment-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 0;
+}
+
+.simpo-message-comments-panel .simpo-comment-avatar {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(139,92,246,.16);
+  font-weight: 700;
+}
+
+.simpo-message-comments-panel .simpo-comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.simpo-message-comments-panel .simpo-comment-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.simpo-message-comments-panel .simpo-comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.simpo-message-comments-panel .simpo-comment-author {
+  font-size: 13px;
+}
+
+.simpo-message-comments-panel .simpo-comment-meta time {
+  font-size: 10px;
+  opacity: .6;
+}
+
+.simpo-message-comments-panel .simpo-comment-body {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.simpo-message-comments-panel .simpo-comments-empty {
+  text-align: center;
+  padding: 35px 15px;
+  opacity: .75;
+}
+
+.simpo-message-comments-panel .simpo-comments-composer {
+  display: flex;
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(130,110,190,.15);
+}
+
+.simpo-message-comments-panel .simpo-comments-composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(130,110,190,.25);
+  border-radius: 24px;
+  background: var(--input-bg, transparent);
+  color: inherit;
+  outline: none;
+}
+
+.simpo-message-comments-panel .simpo-comments-composer button {
+  width: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: white;
+  font-size: 19px;
+}
+
+.simpo-message-comments-panel .simpo-comments-composer button:disabled {
+  opacity: .5;
+}
