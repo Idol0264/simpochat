@@ -4792,100 +4792,56 @@ function renderGroupChat(
           </button>
 
 
-          <button
-            class="chat-header-main"
-            data-action="group-profile"
-          >
+          ${
+            isOrdinaryAnnouncementMember
+              ? `<div class="chat-header-main chat-header-main-static">`
+              : `<button class="chat-header-main" data-action="group-profile">`
+          }
 
-            <span
-            class="group-avatar small ${group.photo ? "has-photo" : ""}"
-            style="--h:${group.hue}"
-            >
-            ${
-               group.photo
-               ? `
-               <img
-               src="${group.photo}"
-               alt="${esc(group.name)}"
-               >
-               `
-               : esc(group.icon)
-            }
+            <span class="group-avatar small ${group.photo ? "has-photo" : ""}" style="--h:${group.hue}">
+              ${
+                group.photo
+                  ? `<img src="${group.photo}" alt="${esc(group.name)}">`
+                  : esc(group.icon)
+              }
             </span>
 
             <span class="chat-header-copy">
-
-              <strong>
-                ${esc(group.name)}
-              </strong>
-
-              <span>
-                ${group.members.length}
-                members
-              </span>
-
+              <strong>${esc(group.name)}</strong>
+              <span>${group.members.length} members</span>
             </span>
 
-          </button>
-
+          ${isOrdinaryAnnouncementMember ? "</div>" : "</button>"}
 
           <div class="chat-header-actions">
-
-
-            <button
-              class="icon-btn"
-              data-action="voice-call"
-              aria-label="Voice call"
-            >
-              ☎
-            </button>
-
-
-            <button
-              class="icon-btn"
-              data-action="video-call"
-              aria-label="Video call"
-            >
-              ▣
-            </button>
-
-
-            <button
-              class="icon-btn"
-              data-action="chat-menu"
-              aria-label="Chat menu"
-            >
-              ⋮
-            </button>
-
-
+            ${
+              isManagedAnnouncementGroup
+                ? (
+                    isOrdinaryAnnouncementMember
+                      ? `<button type="button" class="danger-btn chat-leave-group-btn" data-action="leave-group">Leave Group</button>`
+                      : ""
+                  )
+                : `
+                    <button class="icon-btn" data-action="voice-call">☎</button>
+                    <button class="icon-btn" data-action="video-call">▣</button>
+                    <button class="icon-btn" data-action="chat-menu">⋮</button>
+                  `
+            }
           </div>
-
 
         </div>
 
-
-        <!-- VIEW POST -->
-
-        <button
-          class="view-post-bar"
-          data-action="group-posts"
-        >
-
-          <span>
-            ◉
-          </span>
-
-          <strong>
-            View Post
-          </strong>
-
-          <span>
-            ›
-          </span>
-
-        </button>
-
+        ${
+          isManagedAnnouncementGroup
+            ? ""
+            : `
+              <button class="view-post-bar" data-action="group-posts">
+                <span>◉</span>
+                <strong>View Post</strong>
+                <span>›</span>
+              </button>
+            `
+        }
 
       </div>
 
