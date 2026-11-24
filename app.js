@@ -5850,16 +5850,9 @@ ${
         </div>
 
         ${
-          (
-            group.isOfficial === true ||
-            group.isVerifiedBusiness === true ||
-            group.is_official === true ||
-            group.is_verified_business === true ||
-            group.group_type === "official" ||
-            group.group_type === "verified_business" ||
-            group.type === "official" ||
-            group.type === "verified_business"
-          ) && !message.pending && !message.failed
+          isManagedAnnouncementGroup &&
+          !message.pending &&
+          !message.failed
             ? `
               <div
                 class="announcement-message-actions"
