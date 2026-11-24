@@ -9605,103 +9605,80 @@ body {
    SIMPOCHAT — CUSTOM SQUARE VOICE MESSAGE PLAYER
    ========================================================= */
 
+/* SIMPOCHAT — COMPACT SQUARE VOICE MESSAGE PLAYER */
+
 .simpo-audio-player {
   position: relative;
-
   display: flex;
   flex-direction: column;
 
-  width: 220px;
+  width: 180px;
   max-width: 100%;
   min-width: 0;
 
   aspect-ratio: 1 / 1;
   box-sizing: border-box;
-
-  padding: 14px;
+  padding: 11px;
 
   overflow: hidden;
 
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  border-radius: 15px;
 
   background: var(--surface, #211b2b);
   color: var(--text, #ffffff);
 }
 
-/* Keep the actual audio element available to JavaScript,
-   but hide the browser's default audio controls. */
-
 .simpo-audio-player .simpo-audio-element {
   display: none;
 }
-
-/* Top row: microphone icon and download button */
 
 .simpo-audio-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   flex: 0 0 auto;
-
   width: 100%;
-  min-height: 30px;
+  min-height: 26px;
 }
 
 .simpo-audio-icon {
   display: grid;
   place-items: center;
-
-  width: 30px;
-  height: 30px;
-
-  font-size: 21px;
+  width: 26px;
+  height: 26px;
+  font-size: 19px;
 }
 
 .simpo-audio-download {
   display: grid;
   place-items: center;
-
-  width: 34px;
-  height: 34px;
-
+  width: 29px;
+  height: 29px;
   border-radius: 50%;
-
   background: rgba(255, 255, 255, 0.08);
   color: inherit;
-
-  font-size: 23px;
+  font-size: 20px;
   text-decoration: none;
-
   -webkit-tap-highlight-color: transparent;
 }
-
-/* Main controls row */
 
 .simpo-audio-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   flex: 1 1 auto;
-
   width: 100%;
   min-height: 0;
-  gap: 5px;
+  gap: 4px;
 }
-
-/* Duration on the left and elapsed time on the right */
 
 .simpo-audio-duration,
 .simpo-audio-elapsed {
   flex: 0 1 auto;
-
   min-width: 0;
-
-  font-size: 12px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-
   white-space: nowrap;
 }
 
@@ -9713,29 +9690,19 @@ body {
   text-align: right;
 }
 
-/* Central play/pause button */
-
 .simpo-audio-play {
   position: relative;
-
   display: grid;
   place-items: center;
-
-  flex: 0 0 66px;
-
-  width: 66px;
-  height: 66px;
-
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
   padding: 0;
-
   border: 0;
   border-radius: 50%;
-
   background: var(--primary, #8b5cf6);
   color: #ffffff;
-
-  font-size: 25px;
-
+  font-size: 22px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -9745,27 +9712,19 @@ body {
   z-index: 2;
 }
 
-/* Circular progress indicator around the play/pause button */
-
 .simpo-audio-progress {
   position: absolute;
-
-  inset: -5px;
-
-  width: calc(100% + 10px);
-  height: calc(100% + 10px);
-
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
   overflow: visible;
-
   transform: rotate(-90deg);
-
   pointer-events: none;
 }
 
 .simpo-audio-progress-track,
 .simpo-audio-progress-value {
   fill: none;
-
   stroke-width: 3;
 }
 
@@ -9776,47 +9735,32 @@ body {
 .simpo-audio-progress-value {
   stroke: #ffffff;
   stroke-linecap: round;
-
   stroke-dasharray: 283;
   stroke-dashoffset: 283;
-
   transition: stroke-dashoffset 0.12s linear;
 }
 
-/* Divider between the main player and the mute control */
-
 .simpo-audio-divider {
   flex: 0 0 auto;
-
   width: 100%;
   height: 1px;
-
   background: rgba(255, 255, 255, 0.18);
 }
-
-/* Bottom mute/unmute text button */
 
 .simpo-audio-mute {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  flex: 0 0 34px;
-
+  flex: 0 0 29px;
   width: 100%;
-  min-height: 34px;
-
-  padding: 4px;
-
+  min-height: 29px;
+  padding: 3px;
   border: 0;
   border-radius: 7px;
-
   background: transparent;
   color: inherit;
-
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -9827,40 +9771,33 @@ body {
   opacity: 0.75;
 }
 
-/* Message without an available audio file */
-
 .simpo-audio-unavailable {
   display: grid;
   place-items: center;
-
   width: 100%;
   height: 100%;
-
   color: var(--text-muted, #b9b0c6);
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
 }
 
-/* Fit smaller screens */
-
 @media (max-width: 360px) {
   .simpo-audio-player {
-    width: 200px;
-    padding: 12px;
+    width: 170px;
+    padding: 10px;
   }
 
   .simpo-audio-play {
-    flex-basis: 58px;
-    width: 58px;
-    height: 58px;
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
   }
 
   .simpo-audio-duration,
   .simpo-audio-elapsed {
-    font-size: 11px;
+    font-size: 10px;
   }
 }
-
 
 /* SIMPOCHAT — MOBILE BOTTOM SHEETS */
 @media (max-width: 699px) {
