@@ -22120,7 +22120,7 @@ case "mute-temporary-inviter":
           break;
         }
 
-        const name = await simpoPrompt(
+        const categoryText = await simpoPrompt(
            "Enter the official group category:"
         );
 
