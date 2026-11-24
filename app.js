@@ -25770,8 +25770,8 @@ async function finishTemporaryChat() {
 
   if (!conversationId) return;
 
-  if (!confirm(
-    "Finish this chat? Your private conversation and its messages will be deleted."
+  if (!await simpoConfirm(
+     "Finish this chat? Your private conversation and its messages will be deleted."
   )) return;
 
   try {
