@@ -12770,3 +12770,145 @@ body:has(.search-page) .fab {
     max-width: 125px !important;
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — GLOBAL STYLED NOTIFICATIONS
+   STEP 1
+   ========================================================= */
+
+.simpo-notice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 22px;
+
+  background: rgba(8, 6, 18, .58);
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+
+  animation: simpoNoticeFade .18s ease;
+}
+
+.simpo-notice-card {
+  width: min(100%, 370px);
+
+  padding: 27px 22px 20px;
+
+  border: 1px solid var(--line, rgba(139,92,246,.2));
+  border-radius: 25px;
+
+  background: var(--surface-strong, #fff);
+  color: var(--text, #171717);
+
+  box-shadow: 0 22px 70px rgba(0,0,0,.25);
+
+  text-align: center;
+
+  animation: simpoNoticeUp .22s ease;
+}
+
+.simpo-notice-icon {
+  width: 57px;
+  height: 57px;
+
+  display: grid;
+  place-items: center;
+
+  margin: 0 auto 15px;
+
+  border-radius: 19px;
+
+  background: rgba(139,92,246,.13);
+  color: #985cf6;
+
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.simpo-notice-icon span {
+  width: 29px;
+  height: 29px;
+
+  display: grid;
+  place-items: center;
+
+  border: 2px solid currentColor;
+  border-radius: 50%;
+
+  font-size: 19px;
+}
+
+.simpo-notice-card h2 {
+  margin: 0 0 12px;
+
+  color: var(--text, #171717);
+
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.simpo-notice-message {
+  margin: 0 0 23px;
+
+  color: var(--text, #171717);
+
+  font-size: 14px;
+  line-height: 1.65;
+
+  overflow-wrap: anywhere;
+}
+
+.simpo-notice-button {
+  width: 100%;
+  min-height: 49px;
+
+  border: 0;
+  border-radius: 15px;
+
+  background: linear-gradient(
+    120deg,
+    #7545ff,
+    #a855f7
+  );
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  box-shadow: 0 7px 20px rgba(124,58,237,.22);
+}
+
+.simpo-notice-button:active {
+  transform: scale(.98);
+}
+
+.simpo-notice-overlay.is-closing {
+  opacity: 0;
+  transition: opacity .16s ease;
+}
+
+@keyframes simpoNoticeFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes simpoNoticeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
