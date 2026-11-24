@@ -12718,3 +12718,55 @@ body:has(.search-page) .fab {
 .simpo-message-comments-panel .simpo-comments-composer button:disabled {
   opacity: .5;
 }
+
+/* SIMPOCHAT — EXTRA COMPACT VOICE PLAYER */
+
+.simpo-audio-player {
+  width: 135px !important;
+  max-width: 135px !important;
+  min-width: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  gap: 0 !important;
+}
+
+.simpo-audio-top {
+  min-height: 21px !important;
+}
+
+.simpo-audio-icon {
+  width: 21px !important;
+  height: 21px !important;
+  font-size: 16px !important;
+}
+
+.simpo-audio-download {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 16px !important;
+}
+
+.simpo-audio-play {
+  flex-basis: 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  font-size: 18px !important;
+}
+
+.simpo-audio-duration,
+.simpo-audio-elapsed {
+  font-size: 9px !important;
+}
+
+.simpo-audio-mute {
+  min-height: 23px !important;
+  font-size: 10px !important;
+}
+
+@media (max-width: 360px) {
+  .simpo-audio-player {
+    width: 125px !important;
+    max-width: 125px !important;
+  }
+}
