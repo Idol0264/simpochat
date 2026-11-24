@@ -25809,8 +25809,8 @@ async function muteTemporaryInviter(userId) {
 
   if (!userId) return;
 
-  if (!confirm(
-    "Stop this member from sending you Temporary Chat invitations?"
+  if (!await simpoConfirm(
+     "Stop this member from sending you Temporary Chat invitations?"
   )) return;
 
   try {
