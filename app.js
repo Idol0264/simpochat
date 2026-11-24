@@ -22196,9 +22196,9 @@ case "admin-create-verified-business-group": {
     }
 
     // 2. CATEGORY
-    const categoryText = prompt(
-      "Enter the group categories separated by commas:",
-      "Business"
+    const categoryText = await simpoPrompt(
+       "Enter the group categories separated by commas:",
+       "Business"
     );
 
     const category = categoryText
