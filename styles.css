@@ -12958,3 +12958,38 @@ body:has(.search-page) .fab {
 .simpo-confirm-actions button:active {
   transform: scale(.97);
 }
+/* =========================================================
+   SIMPOCHAT — STYLED TEXT INPUT
+   STEP 3
+   ========================================================= */
+
+.simpo-prompt-input {
+  display: block;
+  width: 100%;
+  min-height: 49px;
+
+  margin: 0 0 20px;
+  padding: 12px 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--line, #ddd);
+  border-radius: 14px;
+
+  outline: none;
+
+  background: var(--surface, #f5f3fa);
+  color: var(--text, #222);
+
+  font: inherit;
+  font-size: 15px;
+}
+
+.simpo-prompt-input:focus {
+  border-color: #985cf6;
+  box-shadow: 0 0 0 3px rgba(152,92,246,.13);
+}
+
+.simpo-prompt-card .simpo-notice-message {
+  margin-bottom: 15px;
+}
