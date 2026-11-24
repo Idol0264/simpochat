@@ -22226,8 +22226,8 @@ case "admin-create-verified-business-group": {
     }
 
     // 4. ORGANISATION EMAIL
-    const managerEmail = prompt(
-      "Enter the organisation manager's registered SimpoChat email:"
+    const managerEmail = await simpoPrompt(
+       "Enter the organisation manager's registered SimpoChat email:"
     );
 
     if (
