@@ -9,8 +9,8 @@ const CACHE_NAME = "simpochat-shell-v12";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js?v=20261120-4",
+  "./styles.css?v=20261124-1",
+  "./app.js?v=20261124-1",
   "./manifest.webmanifest",
   "./icons/simpochat-icon-192.png",
   "./icons/simpochat-icon-512.png"
