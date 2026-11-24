@@ -22188,10 +22188,9 @@ case "admin-create-verified-business-group": {
     }
 
     // 1. GROUP NAME
-    const name = prompt(
-      "Enter the Verified Business Group name (no spaces):"
+    const name = await simpoPrompt(
+       "Enter the Verified Business Group name (no spaces):"
     );
-
     if (!name || !name.trim()) {
       break;
     }
