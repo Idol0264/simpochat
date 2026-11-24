@@ -4746,10 +4746,12 @@ function renderGroupChat(
 
   }
 
-  const isManagedAnnouncementGroup =
-    group.isOfficial === true ||
-    group.isVerifiedBusiness === true;
-
+const isManagedAnnouncementGroup =
+  group.isOfficial === true ||
+  group.isVerifiedBusiness === true ||
+  group.is_official === true ||
+  group.is_verified_business === true;
+   
   const canManageAnnouncementGroup =
     isManagedAnnouncementGroup && isGroupAdmin(group);
 
