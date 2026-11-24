@@ -22301,9 +22301,9 @@ case "admin-create-verified-business-group": {
 
     } else {
 
-      window.prompt(
-        "Copy this verification link and send it to the organisation manager. It expires in 7 days:",
-        verificationLink
+      await simpoPrompt(
+         "Copy this verification link and send it to the organisation manager. It expires in 7 days:",
+         verificationLink
       );
 
     }
