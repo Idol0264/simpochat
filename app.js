@@ -8756,8 +8756,7 @@ function openChatMenu() {
    LEAVE GROUP
    --------------------------------------------------------- */
 
-function leaveCurrentGroup() {
-
+async function leaveCurrentGroup() {
   const id =
     state.selectedGroup;
 
@@ -8769,15 +8768,13 @@ function leaveCurrentGroup() {
   }
 
 
-  const confirmed =
-    confirm(
-      `Leave "${group.name}" and remove it from Home?`
-    );
+const confirmed = await simpoConfirm(
+  `Leave "${group.name}" and remove it from Home?`
+);
 
-
-  if (!confirmed) {
-    return;
-  }
+if (!confirmed) {
+  return;
+}
 
 
   state.groups =
