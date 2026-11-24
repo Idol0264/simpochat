@@ -26696,6 +26696,11 @@ async function syncJoinedGroupsFromSupabase() {
       join_mode: group.join_mode || group.join_policy,
       approval_mode: group.approval_mode || group.join_approval,
       creatorId: group.creator_id,
+
+      // Preserve managed group identification
+      isOfficial: group.is_official === true,
+      isVerifiedBusiness: group.is_verified_business === true,
+
       remote: true
     }));
 
