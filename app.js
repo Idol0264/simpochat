@@ -28621,3 +28621,79 @@ showSimpoCallNotice(
 /* CHECK FOR ADMIN MAGIC LINK CALLBACK */
 
 void handleSimpoAdminMagicLinkCallback();
+
+/* =========================================================
+   SIMPOCHAT — GLOBAL STYLED NOTIFICATION SYSTEM
+   STEP 1: Replace native browser alert()
+   ========================================================= */
+
+let simpoAlertQueue = [];
+let simpoAlertIsOpen = false;
+
+function simpoShowNextAlert() {
+  if (simpoAlertIsOpen || !simpoAlertQueue.length) {
+    return;
+  }
+
+  simpoAlertIsOpen = true;
+
+  const message = simpoAlertQueue.shift();
+
+  const overlay = document.createElement("div");
+  overlay.className = "simpo-notice-overlay";
+
+  overlay.innerHTML = `
+    <section
+      class="simpo-notice-card"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="simpoNoticeTitle"
+    >
+      <div class="simpo-notice-icon">
+        <span>i</span>
+      </div>
+
+      <h2 id="simpoNoticeTitle">SimpoChat</h2>
+
+      <p class="simpo-notice-message"></p>
+
+      <button
+        type="button"
+        class="simpo-notice-button"
+      >
+        Okay
+      </button>
+    </section>
+  `;
+
+  overlay.querySelector(
+    ".simpo-notice-message"
+  ).textContent = message;
+
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector(
+    ".simpo-notice-button"
+  );
+
+  closeButton.addEventListener("click", () => {
+    overlay.classList.add("is-closing");
+
+    setTimeout(() => {
+      overlay.remove();
+      simpoAlertIsOpen = false;
+      simpoShowNextAlert();
+    }, 160);
+  });
+
+  closeButton.focus();
+}
+
+window.alert = function(message) {
+  simpoAlertQueue.push(
+    String(message ?? "")
+  );
+
+  simpoShowNextAlert();
+};
+ 
