@@ -12912,3 +12912,49 @@ body:has(.search-page) .fab {
     transform: translateY(0) scale(1);
   }
 }
+
+/* =========================================================
+   SIMPOCHAT — CONFIRMATION DIALOG
+   STEP 2
+   ========================================================= */
+
+.simpo-confirm-actions {
+  display: flex;
+  gap: 11px;
+  width: 100%;
+}
+
+.simpo-confirm-actions button {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+
+  border: 0;
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.simpo-confirm-cancel {
+  background: var(--surface, #eeeeF5);
+  color: var(--text, #222);
+  border: 1px solid var(--line, #ddd) !important;
+}
+
+.simpo-confirm-okay {
+  background: linear-gradient(
+    120deg,
+    #7545ff,
+    #a855f7
+  );
+
+  color: #fff;
+  box-shadow: 0 7px 20px rgba(124,58,237,.22);
+}
+
+.simpo-confirm-actions button:active {
+  transform: scale(.97);
+}
