@@ -28696,4 +28696,93 @@ window.alert = function(message) {
 
   simpoShowNextAlert();
 };
- 
+
+
+/* =========================================================
+   SIMPOCHAT — STYLED CONFIRMATION DIALOG
+   STEP 2
+   ========================================================= */
+
+function simpoConfirm(message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "simpo-notice-overlay";
+
+    overlay.innerHTML = `
+      <section
+        class="simpo-notice-card"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="simpoConfirmTitle"
+      >
+        <div class="simpo-notice-icon">
+          <span>?</span>
+        </div>
+
+        <h2 id="simpoConfirmTitle">Confirm action</h2>
+
+        <p class="simpo-notice-message"></p>
+
+        <div class="simpo-confirm-actions">
+          <button
+            type="button"
+            class="simpo-confirm-cancel"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="simpo-confirm-okay"
+          >
+            Continue
+          </button>
+        </div>
+      </section>
+    `;
+
+    overlay.querySelector(
+      ".simpo-notice-message"
+    ).textContent = String(message ?? "");
+
+    document.body.appendChild(overlay);
+
+    const cancelButton = overlay.querySelector(
+      ".simpo-confirm-cancel"
+    );
+
+    const okayButton = overlay.querySelector(
+      ".simpo-confirm-okay"
+    );
+
+    let finished = false;
+
+    function close(result) {
+      if (finished) return;
+
+      finished = true;
+      overlay.classList.add("is-closing");
+
+      setTimeout(() => {
+        overlay.remove();
+        resolve(result);
+      }, 160);
+    }
+
+    cancelButton.addEventListener("click", () => {
+      close(false);
+    });
+
+    okayButton.addEventListener("click", () => {
+      close(true);
+    });
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) {
+        close(false);
+      }
+    });
+
+    cancelButton.focus();
+  });
+}
