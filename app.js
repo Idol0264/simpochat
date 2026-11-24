@@ -28783,3 +28783,117 @@ function simpoConfirm(message) {
     cancelButton.focus();
   });
 }
+
+
+/* =========================================================
+   SIMPOCHAT — STYLED TEXT INPUT DIALOG
+   STEP 3
+   ========================================================= */
+
+function simpoPrompt(message, defaultValue = "") {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "simpo-notice-overlay";
+
+    overlay.innerHTML = `
+      <section
+        class="simpo-notice-card simpo-prompt-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="simpoPromptTitle"
+      >
+        <div class="simpo-notice-icon">
+          <span>✎</span>
+        </div>
+
+        <h2 id="simpoPromptTitle">SimpoChat</h2>
+
+        <p class="simpo-notice-message"></p>
+
+        <input
+          type="text"
+          class="simpo-prompt-input"
+          autocomplete="off"
+        >
+
+        <div class="simpo-confirm-actions">
+          <button
+            type="button"
+            class="simpo-confirm-cancel"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="simpo-confirm-okay"
+          >
+            Continue
+          </button>
+        </div>
+      </section>
+    `;
+
+    overlay.querySelector(
+      ".simpo-notice-message"
+    ).textContent = String(message ?? "");
+
+    const input = overlay.querySelector(
+      ".simpo-prompt-input"
+    );
+
+    input.value = String(defaultValue ?? "");
+
+    document.body.appendChild(overlay);
+
+    const cancelButton = overlay.querySelector(
+      ".simpo-confirm-cancel"
+    );
+
+    const okayButton = overlay.querySelector(
+      ".simpo-confirm-okay"
+    );
+
+    let finished = false;
+
+    function close(result) {
+      if (finished) return;
+
+      finished = true;
+      overlay.classList.add("is-closing");
+
+      setTimeout(() => {
+        overlay.remove();
+        resolve(result);
+      }, 160);
+    }
+
+    cancelButton.addEventListener("click", () => {
+      close(null);
+    });
+
+    okayButton.addEventListener("click", () => {
+      close(input.value);
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        close(input.value);
+      }
+
+      if (event.key === "Escape") {
+        close(null);
+      }
+    });
+
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) {
+        close(null);
+      }
+    });
+
+    input.focus();
+    input.select();
+  });
+}
