@@ -22112,14 +22112,16 @@ case "mute-temporary-inviter":
           break;
         }
 
-        const name = prompt("Enter the official group name:");
+      const name = await simpoPrompt(
+         "Enter the official group name:"
+      );
 
         if (!name || !name.trim()) {
           break;
         }
 
-        const categoryText = prompt(
-          "Enter the official group category:"
+        const name = await simpoPrompt(
+           "Enter the official group category:"
         );
 
         if (!categoryText || !categoryText.trim()) {
