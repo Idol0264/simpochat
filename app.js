@@ -9725,21 +9725,47 @@ const group =
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
-async function renderTemporaryChat(conversationId) {
+async function renderTemporaryChat(
+  conversationId,
+  options = {}
+) {
 
-  // Always retrieve the latest messages from Supabase.
-  try {
+  const autoScroll =
+    options.autoScroll !== false;
 
-    await loadTemporaryChatMessages(
-      conversationId
-    );
+  const skipLoad =
+    options.skipLoad === true;
 
-  } catch (error) {
+  const preserveScroll =
+    options.preserveScroll === true;
 
-    console.warn(
-      "Temporary Chat messages could not be loaded:",
-      error
-    );
+  const savedWindowScrollY =
+    window.scrollY ||
+    document.documentElement.scrollTop ||
+    0;
+
+  const savedMessagesScrollTop =
+    document.querySelector("#messages")?.scrollTop ||
+    0;
+
+
+  // Only load messages when a fresh load is needed.
+  if (!skipLoad) {
+
+    try {
+
+      await loadTemporaryChatMessages(
+        conversationId
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Temporary Chat messages could not be loaded:",
+        error
+      );
+
+    }
 
   }
 
