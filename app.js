@@ -5963,50 +5963,53 @@ function attachMessageLongPress() {
             setTimeout(() => {
                
                
-               const scrollRoot =
-                  document.querySelector("#messages") ||
-                  document.scrollingElement ||
-                  document.documentElement;
-
-               
-               const previousScrollTop =
-                  scrollRoot
-                  ? scrollRoot.scrollTop
-                  : 0;
-               
                activeMessageActionId =
                   messageId;
-               
+
+
                if (state.screen === "temporary-chat") {
+
                   renderTemporaryChat(
-                     state.selectedTemporaryChatId
+                     state.selectedTemporaryChatId,
+                     {
+                        autoScroll: false,
+                        skipLoad: true,
+                        preserveScroll: true
+                     }
                   );
+
                } else {
+
+                  const scrollRoot =
+                     document.querySelector("#messages") ||
+                     document.scrollingElement ||
+                     document.documentElement;
+
+                  const previousScrollTop =
+                     scrollRoot
+                     ? scrollRoot.scrollTop
+                     : 0;
+
                   renderGroupChat({
                      autoScroll: false
                   });
-               }
-               
-               requestAnimationFrame(
-                  () => {
-                     
-                     
+
+                  requestAnimationFrame(() => {
+
                      const currentScrollRoot =
                         document.querySelector("#messages") ||
                         document.scrollingElement ||
                         document.documentElement;
 
-                     
                      if (currentScrollRoot) {
-                        
                         currentScrollRoot.scrollTop =
                            previousScrollTop;
-                     
                      }
-                  
-                  }
-               );
-            
+
+                  });
+
+               }
+
             }, 550);
       
       };
