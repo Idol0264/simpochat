@@ -9950,11 +9950,38 @@ async function renderTemporaryChat(
   attachMediaImageViewer();
   initializeSimpoAudioPlayers();
 
-  const messagesBox = document.querySelector("#messages");
+const messagesBox =
+  document.querySelector("#messages");
 
-  if (messagesBox) {
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-  }
+if (messagesBox && autoScroll) {
+
+  messagesBox.scrollTop =
+    messagesBox.scrollHeight;
+
+} else if (preserveScroll) {
+
+  requestAnimationFrame(() => {
+
+    const currentMessagesBox =
+      document.querySelector("#messages");
+
+    const scrollRoot =
+      document.scrollingElement ||
+      document.documentElement;
+
+    if (scrollRoot) {
+      scrollRoot.scrollTop =
+        savedWindowScrollY;
+    }
+
+    if (currentMessagesBox) {
+      currentMessagesBox.scrollTop =
+        savedMessagesScrollTop;
+    }
+
+  });
+
+}
 
   // Start automatic three-second message synchronization.
   startTemporaryChatSync(conversationId);
