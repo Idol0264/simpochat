@@ -6076,55 +6076,47 @@ function attachMessageLongPress() {
           const messageId =
             button.dataset.messageId;
 
+           
+           if (state.screen === "temporary-chat") {
 
-          if (action === "reply") {
-             
-             pendingReplyMessageId =
-                messageId;
-             
-             activeMessageActionId =
-                null;
-             
-             messageActionTimer =
-                null;
-             
-             const scrollRoot =
-                document.scrollingElement ||
-                document.documentElement;
-             const previousScrollTop =
-                scrollRoot
-                ? scrollRoot.scrollTop
-                : 0;
-             if (state.screen === "temporary-chat") {
-                renderTemporaryChat(
-                   state.selectedTemporaryChatId
-                );
-             } else {
-                renderGroupChat({
-                   autoScroll: false
-                });
-             }
-             
-             requestAnimationFrame(
-                () => {
-                   
-                   const currentScrollRoot =
-                      document.scrollingElement ||
-                      document.documentElement;
-                   
-                   if (currentScrollRoot) {
-                      currentScrollRoot.scrollTop =
-                         previousScrollTop;
-                   
-                   }
-                
-                }
-             );
-          
-   
-          }
+              renderTemporaryChat(
+                 state.selectedTemporaryChatId,
+                 {
+                    autoScroll: false,
+                    preserveScroll: true
+                 }
+              );
 
+           } else {
 
+              const scrollRoot =
+                 document.scrollingElement ||
+                 document.documentElement;
+
+              const previousScrollTop =
+                 scrollRoot
+                 ? scrollRoot.scrollTop
+                 : 0;
+
+              renderGroupChat({
+                 autoScroll: false
+              });
+
+              requestAnimationFrame(() => {
+
+                 const currentScrollRoot =
+                    document.scrollingElement ||
+                    document.documentElement;
+
+                 if (currentScrollRoot) {
+                    currentScrollRoot.scrollTop =
+                       previousScrollTop;
+                 }
+
+              });
+
+           }
+           
            
           if (action === "delete") {
             (async () => {
