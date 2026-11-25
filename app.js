@@ -6185,9 +6185,16 @@ function attachMessageLongPress() {
                 messageActionTimer = null;
 
                 saveState();
-                renderTemporaryChat(conversationId);
-                return;
-              }
+
+                 renderTemporaryChat(
+                    conversationId,
+                    {
+                       autoScroll: false,
+                       preserveScroll: true
+                    }
+                 );
+
+                 return;
 
               const group = getGroup(state.selectedGroup);
 
