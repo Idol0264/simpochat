@@ -26318,39 +26318,37 @@ document.addEventListener(
 
 function bindNavigation() {
 
-  document
-    .querySelectorAll(
-      "[data-nav]"
-    )
-    .forEach(button => {
+  if (document.__simpoNavigationBound) {
+    return;
+  }
 
-      button.addEventListener(
-        "click",
-        () => {
+  document.__simpoNavigationBound = true;
 
-          const screenName =
-            button.dataset.nav;
+  document.addEventListener("click", event => {
 
+    const button = event.target.closest("[data-nav]");
 
-          state.screen =
-            screenName;
+    if (!button) {
+      return;
+    }
 
+    event.preventDefault();
 
-          state.selectionMode =
-            false;
+    const screenName = button.dataset.nav;
 
-          state.selectedItems =
-            [];
+    if (!screenName) {
+      return;
+    }
 
+    state.screen = screenName;
 
-          saveState();
+    state.selectionMode = false;
+    state.selectedItems = [];
 
-          render();
+    saveState();
+    render();
 
-        }
-      );
-
-    });
+  });
 
 }
 
@@ -26361,27 +26359,30 @@ function bindNavigation() {
 
 function bindHeaderSearch() {
 
-  document
-    .querySelectorAll(
+  if (document.__simpoSearchBound) {
+    return;
+  }
+
+  document.__simpoSearchBound = true;
+
+  document.addEventListener("click", event => {
+
+    const button = event.target.closest(
       "[data-action='open-search']"
-    )
-    .forEach(button => {
+    );
 
-      button.addEventListener(
-        "click",
-        () => {
+    if (!button) {
+      return;
+    }
 
-          state.screen =
-            "search";
+    event.preventDefault();
 
-          saveState();
+    state.screen = "search";
 
-          render();
+    saveState();
+    render();
 
-        }
-      );
-
-    });
+  });
 
 }
 
