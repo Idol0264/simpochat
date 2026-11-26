@@ -4,13 +4,13 @@
 
 "use strict";
 
-const CACHE_NAME = "simpochat-shell-v13";
+const CACHE_NAME = "simpochat-shell-v14";
 
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20261126-2",
-  "./app.js?v=20261126-2",
+  "./styles.css?v=20261126-3",
+  "./app.js?v=20261126-3",
   "./manifest.webmanifest",
   "./icons/simpochat-icon-192.png",
   "./icons/simpochat-icon-512.png"
