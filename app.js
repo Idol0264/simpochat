@@ -6190,6 +6190,7 @@ function attachMessageLongPress() {
                  );
 
                  return;
+              }
 
               const group = getGroup(state.selectedGroup);
 
