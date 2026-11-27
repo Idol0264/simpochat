@@ -6079,6 +6079,30 @@ function attachMessageLongPress() {
           const messageId =
             button.dataset.messageId;
 
+          // Handle Reply in both group chats
+          // and Temporary Chats.
+          if (action === "reply") {
+            pendingReplyMessageId = messageId;
+            activeMessageActionId = null;
+            messageActionTimer = null;
+
+            if (state.screen === "temporary-chat") {
+              renderTemporaryChat(
+                state.selectedTemporaryChatId,
+                {
+                  autoScroll: false,
+                  skipLoad: true,
+                  preserveScroll: true
+                }
+              );
+            } else {
+              renderGroupChat({
+                autoScroll: false
+              });
+            }
+
+            return;
+          }
            
            if (state.screen === "temporary-chat") {
 
