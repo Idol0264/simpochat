@@ -3004,6 +3004,22 @@ async function openGroup(id) {
     return;
   }
 
+  // Show cached Official and Verified Business
+  // Groups immediately while Supabase refreshes.
+  if (isManagedGroup) {
+    state.previousScreen =
+      previousScreenBeforeOpen;
+
+    state.selectedGroup = id;
+    state.screen = "group-chat";
+
+    state.selectionMode = false;
+    state.selectedItems = [];
+
+    saveState();
+    renderGroupChat();
+  }
+
   try {
 
     /*
