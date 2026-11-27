@@ -10028,6 +10028,51 @@ if (messagesBox && autoScroll) {
   // Start automatic three-second message synchronization.
   startTemporaryChatSync(conversationId);
 
+  // Load the latest messages in the background.
+  if (!skipLoad) {
+    loadTemporaryChatMessages(conversationId)
+      .then(() => {
+        if (
+          state.screen !== "temporary-chat" ||
+          state.selectedTemporaryChatId !== conversationId
+        ) {
+          return;
+        }
+
+        const input =
+          document.querySelector("#messageInput");
+
+        const draft = input?.value || "";
+        const wasFocused =
+          document.activeElement === input;
+
+        renderTemporaryChat(conversationId, {
+          skipLoad: true,
+          autoScroll: false,
+          preserveScroll: true
+        });
+
+        const refreshedInput =
+          document.querySelector("#messageInput");
+
+        if (refreshedInput) {
+          refreshedInput.value = draft;
+
+          if (wasFocused) {
+            refreshedInput.focus({
+              preventScroll: true
+            });
+          }
+        }
+      })
+      .catch(error => {
+        console.warn(
+          "Temporary Chat background refresh failed:",
+          error
+        );
+      });
+  }
+
 }
 
 
