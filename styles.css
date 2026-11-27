@@ -12993,3 +12993,10 @@ body:has(.search-page) .fab {
 .simpo-prompt-card .simpo-notice-message {
   margin-bottom: 15px;
 }
+
+/* Hide the floating button when
+   the current screen does not allow it. */
+
+.fab[hidden] {
+  display: none !important;
+}
