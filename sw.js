@@ -76,29 +76,133 @@ self.addEventListener("fetch", event => {
    * App navigation:
    * try the network first, then use the cached app.
    */
-  if (request.mode === "navigate") {
+if (request.mode === "navigate") {
 
-    event.respondWith(
-      fetch(request)
-        .then(response => {
+  event.respondWith(
+    (async () => {
 
-          const copy = response.clone();
+      const controller =
+        new AbortController();
 
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(request, copy);
-            });
+      const timeoutId =
+        setTimeout(
+          () => controller.abort(),
+          8000
+        );
 
-          return response;
+      try {
 
-        })
-        .catch(() =>
-          caches.match("./index.html")
-        )
-    );
+        const response =
+          await fetch(request, {
+            signal: controller.signal
+          });
 
-    return;
-  }
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(
+            "Poor internet connection."
+          );
+        }
+
+        const copy =
+          response.clone();
+
+        const cache =
+          await caches.open(CACHE_NAME);
+
+        await cache.put(
+          request,
+          copy
+        );
+
+        return response;
+
+      } catch (error) {
+
+        clearTimeout(timeoutId);
+
+        console.warn(
+          "SimpoChat connection problem:",
+          error
+        );
+
+        const offlinePage =
+          await caches.match(
+            "./offline.html"
+          );
+
+        if (offlinePage) {
+          return offlinePage;
+        }
+
+        return new Response(
+          `<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport"
+              content="width=device-width,
+              initial-scale=1">
+            <meta name="theme-color"
+              content="#7040ff">
+            <title>SimpoChat</title>
+            <style>
+              body {
+                margin: 0;
+                min-height: 100vh;
+                display: grid;
+                place-items: center;
+                text-align: center;
+                padding: 24px;
+                box-sizing: border-box;
+                color: white;
+                font-family: system-ui, sans-serif;
+                background:
+                  linear-gradient(
+                    145deg,
+                    #44218f,
+                    #100b20,
+                    #080811
+                  );
+              }
+              button {
+                padding: 15px 28px;
+                border: 0;
+                border-radius: 14px;
+                color: white;
+                font-weight: 800;
+                background: #7847ff;
+              }
+            </style>
+          </head>
+          <body>
+            <main>
+              <h1>Poor internet connection</h1>
+              <p>Check your internet connection
+                and try again.</p>
+              <button onclick="location.reload()">
+                Try Again
+              </button>
+            </main>
+          </body>
+          </html>`,
+          {
+            status: 200,
+            headers: {
+              "Content-Type":
+                "text/html; charset=utf-8"
+            }
+          }
+        );
+
+      }
+
+    })()
+  );
+
+  return;
+}
 
   /*
    * Static files:
