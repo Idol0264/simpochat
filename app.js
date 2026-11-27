@@ -3111,7 +3111,17 @@ async function openGroup(id) {
         remoteGroup.created_by ||
         localGroup.creatorId ||
         "",
+       
+      isOfficial:
+        remoteGroup.is_official === true ||
+        localGroup.isOfficial === true ||
+        localGroup.is_official === true,
 
+      isVerifiedBusiness:
+        remoteGroup.is_verified_business === true ||
+        localGroup.isVerifiedBusiness === true ||
+        localGroup.is_verified_business === true,
+       
       approval_mode:
         remoteGroup.approval_mode ||
         remoteGroup.join_approval ||
