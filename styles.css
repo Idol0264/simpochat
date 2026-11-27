@@ -13406,3 +13406,18 @@ body:has(.search-page) .fab {
 .simpo-location-selected-timezone strong {
   color: var(--text);
 }
+
+/* Saved location — purple text only */
+
+#simpoLocationSelected {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  padding: 0 !important;
+}
+
+#simpoLocationName,
+#simpoLocationTimezone {
+  color: #9b5cff !important;
+}
