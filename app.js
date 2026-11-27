@@ -2093,6 +2093,26 @@ function render() {
 
   applyTheme();
 
+  // Show the floating + button only
+  // on the group collections and Posts.
+
+  const groupSearchFab =
+    document.querySelector(".fab");
+
+  if (groupSearchFab) {
+    const allowedFabScreens = [
+      "home",
+      "archived",
+      "starred",
+      "posts"
+    ];
+
+    groupSearchFab.hidden =
+      !allowedFabScreens.includes(
+        state.screen
+      );
+  }
+
      const temporaryChatFab =
   document.querySelector(
     "#temporaryChatFab"
