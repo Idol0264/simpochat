@@ -2981,7 +2981,16 @@ async function openGroup(id) {
 
   const localGroup =
     getGroup(id);
+   
+  const previousScreenBeforeOpen =
+    state.screen;
 
+  const isManagedGroup =
+    localGroup?.isOfficial === true ||
+    localGroup?.isVerifiedBusiness === true ||
+    localGroup?.is_official === true ||
+    localGroup?.is_verified_business === true;
+   
   if (!localGroup) {
     return;
   }
