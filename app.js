@@ -9811,27 +9811,6 @@ async function renderTemporaryChat(
     document.querySelector("#messages")?.scrollTop ||
     0;
 
-
-  // Only load messages when a fresh load is needed.
-  if (!skipLoad) {
-
-    try {
-
-      await loadTemporaryChatMessages(
-        conversationId
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Temporary Chat messages could not be loaded:",
-        error
-      );
-
-    }
-
-  }
-
   // Prevent an older request from rendering the wrong chat.
   if (
     state.screen !== "temporary-chat" ||
