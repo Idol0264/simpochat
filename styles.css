@@ -13339,3 +13339,70 @@ body:has(.search-page) .fab {
 
   border-radius: 14px;
 }
+
+/* Selected location — purple theme */
+
+.simpo-location-selected {
+  padding: 15px;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 67, 255, .24),
+      rgba(153, 83, 255, .12)
+    );
+
+  border: 1px solid
+    rgba(145, 92, 255, .55);
+
+  box-shadow:
+    0 8px 22px
+      rgba(112, 67, 255, .12);
+}
+
+.simpo-location-selected-title {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  color: #b99aff;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.simpo-location-selected-title span {
+  display: grid;
+  place-items: center;
+
+  width: 22px;
+  height: 22px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color: white;
+
+  background: #7847ff;
+
+  font-size: 12px;
+}
+
+.simpo-location-selected-timezone {
+  margin-top: 9px;
+
+  padding-left: 31px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.simpo-location-selected-timezone strong {
+  color: var(--text);
+}
