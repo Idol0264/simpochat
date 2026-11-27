@@ -18974,14 +18974,19 @@ async function chooseSimpoLocation(index) {
       name: location.name,
       timezone
     };
-
-    suggestions.innerHTML = `
-      <div class="section-note">
-        Selected: <strong>${esc(location.name)}</strong>
-        <br>
-        Detected time zone: <strong>${esc(timezone)}</strong>
-      </div>
-    `;
+   
+     suggestions.innerHTML = `
+       <div class="simpo-location-selected">
+          <div class="simpo-location-selected-title">
+             <span>✓</span>
+             <strong>${esc(location.name)}</strong>
+          </div>
+          <div class="simpo-location-selected-timezone">
+             Detected time zone:
+             <strong>${esc(timezone)}</strong>
+          </div>
+        </div>
+     `;
 
     saveButton.disabled = false;
 
