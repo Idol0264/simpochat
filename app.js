@@ -3006,7 +3006,7 @@ async function openGroup(id) {
 
   // Show cached Official and Verified Business
   // Groups immediately while Supabase refreshes.
-  if (isManagedGroup) {
+  if (localGroup) {
     state.previousScreen =
       previousScreenBeforeOpen;
 
@@ -3018,6 +3018,7 @@ async function openGroup(id) {
 
     saveState();
     renderGroupChat();
+    startGroupMessageRefresh(id);
   }
 
   try {
