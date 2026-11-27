@@ -3237,8 +3237,8 @@ async function openGroup(id) {
       0;
 
     state.previousScreen =
-      state.screen;
-
+       previousScreenBeforeOpen;
+     
     state.screen =
       "group-chat";
 
