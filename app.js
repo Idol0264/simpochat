@@ -10135,10 +10135,11 @@ if (messagesBox && autoScroll) {
           document.activeElement === input;
 
         renderTemporaryChat(conversationId, {
-          skipLoad: true,
-          autoScroll: false,
-          preserveScroll: true
+           skipLoad: true,
+           autoScroll: true
         });
+
+         scrollTemporaryChatToLatest(conversationId);
 
         const refreshedInput =
           document.querySelector("#messageInput");
