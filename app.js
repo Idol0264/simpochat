@@ -10074,6 +10074,8 @@ if (messagesBox && autoScroll) {
   messagesBox.scrollTop =
     messagesBox.scrollHeight;
 
+  scrollTemporaryChatToLatest(conversationId);
+
 } else if (preserveScroll) {
 
   requestAnimationFrame(() => {
