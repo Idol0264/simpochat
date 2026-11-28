@@ -8712,6 +8712,101 @@ function renderMemberRow(
 
 
 /* ---------------------------------------------------------
+   GROUP ADMIN MENU
+   --------------------------------------------------------- */
+
+function openGroupAdminMenu() {
+  const group = getGroup(state.selectedGroup);
+
+  if (!group || !isGroupAdmin(group)) {
+    alert("Only group admins can open this menu.");
+    return;
+  }
+
+  modalRoot.innerHTML = `
+    <div
+      class="modal-backdrop"
+      data-close
+    >
+
+      <div class="modal">
+
+        <div class="modal-head">
+
+          <div class="modal-title">
+            Group Management
+          </div>
+
+          <button
+            class="close-btn"
+            data-close
+          >
+            ×
+          </button>
+
+        </div>
+
+        <p>
+          Manage your group:
+          <strong>${esc(group.name)}</strong>
+        </p>
+
+        <div class="menu-list">
+
+          <button
+            class="menu-item"
+            disabled
+          >
+            <div class="menu-icon">✎</div>
+            <div>
+              <strong>Edit Group</strong>
+              <span>Change the group name, photo and details.</span>
+            </div>
+          </button>
+
+          <button
+            class="menu-item"
+            disabled
+          >
+            <div class="menu-icon">♙</div>
+            <div>
+              <strong>Manage Admins</strong>
+              <span>Choose who can manage this group.</span>
+            </div>
+          </button>
+
+          <button
+            class="menu-item"
+            disabled
+          >
+            <div class="menu-icon">♧</div>
+            <div>
+              <strong>Manage Members</strong>
+              <span>Remove members from this group.</span>
+            </div>
+          </button>
+
+          <button
+            class="menu-item"
+            disabled
+          >
+            <div class="menu-icon">⌫</div>
+            <div>
+              <strong>Delete Group</strong>
+              <span>Permanently delete this group.</span>
+            </div>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* ---------------------------------------------------------
    CHAT MENU
    --------------------------------------------------------- */
 
