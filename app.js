@@ -8786,17 +8786,6 @@ function openGroupAdminMenu() {
             </div>
           </button>
 
-          <button
-            class="menu-item"
-            disabled
-          >
-            <div class="menu-icon">⌫</div>
-            <div>
-              <strong>Delete Group</strong>
-              <span>Permanently delete this group.</span>
-            </div>
-          </button>
-
         </div>
 
       </div>
