@@ -7259,12 +7259,19 @@ scrollTemporaryChatToLatest(conversationId);
 
     saveState();
 
-    if (
-      state.screen === "temporary-chat" &&
-      state.selectedTemporaryChatId === conversationId
-    ) {
-      renderTemporaryChat(conversationId);
-    }
+
+if (
+  state.screen === "temporary-chat" &&
+  state.selectedTemporaryChatId === conversationId
+) {
+  renderTemporaryChat(conversationId, {
+    autoScroll: true,
+    skipLoad: true
+  });
+
+  scrollTemporaryChatToLatest(conversationId);
+}
+
 
   } catch (error) {
 
