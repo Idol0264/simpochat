@@ -17779,6 +17779,21 @@ async function renderAdminSection(section) {
 
                   </div>
 
+                  ${
+                    access.can_delete_groups
+                      ? `
+                        <button
+                          class="settings-button admin-delete-group-button"
+                          data-action="admin-delete-group"
+                          data-group-id="${esc(group.id || "")}"
+                          data-group-name="${esc(group.name || "Unnamed group")}"
+                        >
+                          Delete Group
+                        </button>
+                      `
+                      : ""
+                  }
+
                 </div>
 
               `;
