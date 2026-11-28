@@ -9844,6 +9844,24 @@ const group =
    TEMPORARY CHAT PAGE
    --------------------------------------------------------- */
 
+function scrollTemporaryChatToLatest(conversationId) {
+  requestAnimationFrame(() => {
+    if (
+      state.screen !== "temporary-chat" ||
+      state.selectedTemporaryChatId !== conversationId
+    ) {
+      return;
+    }
+
+    const messagesBox = document.querySelector("#messages");
+
+    if (messagesBox) {
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+  });
+}
+
+
 async function renderTemporaryChat(
   conversationId,
   options = {}
