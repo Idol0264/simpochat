@@ -7211,7 +7211,12 @@ async function sendTemporaryChatText() {
 
   saveState();
 
-  renderTemporaryChat(conversationId);
+renderTemporaryChat(conversationId, {
+  autoScroll: true,
+  skipLoad: true
+});
+
+scrollTemporaryChatToLatest(conversationId);
 
   try {
 
