@@ -27231,29 +27231,6 @@ renderAccessSetup();
     { once: true }
   );
 
-}
-
-
-    localStorage.removeItem(
-      PROFILE_SETUP_KEY
-    );
-
-    modalRoot.innerHTML = "";
-
-    renderAccessSetup();
-
-    const messageBox =
-      document.querySelector(
-        "#simpoAccessMessage"
-      );
-
-    if (messageBox) {
-      messageBox.textContent =
-        "Unable to check access right now. Please try again.";
-
-      messageBox.hidden = false;
-    }
-
   }
 
 }
