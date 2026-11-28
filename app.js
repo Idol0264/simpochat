@@ -16332,12 +16332,14 @@ async function requestToJoinGroup(
 
   if (!sessionToken) {
 
-    alert(
-      "Your SimpoChat session has expired. Please continue again."
-    );
+  restoreJoinButton();
 
-    return;
-  }
+  alert(
+    "Your SimpoChat session has expired. Please continue again."
+  );
+
+  return;
+}
 
 
   try {
