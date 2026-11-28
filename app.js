@@ -16141,7 +16141,8 @@ async function renderSearchResults() {
         () => {
 
           requestToJoinGroup(
-            button.dataset.requestGroup
+             button.dataset.requestGroup,
+             button
           );
 
         }
