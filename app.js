@@ -16373,19 +16373,21 @@ async function requestToJoinGroup(
       await response.json();
 
 
-    if (
-      !response.ok ||
-      data.allowed !== true
-    ) {
+     if (
+        !response.ok ||
+        data.allowed !== true
+     ) {
 
-      alert(
-        data.message ||
-        "Unable to join this group."
-      );
+        restoreJoinButton();
 
-      return;
+        alert(
+           data.message ||
+           "Unable to join this group."
+        );
 
-    }
+        return;
+
+     }
 
 
     const remoteGroup =
