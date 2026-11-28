@@ -27174,12 +27174,64 @@ renderAccessSetup();
     return;
 
 
-  } catch (error) {
+} catch (error) {
 
-    console.error(
-      "SimpoChat startup access check failed:",
-      error
-    );
+  console.error(
+    "SimpoChat startup access check failed:",
+    error
+  );
+
+  /*
+   * A failed network check is not a logout.
+   * Keep the saved profile and session token.
+   * Open the locally saved app instead.
+   */
+
+  modalRoot.innerHTML = "";
+
+  render();
+
+  // Show a temporary connection notice.
+  const oldNotice = document.getElementById(
+    "simpoStartupOfflineNotice"
+  );
+
+  if (oldNotice) {
+    oldNotice.remove();
+  }
+
+  const notice = document.createElement("div");
+
+  notice.id = "simpoStartupOfflineNotice";
+
+  notice.textContent =
+    "Can't connect to SimpoChat right now. Your saved profile and session are kept on this device.";
+
+  notice.style.cssText = `
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    top: max(12px, env(safe-area-inset-top));
+    z-index: 999999;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: var(--surface-strong, #fff);
+    color: var(--text, #111);
+    border: 1px solid var(--line, #ddd);
+    box-shadow: var(--shadow, 0 8px 30px rgba(0,0,0,.2));
+    font: 600 13px/1.5 system-ui, sans-serif;
+    text-align: center;
+  `;
+
+  document.body.appendChild(notice);
+
+  window.addEventListener(
+    "online",
+    () => notice.remove(),
+    { once: true }
+  );
+
+}
 
 
     localStorage.removeItem(
