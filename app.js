@@ -8433,7 +8433,21 @@ function renderGroupProfile() {
   >
     ‹
   </button>
-
+  
+  ${
+    isGroupAdmin(group)
+      ? `
+        <button
+          class="icon-btn profile-admin-menu"
+          data-action="group-admin-menu"
+          aria-label="Group management"
+          title="Group management"
+        >
+          ⋮
+        </button>
+      `
+      : ""
+  }
 
   <div class="profile-photo-wrap">
 
