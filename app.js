@@ -17780,6 +17780,40 @@ async function renderAdminSection(section) {
                   </div>
 
                   ${
+                    access.can_create_official_groups
+                      ? `
+                        <button
+                          class="settings-button"
+                          data-action="admin-update-group-verification"
+                          data-verification-type="official"
+                          data-enabled="${group.is_official ? "false" : "true"}"
+                          data-group-id="${esc(group.id || "")}"
+                          data-group-name="${esc(group.name || "Unnamed group")}"
+                        >
+                          ${group.is_official ? "Remove Official Status" : "Verify as Official"}
+                        </button>
+                      `
+                      : ""
+                  }
+
+                  ${
+                    access.can_create_verified_business_accounts
+                      ? `
+                        <button
+                          class="settings-button"
+                          data-action="admin-update-group-verification"
+                          data-verification-type="business"
+                          data-enabled="${group.is_verified_business ? "false" : "true"}"
+                          data-group-id="${esc(group.id || "")}"
+                          data-group-name="${esc(group.name || "Unnamed group")}"
+                        >
+                          ${group.is_verified_business ? "Remove Business Verification" : "Verify Business"}
+                        </button>
+                      `
+                      : ""
+                  }
+
+                  ${
                     access.can_delete_groups
                       ? `
                         <button
