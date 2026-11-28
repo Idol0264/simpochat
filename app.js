@@ -22863,6 +22863,100 @@ case "admin-create-verified-business-group": {
     }
 
 
+    case "admin-update-group-verification": {
+
+      try {
+
+        const access = await callSimpoAdmin(
+          "admin_status"
+        );
+
+        const verificationType =
+          actionTarget.dataset.verificationType;
+
+        const permission =
+          verificationType === "official"
+            ? access.can_create_official_groups
+            : verificationType === "business"
+              ? access.can_create_verified_business_accounts
+              : false;
+
+        if (!permission) {
+          alert(
+            "You do not have permission to change this group's verification."
+          );
+          break;
+        }
+
+        const groupId =
+          actionTarget.dataset.groupId;
+
+        const groupName =
+          actionTarget.dataset.groupName ||
+          "this group";
+
+        const enabled =
+          actionTarget.dataset.enabled === "true";
+
+        if (!groupId) {
+          throw new Error("Group ID is missing.");
+        }
+
+        const statusName =
+          verificationType === "official"
+            ? "Official"
+            : "Verified Business";
+
+        const actionName =
+          enabled
+            ? `verify "${groupName}" as ${statusName}`
+            : `remove ${statusName} status from "${groupName}"`;
+
+        const confirmed = await simpoConfirm(
+          `GROUP VERIFICATION\n\n` +
+          `Are you sure you want to ${actionName}?\n\n` +
+          `This change will be recorded in the administrator audit log.`
+        );
+
+        if (!confirmed) {
+          break;
+        }
+
+        await callSimpoAdmin(
+          "admin_update_group_verification",
+          {
+            group_id: groupId,
+            verification_type: verificationType,
+            enabled: enabled
+          }
+        );
+
+        alert(
+          enabled
+            ? `"${groupName}" has been verified as ${statusName}.`
+            : `"${groupName}" no longer has ${statusName} status.`
+        );
+
+        await renderAdminSection("groups");
+
+      } catch (error) {
+
+        console.error(
+          "Group verification update failed:",
+          error
+        );
+
+        alert(
+          error.message ||
+          "Unable to update group verification."
+        );
+
+      }
+
+      break;
+    }
+
+
     case "admin-delete-group": {
 
       try {
