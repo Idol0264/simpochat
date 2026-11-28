@@ -16295,8 +16295,30 @@ function renderSearchGroup(
    --------------------------------------------------------- */
 
 async function requestToJoinGroup(
-  groupId
+  groupId,
+  button = null
 ) {
+
+  if (!groupId) {
+    return;
+  }
+
+  const originalButtonText =
+    button?.textContent || "Join";
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Joining...";
+    button.style.opacity = "0.7";
+  }
+
+  function restoreJoinButton() {
+    if (!button) return;
+
+    button.disabled = false;
+    button.textContent = originalButtonText;
+    button.style.opacity = "";
+  }
 
   if (!groupId) {
     return;
