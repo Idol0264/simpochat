@@ -9401,9 +9401,45 @@ function startTemporaryChatSync(conversationId) {
    TEMPORARY CHAT INBOX
    --------------------------------------------------------- */
 
-async function renderTemporaryChatInbox() {
+async function renderTemporaryChatInbox(
+  options = {}
+) {
 
-  await syncTemporaryChatInvites();
+  /*
+   * Show the page immediately.
+   * Sync invitations and conversations
+   * in the background instead of blocking.
+   */
+
+  if (!options.skipSync) {
+
+    syncTemporaryChatInvites()
+      .then(() => {
+
+        // Refresh only if the user is
+        // still viewing the temporary inbox.
+        if (
+          state.screen ===
+          "temporary-chat-inbox"
+        ) {
+
+          renderTemporaryChatInbox({
+            skipSync: true
+          });
+
+        }
+
+      })
+      .catch(error => {
+
+        console.warn(
+          "Temporary chat background sync failed:",
+          error
+        );
+
+      });
+
+  }
 
   setHeader(
     "Temporary Chat",
