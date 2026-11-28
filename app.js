@@ -8862,22 +8862,62 @@ async function leaveCurrentGroup() {
     return;
   }
 
+  const confirmed = await simpoConfirm(
+    `Leave "${group.name}" and remove it from Home?`
+  );
 
-const confirmed = await simpoConfirm(
-  `Leave "${group.name}" and remove it from Home?`
-);
+  if (!confirmed) {
+    return;
+  }
 
-if (!confirmed) {
-  return;
-}
+  // STEP 1: Ask Supabase to remove this user's membership
+  const sessionToken =
+    localStorage.getItem(SESSION_TOKEN_KEY);
 
+  if (!sessionToken) {
+    alert("Please sign in again before leaving this group.");
+    return;
+  }
 
+  try {
+    const response = await fetch(
+      SIMPOCHAT_ACCESS_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + sessionToken
+        },
+        body: JSON.stringify({
+          action: "leave_group",
+          group_id: id
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.allowed !== true) {
+      throw new Error(
+        result.message || "Unable to leave this group."
+      );
+    }
+
+  } catch (error) {
+    alert(
+      error.message ||
+      "Unable to leave this group. Please try again."
+    );
+
+    return;
+  }
+
+  // STEP 2: Remove the group from this user's Home
   state.groups =
     state.groups.filter(
       item =>
         item.id !== id
     );
-
 
   state.starred =
     state.starred.filter(
@@ -8885,23 +8925,19 @@ if (!confirmed) {
         groupId !== id
     );
 
-
   state.archived =
     state.archived.filter(
       groupId =>
         groupId !== id
     );
 
-
   delete state.messages[id];
-
 
   state.selectedGroup =
     null;
 
   state.screen =
     "home";
-
 
   saveState();
 
