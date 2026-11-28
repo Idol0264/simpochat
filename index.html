@@ -83,37 +83,25 @@
 
             <script>
               (() => {
-                const subtitle = document.getElementById("screenSubtitle");
-
-                if (subtitle) {
-                  subtitle.textContent = "JavaScript started; loading app...";
-                }
-
                 window.addEventListener("error", (event) => {
-                  if (event.target && event.target.tagName === "SCRIPT") {
-                    if (subtitle) {
-                      subtitle.textContent =
-                        "Script failed to load: " + (event.target.src || "inline script");
-                    }
-                  } else if (
-                    event.message &&
-                    subtitle &&
-                    subtitle.textContent !== "Groups you belong to"
-                  ) {
-                    subtitle.textContent = "App error: " + event.message;
-                  }
-                }, true);
-                window.addEventListener("unhandledrejection", (event) => {
-                  if (subtitle && subtitle.textContent !== "Groups you belong to") {
-                    const reason = event.reason && event.reason.message
-                      ? event.reason.message
-                      : String(event.reason || "Unknown error");
-                    
-                    subtitle.textContent = "App promise error: " + reason;
-                  }
+                  console.error(
+                    "SimpoChat application error:",
+                    event.message || event
+                  );
                 });
+
+                window.addEventListener(
+                  "unhandledrejection",
+                  (event) => {
+                    console.error(
+                      "SimpoChat application promise error:",
+                      event.reason
+                    );
+                  }
+                );
               })();
             </script>
+
 
           </div>
 
