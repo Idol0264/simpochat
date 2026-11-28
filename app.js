@@ -16716,7 +16716,9 @@ if (
       "Join group failed:",
       error
     );
-
+     
+    restoreJoinButton();
+     
     alert(
       "Unable to connect to SimpoChat right now."
     );
