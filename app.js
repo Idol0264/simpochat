@@ -22829,6 +22829,90 @@ case "admin-create-verified-business-group": {
     }
 
 
+    case "admin-delete-group": {
+
+      try {
+
+        const access = await callSimpoAdmin(
+          "admin_status"
+        );
+
+        if (!access.can_delete_groups) {
+          alert(
+            "You do not have permission to delete groups."
+          );
+          break;
+        }
+
+        const groupId =
+          actionTarget.dataset.groupId;
+
+        const groupName =
+          actionTarget.dataset.groupName ||
+          "this group";
+
+        if (!groupId) {
+          throw new Error("Group ID is missing.");
+        }
+
+        const reason = await simpoPrompt(
+          `Reason for permanently deleting "${groupName}":`
+        );
+
+        if (!reason || !reason.trim()) {
+          break;
+        }
+
+        if (reason.trim().length < 3) {
+          alert(
+            "Please enter a deletion reason of at least 3 characters."
+          );
+          break;
+        }
+
+        const confirmed = await simpoConfirm(
+          `PERMANENT DELETION\n\n` +
+          `You are about to permanently delete "${groupName}".\n\n` +
+          `This will remove the group and its associated messages, memberships and other group data.\n\n` +
+          `This action cannot be undone. Continue?`
+        );
+
+        if (!confirmed) {
+          break;
+        }
+
+        await callSimpoAdmin(
+          "admin_delete_group",
+          {
+            group_id: groupId,
+            reason: reason.trim()
+          }
+        );
+
+        alert(
+          `"${groupName}" has been permanently deleted.`
+        );
+
+        await renderAdminSection("groups");
+
+      } catch (error) {
+
+        console.error(
+          "Administrator group deletion failed:",
+          error
+        );
+
+        alert(
+          error.message ||
+          "Unable to delete this group."
+        );
+
+      }
+
+      break;
+    }
+
+
     case "admin-report-filter":
 
       state.adminReportFilter =
