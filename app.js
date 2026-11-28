@@ -16492,150 +16492,19 @@ async function requestToJoinGroup(
     }
 
 
-    /*
-     * Open groups:
-     * the user is now a real member.
-     */
+/*
+ * Open groups:
+ * the user is now a real member.
+ *
+ * Open immediately using the group already
+ * returned by the join request.
+ * Fetch full group details in the background.
+ */
 
 if (
   data.join_status ===
   "member"
 ) {
-
-  try {
-
-    const groupResponse =
-      await fetch(
-        SIMPOCHAT_ACCESS_URL,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${sessionToken}`
-          },
-
-          body: JSON.stringify({
-            action:
-              "get_group",
-
-            group_id:
-              groupId
-          })
-        }
-      );
-
-    const groupData =
-      await groupResponse.json();
-
-    if (
-      groupResponse.ok &&
-      groupData.allowed === true &&
-      groupData.group
-    ) {
-
-      const fullGroup =
-        groupData.group;
-
-      const existingIndex =
-        state.groups.findIndex(
-          group =>
-            group.id ===
-            groupId
-        );
-
-      const fullLocalGroup = {
-
-        id:
-          fullGroup.id,
-
-        name:
-          fullGroup.name,
-
-        icon:
-          fullGroup.icon ||
-          fullGroup.name
-            ?.charAt(0)
-            ?.toUpperCase() ||
-          "G",
-
-        photo:
-          fullGroup.photo_url ||
-          "",
-
-        hue:
-          randomHue(),
-
-        category:
-          safeArray(
-            fullGroup.category
-          ),
-
-        members:
-          safeArray(
-            fullGroup.members
-          ),
-
-        join_mode:
-          fullGroup.join_mode,
-
-        approval_mode:
-          fullGroup.approval_mode,
-
-        creatorId:
-          fullGroup.created_by,
-
-        admin:
-          safeArray(
-            fullGroup.members
-          ).some(
-            member =>
-              member.id ===
-                state.currentUser?.id &&
-              (
-                member.role ===
-                  "admin" ||
-                member.role ===
-                  "creator"
-              )
-          )
-
-      };
-
-      if (
-        existingIndex >= 0
-      ) {
-
-        state.groups[
-          existingIndex
-        ] = {
-          ...state.groups[
-            existingIndex
-          ],
-          ...fullLocalGroup
-        };
-
-      } else {
-
-        state.groups.push(
-          fullLocalGroup
-        );
-
-      }
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Loading joined group failed:",
-      error
-    );
-
-  }
 
   delete state.joinRequests[
     groupId
@@ -16651,8 +16520,155 @@ if (
 
   render();
 
-  return;
+  /*
+   * Refresh full group details without
+   * blocking the opening of the chat.
+   */
 
+  fetch(
+    SIMPOCHAT_ACCESS_URL,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Authorization":
+          `Bearer ${sessionToken}`
+      },
+
+      body: JSON.stringify({
+        action: "get_group",
+        group_id: groupId
+      })
+    }
+  )
+  .then(response =>
+    response.json()
+  )
+  .then(groupData => {
+
+    if (
+      !groupData.allowed ||
+      !groupData.group
+    ) {
+      return;
+    }
+
+    const fullGroup =
+      groupData.group;
+
+    const existingIndex =
+      state.groups.findIndex(
+        group =>
+          group.id === groupId
+      );
+
+    const fullLocalGroup = {
+
+      id:
+        fullGroup.id,
+
+      name:
+        fullGroup.name,
+
+      icon:
+        fullGroup.icon ||
+        fullGroup.name
+          ?.charAt(0)
+          ?.toUpperCase() ||
+        "G",
+
+      photo:
+        fullGroup.photo_url ||
+        "",
+
+      hue:
+        randomHue(),
+
+      category:
+        safeArray(
+          fullGroup.category
+        ),
+
+      members:
+        safeArray(
+          fullGroup.members
+        ),
+
+      join_mode:
+        fullGroup.join_mode,
+
+      approval_mode:
+        fullGroup.approval_mode,
+
+      creatorId:
+        fullGroup.created_by,
+
+      admin:
+        safeArray(
+          fullGroup.members
+        ).some(
+          member =>
+            member.id ===
+              state.currentUser?.id &&
+            (
+              member.role ===
+                "admin" ||
+              member.role ===
+                "creator"
+            )
+        )
+
+    };
+
+    if (existingIndex >= 0) {
+
+      state.groups[
+        existingIndex
+      ] = {
+        ...state.groups[
+          existingIndex
+        ],
+        ...fullLocalGroup
+      };
+
+    } else {
+
+      state.groups.push(
+        fullLocalGroup
+      );
+
+    }
+
+    saveState();
+
+    /*
+     * Refresh the screen only if the
+     * user is still in this group.
+     */
+
+    if (
+      state.screen ===
+        "group-chat" &&
+      state.selectedGroup ===
+        groupId
+    ) {
+      render();
+    }
+
+  })
+  .catch(error => {
+
+    console.warn(
+      "Background group refresh failed:",
+      error
+    );
+
+  });
+
+  return;
 }
 
 
