@@ -23032,6 +23032,13 @@ case "admin-create-verified-business-group": {
       break;
 
 
+    case "group-admin-menu":
+
+      openGroupAdminMenu();
+
+      break;
+
+
     case "group-profile":
         
         if (
