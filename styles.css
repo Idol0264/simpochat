@@ -13421,3 +13421,32 @@ body:has(.search-page) .fab {
 #simpoLocationTimezone {
   color: #9b5cff !important;
 }
+
+/* =========================================================
+   GROUP PROFILE — ADMIN THREE-DOT MENU
+   ========================================================= */
+
+.profile-page .profile-admin-menu {
+  position: absolute;
+
+  top: 0;
+  right: 0;
+
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 15px;
+
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+
+  color: var(--text);
+
+  font-size: 25px;
+  font-weight: 800;
+
+  z-index: 5;
+}
